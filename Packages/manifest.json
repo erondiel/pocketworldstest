@@ -48,7 +48,8 @@
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0",
     "com.unity.probuilder": "5.2.2",
-    "com.pz.studio": "0.23.0"
+    "com.pz.studio": "0.23.0",
+    "com.pathightree.spacenavigator-driver": "file:com.pathightree.spacenavigator-driver"
   },
   "scopedRegistries": [
     {
