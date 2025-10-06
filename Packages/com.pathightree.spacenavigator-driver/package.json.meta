@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: c83456f41997eec47a51ca7888240841
+PackageManifestImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 9774
+  packageName: SpaceNavigator Driver
+  packageVersion: 2.0.0
+  assetPath: Packages/com.pathightree.spacenavigator-driver/package.json
+  uploadId: 753307

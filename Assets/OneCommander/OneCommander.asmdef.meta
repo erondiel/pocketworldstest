@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 17bcbb8bd5633a24e87b31886b940504
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 247753
+  packageName: OneCommander Connector for Unity
+  packageVersion: 1.0.0
+  assetPath: Assets/OneCommander/OneCommander.asmdef
+  uploadId: 577557

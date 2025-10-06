@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: fcdcb673cac44088a6dde98999a16e55
+timeCreated: 1718492729
+AssetOrigin:
+  serializedVersion: 1
+  productId: 9774
+  packageName: SpaceNavigator Driver
+  packageVersion: 2.0.0
+  assetPath: Packages/com.pathightree.spacenavigator-driver/Editor/Toolbar/Controls/SnapGrid.cs
+  uploadId: 753307

@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 8e508a36995e4891a16de9ebcdb9b60c
+timeCreated: 1718493099
+AssetOrigin:
+  serializedVersion: 1
+  productId: 9774
+  packageName: SpaceNavigator Driver
+  packageVersion: 2.0.0
+  assetPath: Packages/com.pathightree.spacenavigator-driver/Editor/Toolbar/Controls/SnapAngle.cs
+  uploadId: 753307

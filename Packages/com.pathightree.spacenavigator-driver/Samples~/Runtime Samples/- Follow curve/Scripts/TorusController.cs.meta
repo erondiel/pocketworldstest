@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: bd2296ba0f06d4f45b9b64b5f668d955
+timeCreated: 1456665691
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 9774
+  packageName: SpaceNavigator Driver
+  packageVersion: 2.0.0
+  assetPath: Packages/com.pathightree.spacenavigator-driver/Samples~/Runtime Samples/-
+    Follow curve/Scripts/TorusController.cs
+  uploadId: 753307

@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 46adece13ee447a68fcfbcef760f9db2
+timeCreated: 1718489323
+AssetOrigin:
+  serializedVersion: 1
+  productId: 9774
+  packageName: SpaceNavigator Driver
+  packageVersion: 2.0.0
+  assetPath: Packages/com.pathightree.spacenavigator-driver/Editor/Toolbar/Controls/CoordinateSystem.cs
+  uploadId: 753307

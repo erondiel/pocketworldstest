@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: c4acc9382c3f4fe5b4b16b0b68cb73c1
+timeCreated: 1612989676
+AssetOrigin:
+  serializedVersion: 1
+  productId: 9774
+  packageName: SpaceNavigator Driver
+  packageVersion: 2.0.0
+  assetPath: Packages/com.pathightree.spacenavigator-driver/Runtime/SpaceNavigatorHID.cs
+  uploadId: 753307

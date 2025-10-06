@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 13158e59074494444a2604945ebd60a8
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 9774
+  packageName: SpaceNavigator Driver
+  packageVersion: 2.0.0
+  assetPath: Packages/com.pathightree.spacenavigator-driver/Editor/ViewportController.cs
+  uploadId: 753307

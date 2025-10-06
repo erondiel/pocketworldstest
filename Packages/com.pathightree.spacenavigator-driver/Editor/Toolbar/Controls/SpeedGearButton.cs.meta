@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: ec38ba3f86ed44f99d51a16d348e6b12
+timeCreated: 1719264484
+AssetOrigin:
+  serializedVersion: 1
+  productId: 9774
+  packageName: SpaceNavigator Driver
+  packageVersion: 2.0.0
+  assetPath: Packages/com.pathightree.spacenavigator-driver/Editor/Toolbar/Controls/SpeedGearButton.cs
+  uploadId: 753307
