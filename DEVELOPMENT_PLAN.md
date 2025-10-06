@@ -463,31 +463,51 @@ function self:Update()        -- Unity Update
 
 ### Documentation Links
 - [x] Highrise Studio Best Practices: https://create.highrise.game/learn/studio/basics/best-practices
-- [ ] Highrise Studio API Reference: https://create.highrise.game/learn/studio (explore further)
-- [ ] Lua Scripting Guide: https://create.highrise.game/learn/studio/scripting
-- [ ] Example projects: Check Highrise Studio dashboard/community
+- [x] Highrise Studio API Globals: https://create.highrise.game/learn/studio-api/globals
+- [x] Player/Server/Client APIs understood
+- [ ] Chat API: https://create.highrise.game/learn/studio-api/services/chat
+- [ ] Storage API: https://create.highrise.game/learn/studio-api/services/storage (for persistent stats)
+- [ ] UI API: https://create.highrise.game/learn/studio-api/services/ui
 
 ### Reference Files
 - `Library/PackageCache/com.pz.studio@be2e4f637d27/Runtime/Lua/GeneralChat.lua` - Example module
 - `Library/PackageCache/com.pz.studio@be2e4f637d27/Runtime/Lua/Camera/FirstPersonCamera.lua` - Example client script
 
 ### Key Code Patterns Discovered
+
+**Global Objects Available:**
+- `self` - Current LuaBehaviour instance (access to GameObject, Unity methods)
+- `server` - GameServer instance (ServerOnly) - PlayerConnected, PlayerDisconnected events
+- `client` - GameClient instance (ClientOnly) - localPlayer, PlayerConnected events  
+- `scene` - Active Scene instance - PlayerJoined, PlayerLeft events
+
+**Key APIs:**
 ```lua
 -- Server player connection
 server.PlayerConnected:Connect(function(player)
-    -- Handle new player
+    print("Player connected: " .. player.name)
 end)
 
--- Access local player
-client.localPlayer.character
+-- Scene player events (both server and client can use)
+scene.PlayerJoined:Connect(function(scene, player)
+    print("Player joined scene: " .. player.name)
+end)
+
+-- Access local player (client only)
+local localPlayer = client.localPlayer
+local character = localPlayer.character
 
 -- Unity component access
-self.gameObject:GetComponent(Camera)
+local camera = self.gameObject:GetComponent(Camera)
+local transform = self.gameObject.transform
 
--- Event connections
-player.CharacterChanged:Connect(function(player, character)
-    -- Handle character change
+-- Defer execution to next frame
+defer(function()
+    print("Runs next frame")
 end)
+
+-- Require modules
+local myModule = require("ModuleName")
 ```
 
 ---

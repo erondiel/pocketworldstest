@@ -9,19 +9,19 @@
 -- Configuration
 --!SerializeField
 --!Tooltip("Time in seconds for the hiding phase")
-local hidePhaseTime: number = 30
+local hidePhaseTime = 30
 
 --!SerializeField
 --!Tooltip("Time in seconds for the hunting phase")  
-local huntPhaseTime: number = 120
+local huntPhaseTime = 120
 
 --!SerializeField
 --!Tooltip("Time in seconds for the round end phase")
-local roundEndTime: number = 10
+local roundEndTime = 10
 
 --!SerializeField
 --!Tooltip("Minimum players required to start a round")
-local minPlayersToStart: number = 2
+local minPlayersToStart = 2
 
 -- Game States
 local GameState = {
@@ -46,10 +46,23 @@ local eliminatedPlayers = {}
 local propsWins = 0
 local huntersWins = 0
 
--- Remote functions for client communication
-local remoteStateChanged = nil
-local remoteRoleAssigned = nil
-local remotePlayerTagged = nil
+-- Networking primitives
+local stateChangedEvent = nil      -- Event: broadcast phase + timer to clients
+local roleAssignedEvent = nil      -- Event: per-client role assignment
+local playerTaggedEvent = nil      -- Event: broadcast tag events
+
+local tagRequest = nil             -- RemoteFunction: client asks to tag a target
+local disguiseRequest = nil        -- RemoteFunction: client asks to disguise as prop
+
+-- Utility: get Player by id
+local function GetPlayerById(id)
+    for _, p in pairs(activePlayers) do
+        if p.id == id or p.userId == id then
+            return p
+        end
+    end
+    return nil
+end
 
 --[[
     Initialization
@@ -57,8 +70,51 @@ local remotePlayerTagged = nil
 function self:ServerStart()
     print("🎮 PropHunt Game Manager - Server Started")
     
-    -- Setup remote functions for client communication
-    -- (We'll implement these when we add the client script)
+    -- Events (server -> clients)
+    stateChangedEvent = Event.new("PH_StateChanged")
+    roleAssignedEvent = Event.new("PH_RoleAssigned")
+    playerTaggedEvent = Event.new("PH_PlayerTagged")
+
+    -- RemoteFunctions (client -> server)
+    tagRequest = RemoteFunction.new("PH_TagRequest")
+    disguiseRequest = RemoteFunction.new("PH_DisguiseRequest")
+
+    -- Handle client tag requests
+    tagRequest.OnInvokeServer = function(player, targetPlayerId)
+        if currentState ~= GameState.HUNTING then
+            return false, "Not hunting phase"
+        end
+
+        if not IsPlayerInTeam(player, huntersTeam) then
+            return false, "Not a hunter"
+        end
+
+        local target = GetPlayerById(targetPlayerId)
+        if not target then
+            return false, "Target not found"
+        end
+        if not IsPlayerInTeam(target, propsTeam) then
+            return false, "Target not a prop"
+        end
+
+        -- Process tag
+        OnPlayerTagged(player, target)
+        return true, "Tagged"
+    end
+
+    -- Handle client disguise requests
+    disguiseRequest.OnInvokeServer = function(player, propIdentifier)
+        if currentState ~= GameState.HIDING then
+            return false, "Not hiding phase"
+        end
+        if not IsPlayerInTeam(player, propsTeam) then
+            return false, "Not a prop"
+        end
+        -- TODO: Validate propIdentifier and apply disguise on player's character
+        -- Placeholder success
+        print("[Server] Disguise requested by", player.name, "->", tostring(propIdentifier))
+        return true, "Disguised"
+    end
     
     -- Listen for player connections
     server.PlayerConnected:Connect(OnPlayerConnected)
@@ -366,18 +422,26 @@ end
     (To be implemented with RemoteFunction when we add client scripts)
 ]]
 function BroadcastStateChange(newState, timer)
-    -- TODO: Send state change to all clients
-    -- remoteStateChanged:InvokeAllClients(newState, timer)
+    -- Broadcast state to all clients
+    if stateChangedEvent then
+        stateChangedEvent:FireAllClients(newState, timer)
+    end
 end
 
 function NotifyPlayerRole(player, role)
-    -- TODO: Send role assignment to specific player
-    -- remoteRoleAssigned:InvokeClient(player, role)
+    -- Notify a specific client of their role
+    if roleAssignedEvent then
+        roleAssignedEvent:FireClient(player, role)
+    end
 end
 
 function BroadcastPlayerTagged(hunter, prop)
-    -- TODO: Notify all clients that a player was tagged
-    -- remotePlayerTagged:InvokeAllClients(hunter.userId, prop.userId)
+    -- Notify all clients that a player was tagged
+    if playerTaggedEvent then
+        local hunterId = hunter.id or hunter.userId
+        local propId = prop.id or prop.userId
+        playerTaggedEvent:FireAllClients(hunterId, propId)
+    end
 end
 
 --[[

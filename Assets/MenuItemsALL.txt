@@ -1,0 +1,513 @@
+Assets/Create/Highrise/Character/NPC Outfit
+Assets/Create/Highrise/Character/Player Outfit
+Assets/Create/Highrise/Character/Spine Skeleton
+Assets/Create/Highrise/World Variant
+Assets/Create/Highrise/Scene Variant
+Assets/Create/Highrise/Character Variant
+Assets/Create/Highrise/Pet Variant
+Assets/Create/Highrise/Clothing/Effects/Offset
+Assets/Create/Highrise/Clothing/Effects/Attributes
+Assets/Create/Highrise/Clothing/Effects/BoneScale
+Assets/Create/Highrise/Clothing/Effects/Animation
+Assets/Create/Highrise/Clothing/Effects/Face Offset
+Assets/Create/Highrise/Clothing Collection
+Assets/Create/Highrise/Audio/Audio Shader
+Assets/Create/Lua/Client
+Assets/Create/Lua/Server
+Assets/Create/Lua/ClientAndServer
+Assets/Create/Lua/Module
+Assets/Create/Lua/UI
+Assets/Create/Lua/ScriptableObject
+Assets/Create/Folder
+Assets/Create/2D/Physics Material 2D
+Assets/Create/Shader Graph/URP/Lit Shader Graph
+Assets/Create/Shader Graph/URP/Unlit Shader Graph
+Assets/Create/Shader Graph/URP/Sprite Custom Lit Shader Graph
+Assets/Create/Shader Graph/URP/Sprite Unlit Shader Graph
+Assets/Create/Shader Graph/URP/Sprite Lit Shader Graph
+Assets/Create/Shader Graph/URP/Decal Shader Graph
+Assets/Create/Shader Graph/URP/Canvas Shader Graph
+Assets/Create/Shader Graph/URP/Fullscreen Shader Graph
+Assets/Create/Shader Graph/URP/Six Way Shader Graph
+Assets/Create/Shader Graph/BuiltIn/Lit Shader Graph
+Assets/Create/Shader Graph/BuiltIn/Unlit Shader Graph
+Assets/Create/Shader Graph/BuiltIn/Canvas Shader Graph
+Assets/Create/Shader Graph/Blank Shader Graph
+Assets/Create/Shader Graph/Sub Graph
+Assets/Create/Shader Graph/Custom Render Texture
+Assets/Create/Shader Graph/Custom Heatmap Values/Heatmap with Default Values
+Assets/Create/Shader Graph/Custom Heatmap Values/Empty Heatmap
+Assets/Create/Shader/Standard Surface Shader
+Assets/Create/Shader/Unlit Shader
+Assets/Create/Shader/Image Effect Shader
+Assets/Create/Shader/Compute Shader
+Assets/Create/Shader/Ray Tracing Shader
+Assets/Create/Shader/Custom Render Texture
+Assets/Create/Shader/Shader Variant Collection
+Assets/Create/TextMeshPro/Font Asset/SDF
+Assets/Create/TextMeshPro/Font Asset/Bitmap
+Assets/Create/TextMeshPro/Font Asset/Color
+Assets/Create/TextMeshPro/Font Asset/Font Asset Variant
+Assets/Create/TextMeshPro/Sprite Asset
+Assets/Create/TextMeshPro/Style Sheet
+Assets/Create/TextMeshPro/Color Gradient
+Assets/Create/Scene/Scene
+Assets/Create/Scene/Scene Template
+Assets/Create/Scene/Scene Template From Scene
+Assets/Create/Scene/Prefab
+Assets/Create/Scene/Prefab Variant
+Assets/Create/Scene/Scene Template Pipeline
+Assets/Create/Prefab Variant
+Assets/Create/Material
+Assets/Create/Animation/Animator Controller
+Assets/Create/Animation/Animator Override Controller
+Assets/Create/Animation/Avatar Mask
+Assets/Create/Animation/Animation Clip
+Assets/Create/Custom Font
+Assets/Create/UI Toolkit/Style Sheet
+Assets/Create/UI Toolkit/TSS Theme File
+Assets/Create/UI Toolkit/Default Runtime Theme File
+Assets/Create/UI Toolkit/UI Document
+Assets/Create/UI Toolkit/Editor Window
+Assets/Create/UI Toolkit/Panel Settings Asset
+Assets/Create/UI Toolkit/Text Settings
+Assets/Show in Explorer
+Assets/Open
+Assets/Delete
+Assets/Rename
+Assets/Copy Path
+Assets/Open Scene Additive
+Assets/Open in VSCode
+Assets/Export Highrise Asset...
+Assets/Find References In Scene
+Assets/Highrise/Upload Item...
+Assets/Highrise/Export Character Image
+Assets/Find References In Project
+Assets/Select Dependencies
+Assets/Refresh
+Assets/Reimport
+Assets/Reimport All
+Assets/Extract From Prefab
+Assets/Restore Backup
+Assets/Properties...
+GameObject/Create Empty
+GameObject/Create Empty Child
+GameObject/Create Empty Parent
+GameObject/2D Object/Pixel Perfect Camera (URP)
+GameObject/Highrise/NPC
+GameObject/Highrise/Cameras/First-Person Camera
+GameObject/Highrise/Cameras/RTS Camera
+GameObject/Highrise/Cameras/Side-Scroller Camera
+GameObject/Highrise/Cameras/Third-Person Camera
+GameObject/Highrise/NavMesh/Exclude from NavMesh
+GameObject/Highrise/NavMesh/Snap to NavMesh
+GameObject/Highrise/Spawn Point
+GameObject/3D Object/Cube
+GameObject/3D Object/Sphere
+GameObject/3D Object/Capsule
+GameObject/3D Object/Cylinder
+GameObject/3D Object/Plane
+GameObject/3D Object/Quad
+GameObject/3D Object/Text - TextMeshPro
+GameObject/3D Object/Legacy/TextMesh
+GameObject/3D Object/Ragdoll...
+GameObject/3D Object/Terrain
+GameObject/3D Object/Tree
+GameObject/3D Object/Wind Zone
+GameObject/Effects/Particle System
+GameObject/Effects/Particle System Force Field
+GameObject/Effects/Trail
+GameObject/Effects/Line
+GameObject/Light/Directional Light
+GameObject/Light/Point Light
+GameObject/Light/Spot Light
+GameObject/Light/Area Light
+GameObject/Light/Reflection Probe
+GameObject/Light/Sprite Light 2D
+GameObject/Light/Spot Light 2D
+GameObject/Light/Global Light 2D
+GameObject/Light/Freeform Light 2D/Square
+GameObject/Light/Freeform Light 2D/Circle
+GameObject/Light/Freeform Light 2D/Isometric Diamond
+GameObject/Light/Freeform Light 2D/Hexagon Flat Top
+GameObject/Light/Freeform Light 2D/Hexagon Pointed Top
+GameObject/Light/Adaptive Probe Volume
+GameObject/Light/Probe Adjustment Volume
+GameObject/Light/Light Probe Group
+GameObject/Audio/Audio Source
+GameObject/Audio/Audio Reverb Zone
+GameObject/Video/Video Player
+GameObject/Video/AVPro Video - Media Player
+GameObject/Video/AVPro Video - Media Player with Unity Audio
+GameObject/UI/Image
+GameObject/UI/Text - TextMeshPro
+GameObject/UI/Raw Image
+GameObject/UI/Panel
+GameObject/UI/Toggle
+GameObject/UI/Slider
+GameObject/UI/Scrollbar
+GameObject/UI/Scroll View
+GameObject/UI/Button - TextMeshPro
+GameObject/UI/Dropdown - TextMeshPro
+GameObject/UI/Input Field - TextMeshPro
+GameObject/UI/Canvas
+GameObject/UI/Event System
+GameObject/UI/Legacy/Text
+GameObject/UI/Legacy/Button
+GameObject/UI/Legacy/Dropdown
+GameObject/UI/Legacy/Input Field
+GameObject/AI/NavMesh Surface
+GameObject/AI/NavMesh Modifier Volume
+GameObject/AI/NavMesh Link
+GameObject/ProBuilder/Arch
+GameObject/ProBuilder/Cone
+GameObject/ProBuilder/Cube
+GameObject/ProBuilder/Curved Stair
+GameObject/ProBuilder/Cylinder
+GameObject/ProBuilder/Door
+GameObject/ProBuilder/Pipe
+GameObject/ProBuilder/Plane
+GameObject/ProBuilder/Prism
+GameObject/ProBuilder/Sphere
+GameObject/ProBuilder/Sprite
+GameObject/ProBuilder/Stair
+GameObject/ProBuilder/Torus
+GameObject/UI Toolkit/UI Document
+GameObject/In-App Purchasing/IAP Button
+GameObject/In-App Purchasing/IAP Listener
+GameObject/In-App Purchasing/IAP Button (Legacy)
+GameObject/Rendering/URP Decal Projector
+GameObject/Volume/Global Volume
+GameObject/Volume/Box Volume
+GameObject/Volume/Sphere Volume
+GameObject/Volume/Convex Mesh Volume
+GameObject/Camera
+GameObject/Visual Scripting Scene Variables
+GameObject/Center On Children
+GameObject/Make Parent
+GameObject/Clear Parent
+GameObject/Set as first sibling
+GameObject/Set as last sibling
+GameObject/Move To View
+GameObject/Align With View
+GameObject/Align View to Selected
+GameObject/Toggle Active State
+Window/AI/Navigation
+Window/Animation/Animation
+Window/Animation/Animator
+Window/Animation/Animator Parameter
+Window/Audio/Audio Random Container
+Window/Audio/Audio Mixer
+Window/General/Scene
+Window/General/Game
+Window/General/Inspector
+Window/General/Hierarchy
+Window/General/Project
+Window/General/Console
+Window/General/Progress
+Window/Rendering/Lighting
+Window/Rendering/Light Explorer
+Window/Rendering/Render Pipeline Converter
+Window/Layouts/Default
+Window/Layouts/Other Versions/Default (6000)
+Window/Layouts/Other Versions/Hr_studio_simple (6000)
+Window/Layouts/Studio Default
+Window/Layouts/Studio 2 by 3
+Window/Layouts/Studio 4 Split
+Window/Layouts/Studio Center
+Window/Layouts/Studio Tall
+Window/Layouts/Studio Wide
+Window/Layouts/Studio Play
+Window/Layouts/Save Layout...
+Window/Layouts/Save Layout to File...
+Window/Layouts/Load Layout from File...
+Window/Layouts/Delete Layout/Default
+Window/Layouts/Reset All Layouts
+Window/Editor Mode/Highrise Studio Advanced
+Window/Editor Mode/Highrise Studio
+Window/Editor Mode/Highrise Clothing
+Window/Editor Mode/Unity Default
+Window/Asset Store
+Window/Package Manager
+Window/Text/Font Asset Creator
+Window/Text/Sprite Importer
+Window/TextMeshPro/Font Asset Creator
+Window/TextMeshPro/Sprite Importer
+Window/TextMeshPro/Import TMP Essential Resources
+Window/TextMeshPro/Import TMP Examples and Extras
+Window/TextMeshPro/Project Files GUID Remapping Tool
+Window/TextMeshPro/Project Text Spacing Conversion Tool
+Window/UI Toolkit/UI Builder
+Window/UI Toolkit/Debugger
+Edit/Undo
+Edit/Redo
+Edit/Undo History
+Edit/Select All
+Edit/Deselect All
+Edit/Select Children
+Edit/Select Prefab Root
+Edit/Invert Selection
+Edit/Selection Groups/Load Selection 1
+Edit/Selection Groups/Load Selection 2
+Edit/Selection Groups/Load Selection 3
+Edit/Selection Groups/Load Selection 4
+Edit/Selection Groups/Load Selection 5
+Edit/Selection Groups/Load Selection 6
+Edit/Selection Groups/Load Selection 7
+Edit/Selection Groups/Load Selection 8
+Edit/Selection Groups/Load Selection 9
+Edit/Selection Groups/Load Selection 0
+Edit/Selection Groups/Save Selection 1
+Edit/Selection Groups/Save Selection 2
+Edit/Selection Groups/Save Selection 3
+Edit/Selection Groups/Save Selection 4
+Edit/Selection Groups/Save Selection 5
+Edit/Selection Groups/Save Selection 6
+Edit/Selection Groups/Save Selection 7
+Edit/Selection Groups/Save Selection 8
+Edit/Selection Groups/Save Selection 9
+Edit/Selection Groups/Save Selection 0
+Edit/Cut
+Edit/Copy
+Edit/Paste
+Edit/Paste Special/Paste as Child (Keep Local Transform)
+Edit/Paste Special/Paste as Child (Keep World Transform)
+Edit/Duplicate
+Edit/Rename
+Edit/Delete
+Edit/Frame Selected in Scene
+Edit/Frame Selected in Window under Cursor
+Edit/Lock View to Selected
+Edit/Search/Find
+Edit/Search/Search All...
+Edit/Play
+Edit/Pause
+Edit/Step
+Edit/Project Settings...
+Edit/Preferences...
+Edit/Shortcuts...
+Edit/Clear All PlayerPrefs
+Edit/Lighting/Generate Lighting
+Edit/Lighting/Bake Reflection Probes
+Edit/Lighting/Clear Baked Data
+Edit/Graphics Tier/Shader Hardware Tier 1
+Edit/Graphics Tier/Shader Hardware Tier 2
+Edit/Graphics Tier/Shader Hardware Tier 3
+Edit/Rendering/Generate Core CommandBuffers
+Edit/Rendering/Materials/Convert Selected Built-in Materials to URP
+Edit/Rendering/Generate Shader Includes
+CONTEXT/Animator/Optimize Transform Hierarchy
+CONTEXT/Material/Select Shader
+CONTEXT/Material/Edit Shader...
+CONTEXT/Material/Select Material
+CONTEXT/Material/Flatten Material Variant
+CONTEXT/Material/Remove Unused Properties...
+CONTEXT/Material/Copy Material Properties
+CONTEXT/Material/Paste Material Properties
+CONTEXT/Material/Create Material Preset
+CONTEXT/Material/Copy Atlas
+CONTEXT/Material/Paste Atlas
+CONTEXT/Material/Reset
+CONTEXT/Renderer/Select Material
+CONTEXT/UNUSED_PROXY_SetupMisc
+CONTEXT/TMP_FontAsset/Reset
+CONTEXT/TMP_FontAsset/Reset FaceInfo
+CONTEXT/TMP_FontAsset/Update Atlas Texture...
+CONTEXT/TMP_FontAsset/Clear Dynamic Data
+CONTEXT/TMP_FontAsset/Import Font Features
+CONTEXT/TMP_FontAsset/Extract Atlas
+CONTEXT/UNUSED_PROXY_ScriptContextCommands
+CONTEXT/Object/Reset
+CONTEXT/TEMPORARY-OBJECT-DISPLAY/Fly
+CONTEXT/TEMPORARY-OBJECT-DISPLAY/Orbit
+CONTEXT/TEMPORARY-OBJECT-DISPLAY/Telekinesis
+CONTEXT/TEMPORARY-OBJECT-DISPLAY/Grab Move
+CONTEXT/TrueTypeFontImporter/Create Font Asset...
+CONTEXT/TrueTypeFontImporter/Create TMP Font Asset...
+CONTEXT/TrueTypeFontImporter/Create Editable Copy
+CONTEXT/Component/Remove Component
+CONTEXT/Component/Move Up
+CONTEXT/Component/Move Down
+CONTEXT/Component/Copy Component
+CONTEXT/Component/Paste Component As New
+CONTEXT/Component/Paste Component Values
+CONTEXT/Component/Find References In Scene
+CONTEXT/Component/Properties...
+CONTEXT/MonoBehaviour/Edit Script
+CONTEXT/GameObject/Select Prefab
+CONTEXT/StateMachineBehaviour/Remove
+CONTEXT/StateMachineBehaviour/Move Up
+CONTEXT/StateMachineBehaviour/Move Down
+CONTEXT/InvalidStateMachineBehaviour/Remove
+CONTEXT/Preset/Exclude all properties
+CONTEXT/Preset/Include all properties
+CONTEXT/AnimationWindowEvent/Reset
+CONTEXT/AssemblyDefinitionImporter/Reset
+CONTEXT/AssemblyDefinitionReferenceImporter/Reset
+CONTEXT/AudioMixerGroupController/Copy all effect settings to all snapshots
+CONTEXT/AudioMixerGroupController/Toggle CPU usage display (only available on first editor instance)
+CONTEXT/CustomRenderTexture/Export
+CONTEXT/MonoImporter/Reset
+CONTEXT/MonoManager/Reset
+CONTEXT/TerrainLayers/Create Layer...
+CONTEXT/TerrainLayers/Add Layer...
+CONTEXT/TerrainLayers/Replace Layer...
+CONTEXT/TerrainLayers/Remove layer
+CONTEXT/TerrainEngineDetails/Add Detail Mesh
+CONTEXT/TerrainEngineDetails/Add Grass Texture
+CONTEXT/TerrainEngineDetails/Edit
+CONTEXT/TerrainEngineDetails/Remove
+CONTEXT/TerrainEngineTrees/Add Tree
+CONTEXT/TerrainEngineTrees/Edit Tree
+CONTEXT/TerrainEngineTrees/Remove Tree
+CONTEXT/Tilemap/Refresh All Tiles
+CONTEXT/Tilemap/Compress Tilemap Bounds
+CONTEXT/BuildProfile/Reset
+CONTEXT/Camera/Remove Component
+CONTEXT/Light/Remove Component
+CONTEXT/ProbeAdjustmentVolume/Rendering Debugger...
+CONTEXT/ProbeVolume/Rendering Debugger...
+CONTEXT/ProBuilderMesh/Open ProBuilder
+CONTEXT/ReflectionProbe/Remove Component
+CONTEXT/ServicesInitialization/Open Environment Settings
+CONTEXT/ServicesInitialization/Open Services Settings
+CONTEXT/UniversalAdditionalCameraData/Remove Component
+CONTEXT/UniversalAdditionalLightData/Remove Component
+CONTEXT/Texture/Copy
+CONTEXT/FontAsset/Update Atlas Texture...
+CONTEXT/FontAsset/Reset
+CONTEXT/FontAsset/Reset FaceInfo
+CONTEXT/FontAsset/Clear Dynamic Data
+CONTEXT/FontAsset/Import Font Features
+CONTEXT/TMP_SpriteAsset/Update Sprite Asset
+CONTEXT/TMP_SpriteAsset/Add Default Material
+CONTEXT/Font Asset/Extract Atlas
+CONTEXT/SpriteAsset/Update Sprite Asset
+CONTEXT/SpriteAsset/Add Default Material
+CONTEXT/Transform/Copy/Position
+CONTEXT/Transform/Copy/Rotation
+CONTEXT/Transform/Copy/Scale
+CONTEXT/Transform/Copy/World Transform
+CONTEXT/Transform/Paste/Position
+CONTEXT/Transform/Paste/Rotation
+CONTEXT/Transform/Paste/Scale
+CONTEXT/Transform/Paste/World Transform
+CONTEXT/Transform/Reset Property/Position
+CONTEXT/Transform/Reset Property/Rotation
+CONTEXT/Transform/Reset Property/Scale
+Tools/ProBuilder/ProBuilder Window
+Tools/ProBuilder/Editors/New Bezier Shape
+Tools/ProBuilder/Editors/New Poly Shape Toggle
+Tools/ProBuilder/Editors/New Shape Toggle
+Tools/ProBuilder/Editors/Open Lightmap UV Editor
+Tools/ProBuilder/Editors/Open Material Editor
+Tools/ProBuilder/Editors/Open Smoothing Editor
+Tools/ProBuilder/Editors/Open UV Editor
+Tools/ProBuilder/Editors/Open Vertex Color Editor
+Tools/ProBuilder/Editors/Open Vertex Position Editor
+Tools/ProBuilder/Dimensions Overlay/Hide
+Tools/ProBuilder/Dimensions Overlay/Show
+Tools/ProBuilder/Selection/Grow Selection
+Tools/ProBuilder/Selection/Select Hole
+Tools/ProBuilder/Selection/Select Loop
+Tools/ProBuilder/Selection/Select Material
+Tools/ProBuilder/Selection/Select Ring
+Tools/ProBuilder/Selection/Select Smoothing Group
+Tools/ProBuilder/Selection/Select Vertex Color
+Tools/ProBuilder/Selection/Shrink Selection
+Tools/ProBuilder/Interaction/Toggle Drag Rect Mode
+Tools/ProBuilder/Interaction/Toggle Drag Selection Mode
+Tools/ProBuilder/Interaction/Toggle Handle Orientation [p]
+Tools/ProBuilder/Interaction/Toggle Select Back Faces
+Tools/ProBuilder/Interaction/Toggle X Ray
+Tools/ProBuilder/Object/Center Pivot
+Tools/ProBuilder/Object/Conform Object Normals
+Tools/ProBuilder/Object/Flip Object Normals
+Tools/ProBuilder/Object/Freeze Transform
+Tools/ProBuilder/Object/Merge Objects
+Tools/ProBuilder/Object/Mirror Objects
+Tools/ProBuilder/Object/Pro Builderize
+Tools/ProBuilder/Object/Set Collider
+Tools/ProBuilder/Object/Set Trigger
+Tools/ProBuilder/Object/Subdivide Object
+Tools/ProBuilder/Object/Triangulate Object
+Tools/ProBuilder/Geometry/Bevel Edges
+Tools/ProBuilder/Geometry/Bridge Edges
+Tools/ProBuilder/Geometry/Collapse Vertices
+Tools/ProBuilder/Geometry/Conform Face Normals
+Tools/ProBuilder/Geometry/Delete Faces [backspace]
+Tools/ProBuilder/Geometry/Detach Faces
+Tools/ProBuilder/Geometry/Duplicate Faces
+Tools/ProBuilder/Geometry/Extrude
+Tools/ProBuilder/Geometry/Fill Hole
+Tools/ProBuilder/Geometry/Flip Face Edge
+Tools/ProBuilder/Geometry/Flip Face Normals
+Tools/ProBuilder/Geometry/Insert Edge Loop
+Tools/ProBuilder/Geometry/Merge Faces
+Tools/ProBuilder/Geometry/Offset Elements
+Tools/ProBuilder/Geometry/Set Pivot To Selection
+Tools/ProBuilder/Geometry/Smart Connect
+Tools/ProBuilder/Geometry/Smart Subdivide
+Tools/ProBuilder/Geometry/Split Vertices
+Tools/ProBuilder/Geometry/Triangulate Faces
+Tools/ProBuilder/Geometry/Weld Vertices
+Tools/ProBuilder/Materials/Apply Material Preset 1
+Tools/ProBuilder/Materials/Apply Material Preset 10
+Tools/ProBuilder/Materials/Apply Material Preset 2
+Tools/ProBuilder/Materials/Apply Material Preset 3
+Tools/ProBuilder/Materials/Apply Material Preset 4
+Tools/ProBuilder/Materials/Apply Material Preset 5
+Tools/ProBuilder/Materials/Apply Material Preset 6
+Tools/ProBuilder/Materials/Apply Material Preset 7
+Tools/ProBuilder/Materials/Apply Material Preset 8
+Tools/ProBuilder/Materials/Apply Material Preset 9
+Tools/ProBuilder/Vertex Colors/Set Selected Faces to Preset 0
+Tools/ProBuilder/Vertex Colors/Set Selected Faces to Preset 1
+Tools/ProBuilder/Vertex Colors/Set Selected Faces to Preset 2
+Tools/ProBuilder/Vertex Colors/Set Selected Faces to Preset 3
+Tools/ProBuilder/Vertex Colors/Set Selected Faces to Preset 4
+Tools/ProBuilder/Vertex Colors/Set Selected Faces to Preset 5
+Tools/ProBuilder/Vertex Colors/Set Selected Faces to Preset 6
+Tools/ProBuilder/Vertex Colors/Set Selected Faces to Preset 7
+Tools/ProBuilder/Vertex Colors/Set Selected Faces to Preset 8
+Tools/ProBuilder/Vertex Colors/Set Selected Faces to Preset 9
+Tools/ProBuilder/Repair/Fix Meshes in Selection
+Tools/ProBuilder/Repair/Rebuild All ProBuilder Objects
+Tools/ProBuilder/Repair/Rebuild Shared Indexes Cache
+Tools/ProBuilder/Repair/Mesh Debug Tool
+Tools/ProBuilder/Repair/Check for Broken ProBuilder References
+Tools/ProBuilder/Export/Export Asset
+Tools/ProBuilder/Export/Export Obj
+Tools/ProBuilder/Export/Export Ply
+Tools/ProBuilder/Export/Export Stl Ascii
+Tools/ProBuilder/Export/Export Stl Binary
+Tools/ProBuilder/Actions/Strip All ProBuilder Scripts in Scene
+Tools/ProBuilder/Actions/Strip ProBuilder Scripts in Selection
+Tools/ProBuilder/Debug/Log Preferences
+Tools/Force Open SpaceNavigator
+Tools/Menu Item Window
+File/New Scene
+File/Open Scene
+File/Open Recent Scene/Missing or broken path ()
+File/Open Recent Scene/Room (from Scenes)
+File/Save
+File/Save As...
+File/New Project...
+File/Open Project...
+File/Save Project
+Highrise/Lua/Rebuild All
+Highrise/Studio/Asset Catalog
+Highrise/Studio/Clothing Window
+Highrise/Studio/Inventory Viewer
+Highrise/Studio/Leaderboard Viewer
+Highrise/Studio/Localization Editor
+Highrise/Studio/Storage Viewer
+Highrise/Studio/Virtual Player
+Highrise/Tools/Build/Server Bundle
+Highrise/Tools/Studio/Testing/Load Tester
+Highrise/Tools/Studio/Validate Project
+Highrise/Tools/Clear Cache
+Highrise/Check For Updates
+Highrise/World Settings
+Tutorials/Show Tutorials
+Tutorials/Welcome Dialog
