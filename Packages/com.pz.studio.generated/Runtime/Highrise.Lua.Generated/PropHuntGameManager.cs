@@ -26,6 +26,14 @@ namespace Highrise.Lua.Generated
         private const string s_scriptGUID = "65f089c15ccc03e439fd1c159cd0b660";
         public override string ScriptGUID => s_scriptGUID;
 
+        [Tooltip("Time in seconds for the hiding phase")]
+        [SerializeField] public System.Double m_hidePhaseTime = 0;
+        [Tooltip("Time in seconds for the hunting phase")]
+        [SerializeField] public System.Double m_huntPhaseTime = 0;
+        [Tooltip("Time in seconds for the round end phase")]
+        [SerializeField] public System.Double m_roundEndTime = 0;
+        [Tooltip("Minimum players required to start a round")]
+        [SerializeField] public System.Double m_minPlayersToStart = 0;
 
         protected override SerializedPropertyValue[] SerializeProperties()
         {
@@ -34,6 +42,10 @@ namespace Highrise.Lua.Generated
 
             return new SerializedPropertyValue[]
             {
+                CreateSerializedProperty(_script.GetPropertyAt(0), m_hidePhaseTime),
+                CreateSerializedProperty(_script.GetPropertyAt(1), m_huntPhaseTime),
+                CreateSerializedProperty(_script.GetPropertyAt(2), m_roundEndTime),
+                CreateSerializedProperty(_script.GetPropertyAt(3), m_minPlayersToStart),
             };
         }
         

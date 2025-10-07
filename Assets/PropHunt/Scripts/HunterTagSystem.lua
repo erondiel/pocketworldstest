@@ -10,25 +10,45 @@
 --!Tooltip("Seconds between tag attempts")
 local shootCooldown = 2.0
 
+local function getGlobalChannel(key, factory)
+    local cached = _G[key]
+    if cached then return cached end
+    local created = factory()
+    _G[key] = created
+    return created
+end
+
+local stateChangedEvent = getGlobalChannel("__PH_EVT_STATE", function() return Event.new("PH_StateChanged") end)
+local roleAssignedEvent = getGlobalChannel("__PH_EVT_ROLE", function() return Event.new("PH_RoleAssigned") end)
+local playerTaggedEvent = getGlobalChannel("__PH_EVT_TAG", function() return Event.new("PH_PlayerTagged") end)
+local tagRequest = getGlobalChannel("__PH_RF_TAG", function() return RemoteFunction.new("PH_TagRequest") end)
 local lastShotTime = -9999
-local tagRequest = nil
-local playerTaggedEvent = nil
+local currentState = "LOBBY"
+local localRole = "unknown"
+
+local function NormalizeState(value)
+    if type(value) == "number" then
+        if value == 1 then return "LOBBY"
+        elseif value == 2 then return "HIDING"
+        elseif value == 3 then return "HUNTING"
+        elseif value == 4 then return "ROUND_END"
+        end
+    end
+    return tostring(value)
+end
 
 local function IsHuntPhase()
-    -- TODO: Wire to server state via RemoteFunction/state sync
-    -- For now, allow always; change to check a cached state set by server
-    return true
+    return localRole == "hunter" and currentState == "HUNTING"
 end
 
 local function TryInvokeServerTag(hitObject)
-    if not tagRequest then
-        tagRequest = RemoteFunction.new("PH_TagRequest")
-    end
-
     -- Attempt to resolve a player id from the hit object
     local targetId = nil
     if hitObject then
         local character = hitObject:GetComponent(Character)
+        if (not character) and hitObject.transform then
+            character = hitObject.transform:GetComponentInParent(Character)
+        end
         if character and character.player then
             targetId = character.player.id
         end
@@ -65,7 +85,7 @@ local function OnTapToShoot(tap)
     end
 
     local ray = cam:ScreenPointToRay(tap.position)
-    local hit = RaycastHit()
+    local hit : RaycastHit
     local didHit = Physics.Raycast(ray, hit, 100)
     if didHit then
         TryInvokeServerTag(hit.collider and hit.collider.gameObject or nil)
@@ -79,8 +99,17 @@ function self:ClientStart()
     Input.Tapped:Connect(OnTapToShoot)
 
     -- Listen for tag events (for VFX feedback)
-    playerTaggedEvent = Event.new("PH_PlayerTagged")
     playerTaggedEvent:Connect(function(hunterId, propId)
         print("[HunterTagSystem] Player tagged -> hunter:", tostring(hunterId), "prop:", tostring(propId))
+    end)
+
+    -- Listen for state/role updates
+    stateChangedEvent:Connect(function(newState, timer)
+        currentState = NormalizeState(newState)
+    end)
+
+    roleAssignedEvent:Connect(function(role)
+        localRole = tostring(role)
+        print("[HunterTagSystem] Role:", localRole)
     end)
 end

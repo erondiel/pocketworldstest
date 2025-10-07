@@ -9,19 +9,19 @@
 -- Configuration
 --!SerializeField
 --!Tooltip("Time in seconds for the hiding phase")
-local hidePhaseTime = 30
+local hidePhaseTime: number = 30
 
 --!SerializeField
 --!Tooltip("Time in seconds for the hunting phase")  
-local huntPhaseTime = 120
+local huntPhaseTime: number = 120
 
 --!SerializeField
 --!Tooltip("Time in seconds for the round end phase")
-local roundEndTime = 10
+local roundEndTime: number = 10
 
 --!SerializeField
 --!Tooltip("Minimum players required to start a round")
-local minPlayersToStart = 2
+local minPlayersToStart: number = 2
 
 -- Game States
 local GameState = {
@@ -46,13 +46,21 @@ local eliminatedPlayers = {}
 local propsWins = 0
 local huntersWins = 0
 
--- Networking primitives
-local stateChangedEvent = nil      -- Event: broadcast phase + timer to clients
-local roleAssignedEvent = nil      -- Event: per-client role assignment
-local playerTaggedEvent = nil      -- Event: broadcast tag events
+local function getGlobalChannel(key, factory)
+    local cached = _G[key]
+    if cached then return cached end
+    local created = factory()
+    _G[key] = created
+    return created
+end
 
-local tagRequest = nil             -- RemoteFunction: client asks to tag a target
-local disguiseRequest = nil        -- RemoteFunction: client asks to disguise as prop
+local stateChangedEvent = getGlobalChannel("__PH_EVT_STATE", function() return Event.new("PH_StateChanged") end)
+local roleAssignedEvent = getGlobalChannel("__PH_EVT_ROLE", function() return Event.new("PH_RoleAssigned") end)
+local playerTaggedEvent = getGlobalChannel("__PH_EVT_TAG", function() return Event.new("PH_PlayerTagged") end)
+local debugEvent = getGlobalChannel("__PH_EVT_DEBUG", function() return Event.new("PH_Debug") end)
+local tagRequest = getGlobalChannel("__PH_RF_TAG", function() return RemoteFunction.new("PH_TagRequest") end)
+local disguiseRequest = getGlobalChannel("__PH_RF_DISGUISE", function() return RemoteFunction.new("PH_DisguiseRequest") end)
+local forceStateRequest = getGlobalChannel("__PH_RF_FORCE", function() return RemoteFunction.new("PH_ForceState") end)
 
 -- Utility: get Player by id
 local function GetPlayerById(id)
@@ -69,16 +77,12 @@ end
 ]]
 function self:ServerStart()
     print("🎮 PropHunt Game Manager - Server Started")
+    -- Ensure sane defaults if not set from Inspector
+    if not hidePhaseTime or hidePhaseTime <= 0 then hidePhaseTime = 30 end
+    if not huntPhaseTime or huntPhaseTime <= 0 then huntPhaseTime = 120 end
+    if not roundEndTime or roundEndTime <= 0 then roundEndTime = 10 end
+    if not minPlayersToStart or minPlayersToStart < 1 then minPlayersToStart = 2 end
     
-    -- Events (server -> clients)
-    stateChangedEvent = Event.new("PH_StateChanged")
-    roleAssignedEvent = Event.new("PH_RoleAssigned")
-    playerTaggedEvent = Event.new("PH_PlayerTagged")
-
-    -- RemoteFunctions (client -> server)
-    tagRequest = RemoteFunction.new("PH_TagRequest")
-    disguiseRequest = RemoteFunction.new("PH_DisguiseRequest")
-
     -- Handle client tag requests
     tagRequest.OnInvokeServer = function(player, targetPlayerId)
         if currentState ~= GameState.HUNTING then
@@ -124,14 +128,34 @@ function self:ServerStart()
     scene.PlayerJoined:Connect(OnPlayerJoinedScene)
     scene.PlayerLeft:Connect(OnPlayerLeftScene)
     
+    -- Handle force state (debug)
+    forceStateRequest.OnInvokeServer = function(player, requestedState)
+        local target = nil
+        if type(requestedState) == "number" then
+            target = requestedState
+        elseif type(requestedState) == "string" then
+            local s = string.upper(requestedState)
+            if s == "LOBBY" then target = GameState.LOBBY
+            elseif s == "HIDING" then target = GameState.HIDING
+            elseif s == "HUNTING" then target = GameState.HUNTING
+            elseif s == "ROUND_END" or s == "ROUNDEND" or s == "END" then target = GameState.ROUND_END
+            end
+        end
+        if not target then
+            return false, "Invalid state"
+        end
+        TransitionToState(target)
+        return true, "OK"
+    end
+
     -- Initialize lobby state
     TransitionToState(GameState.LOBBY)
 end
 
 --[[
-    Update loop - runs every frame
+    Server tick
 ]]
-function self:Update()
+function self:ServerFixedUpdate()
     if currentState == GameState.LOBBY then
         UpdateLobby()
     elseif currentState == GameState.HIDING then
@@ -141,6 +165,7 @@ function self:Update()
     elseif currentState == GameState.ROUND_END then
         UpdateRoundEnd()
     end
+
 end
 
 --[[
@@ -234,6 +259,7 @@ function TransitionToState(newState)
     
     -- Notify all clients of state change
     BroadcastStateChange(newState, stateTimer)
+    debugEvent:FireAllClients("STATE", GetStateName(newState), stateTimer, roundNumber)
 end
 
 --[[
@@ -248,6 +274,7 @@ function StartNewRound()
     
     -- Transition to hiding phase
     TransitionToState(GameState.HIDING)
+    debugEvent:FireAllClients("ROUND_START", roundNumber)
 end
 
 function EndRound(winner)
@@ -264,6 +291,7 @@ function EndRound(winner)
     print("📊 Score - Props: " .. propsWins .. " | Hunters: " .. huntersWins)
     
     TransitionToState(GameState.ROUND_END)
+    debugEvent:FireAllClients("ROUND_END", winner, propsWins, huntersWins)
 end
 
 --[[
@@ -289,10 +317,12 @@ function AssignRoles()
             table.insert(propsTeam, player)
             NotifyPlayerRole(player, "prop")
             print("📦 " .. player.name .. " is a PROP")
+            debugEvent:FireAllClients("ROLE", player.id, "prop")
         else
             table.insert(huntersTeam, player)
             NotifyPlayerRole(player, "hunter")
             print("👁️ " .. player.name .. " is a HUNTER")
+            debugEvent:FireAllClients("ROLE", player.id, "hunter")
         end
     end
 end
@@ -302,12 +332,12 @@ end
 ]]
 function OnPlayerConnected(player)
     print("✅ Player connected: " .. player.name)
-    activePlayers[player.userId] = player
+    activePlayers[player.id] = player
 end
 
 function OnPlayerDisconnected(player)
     print("❌ Player disconnected: " .. player.name)
-    activePlayers[player.userId] = nil
+    activePlayers[player.id] = nil
     
     -- Remove from teams
     RemoveFromTeams(player)
@@ -344,6 +374,7 @@ function OnPlayerTagged(hunter, prop)
     
     -- Notify clients
     BroadcastPlayerTagged(hunter, prop)
+    debugEvent:FireAllClients("TAG", hunter.id, prop.id)
     
     -- Check if round should end
     if currentState == GameState.HUNTING and AreAllPropsEliminated() then
@@ -372,7 +403,7 @@ end
 
 function IsPlayerInTeam(player, team)
     for _, p in ipairs(team) do
-        if p.userId == player.userId then
+        if p.id == player.id then
             return true
         end
     end
@@ -382,7 +413,7 @@ end
 function RemoveFromTeams(player)
     -- Remove from props team
     for i, p in ipairs(propsTeam) do
-        if p.userId == player.userId then
+        if p.id == player.id then
             table.remove(propsTeam, i)
             break
         end
@@ -390,7 +421,7 @@ function RemoveFromTeams(player)
     
     -- Remove from hunters team
     for i, p in ipairs(huntersTeam) do
-        if p.userId == player.userId then
+        if p.id == player.id then
             table.remove(huntersTeam, i)
             break
         end
@@ -422,26 +453,15 @@ end
     (To be implemented with RemoteFunction when we add client scripts)
 ]]
 function BroadcastStateChange(newState, timer)
-    -- Broadcast state to all clients
-    if stateChangedEvent then
-        stateChangedEvent:FireAllClients(newState, timer)
-    end
+    stateChangedEvent:FireAllClients(newState, timer)
 end
 
 function NotifyPlayerRole(player, role)
-    -- Notify a specific client of their role
-    if roleAssignedEvent then
-        roleAssignedEvent:FireClient(player, role)
-    end
+    roleAssignedEvent:FireClient(player, role)
 end
 
 function BroadcastPlayerTagged(hunter, prop)
-    -- Notify all clients that a player was tagged
-    if playerTaggedEvent then
-        local hunterId = hunter.id or hunter.userId
-        local propId = prop.id or prop.userId
-        playerTaggedEvent:FireAllClients(hunterId, propId)
-    end
+    playerTaggedEvent:FireAllClients(hunter.id, prop.id)
 end
 
 --[[
