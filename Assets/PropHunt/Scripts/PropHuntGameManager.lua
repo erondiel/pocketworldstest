@@ -6,19 +6,24 @@
 
 --!Type(Module)
 
+-- Enhanced logging
+local function Log(msg)
+    print(tostring(msg))
+end
+
 -- Configuration
---!SerializeField
 --!Tooltip("Time in seconds for the hiding phase")
-local hidePhaseTime: number = 30
 --!SerializeField
---!Tooltip("Time in seconds for the hunting phase")  
-local huntPhaseTime: number = 120
+local _hidePhaseTime : number = 30
+--!Tooltip("Time in seconds for the hunting phase")
 --!SerializeField
+local _huntPhaseTime : number = 120
 --!Tooltip("Time in seconds for the round end phase")
-local roundEndTime: number = 10
 --!SerializeField
+local _roundEndTime : number = 10
 --!Tooltip("Minimum players required to start a round")
-local minPlayersToStart: number = 2
+--!SerializeField
+local _minPlayersToStart : number = 2
 
 -- Game States
 local GameState = {
@@ -68,14 +73,8 @@ end
     Initialization
 ]]
 function self:ServerStart()
-    print("🎮 PropHunt Game Manager - Server Started")
-    print("⚙️ Configuration: Hide=" .. hidePhaseTime .. "s Hunt=" .. huntPhaseTime .. "s RoundEnd=" .. roundEndTime .. "s MinPlayers=" .. minPlayersToStart)
-    
-    -- Ensure sane defaults if not set from Inspector
-    if not hidePhaseTime or hidePhaseTime <= 0 then hidePhaseTime = 30 end
-    if not huntPhaseTime or huntPhaseTime <= 0 then huntPhaseTime = 120 end
-    if not roundEndTime or roundEndTime <= 0 then roundEndTime = 10 end
-    if not minPlayersToStart or minPlayersToStart < 1 then minPlayersToStart = 2 end
+    Log("GM Started")
+    Log(string.format("CFG H=%ds U=%ds E=%ds P=%d", _hidePhaseTime, _huntPhaseTime, _roundEndTime, _minPlayersToStart))
     
     -- Handle client tag requests
     tagRequest.OnInvokeServer = function(player, targetPlayerId)
@@ -164,7 +163,7 @@ end
 function UpdateLobby()
     local playerCount = GetActivePlayerCount()
     
-    if playerCount >= minPlayersToStart then
+    if playerCount >= _minPlayersToStart then
         -- Check if we should start countdown
         if stateTimer > 0 then
             stateTimer = stateTimer - Time.deltaTime
@@ -175,14 +174,14 @@ function UpdateLobby()
         else
             -- Start countdown
             stateTimer = 5 -- 5 second countdown
-            print("⏱️ Game starting in " .. math.floor(stateTimer) .. " seconds! Players: " .. playerCount .. "/" .. minPlayersToStart)
+            Log(string.format("START %ds [%d/%d]", math.floor(stateTimer), playerCount, _minPlayersToStart))
             BroadcastStateChange(GameState.LOBBY, stateTimer)
         end
     else
         -- Not enough players, reset timer
         if stateTimer ~= 0 then
             stateTimer = 0
-            print("⏸️ Waiting for players... " .. playerCount .. "/" .. minPlayersToStart)
+            Log(string.format("WAIT [%d/%d]", playerCount, _minPlayersToStart))
             BroadcastStateChange(GameState.LOBBY, stateTimer)
         end
     end
@@ -231,7 +230,9 @@ end
     State Machine - Transition Handler
 ]]
 function TransitionToState(newState)
-    print("🔄 State Transition: " .. GetStateName(currentState) .. " → " .. GetStateName(newState))
+    local oldName = GetStateName(currentState)
+    local newName = GetStateName(newState)
+    Log(string.format("%s->%s", oldName, newName))
     
     currentState = newState
     
@@ -240,20 +241,21 @@ function TransitionToState(newState)
         eliminatedPlayers = {}
         
     elseif newState == GameState.HIDING then
-        stateTimer = hidePhaseTime
-        print("🙈 HIDING PHASE - Props find your spots!")
+        stateTimer = _hidePhaseTime
+        Log(string.format("HIDE %ds", _hidePhaseTime))
         
     elseif newState == GameState.HUNTING then
-        stateTimer = huntPhaseTime
-        print("🔫 HUNTING PHASE - Hunters go!")
+        stateTimer = _huntPhaseTime
+        Log(string.format("HUNT %ds", _huntPhaseTime))
         
     elseif newState == GameState.ROUND_END then
-        stateTimer = roundEndTime
+        stateTimer = _roundEndTime
+        Log(string.format("END %ds", _roundEndTime))
     end
     
     -- Notify all clients of state change
     BroadcastStateChange(newState, stateTimer)
-    debugEvent:FireAllClients("STATE", GetStateName(newState), stateTimer, roundNumber)
+    debugEvent:FireAllClients("STATE", newName, stateTimer, roundNumber)
 end
 
 --[[
@@ -261,7 +263,7 @@ end
 ]]
 function StartNewRound()
     roundNumber = roundNumber + 1
-    print("🎯 Starting Round " .. roundNumber)
+    Log(string.format("ROUND %d", roundNumber))
     
     -- Assign roles
     AssignRoles()
@@ -272,17 +274,15 @@ function StartNewRound()
 end
 
 function EndRound(winner)
-    print("🏆 Round " .. roundNumber .. " ended - Winner: " .. winner)
-    
     if winner == "hunters" then
         huntersWins = huntersWins + 1
-        print("👁️ Hunters win! All props eliminated!")
+        Log("HUNTERS WIN!")
     else
         propsWins = propsWins + 1
-        print("📦 Props win! Survived until time ran out!")
+        Log("PROPS WIN!")
     end
     
-    print("📊 Score - Props: " .. propsWins .. " | Hunters: " .. huntersWins)
+    Log(string.format("SCORE Props:%d Hunt:%d", propsWins, huntersWins))
     
     TransitionToState(GameState.ROUND_END)
     debugEvent:FireAllClients("ROUND_END", winner, propsWins, huntersWins)
@@ -310,12 +310,12 @@ function AssignRoles()
         if i <= propsCount then
             table.insert(propsTeam, player)
             NotifyPlayerRole(player, "prop")
-            print("📦 " .. player.name .. " is a PROP")
+            Log(string.format("PROP: %s", player.name))
             debugEvent:FireAllClients("ROLE", player.id, "prop")
         else
             table.insert(huntersTeam, player)
             NotifyPlayerRole(player, "hunter")
-            print("👁️ " .. player.name .. " is a HUNTER")
+            Log(string.format("HUNTER: %s", player.name))
             debugEvent:FireAllClients("ROLE", player.id, "hunter")
         end
     end
@@ -325,18 +325,16 @@ end
     Player Management
 ]]
 function OnPlayerJoinedScene(sceneObj, player)
-    print("✅ Player joined scene: " .. player.name)
     activePlayers[player.id] = player
-    print("📊 Active players: " .. GetActivePlayerCount())
+    local count = GetActivePlayerCount()
+    Log(string.format("JOIN %s (%d)", player.name, count))
 end
 
 function OnPlayerLeftScene(sceneObj, player)
-    print("❌ Player left scene: " .. player.name)
     activePlayers[player.id] = nil
-    
-    -- Remove from teams
     RemoveFromTeams(player)
-    print("📊 Active players: " .. GetActivePlayerCount())
+    local count = GetActivePlayerCount()
+    Log(string.format("LEFT %s (%d)", player.name, count))
 end
 
 --[[

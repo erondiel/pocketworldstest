@@ -131,8 +131,9 @@ function self:ClientStart()
     print("[DebugMenu] ClientStart")
     BuildUI()
 
+    -- Listen for state changes to update immediately
     stateChangedEvent:Connect(function(newState, timer)
-Seri        print("[DebugMenu] State changed:", newState, timer)
+        print("[DebugMenu] State changed:", newState, timer)
         currentState = FormatState(newState)
         stateTimer = tonumber(timer) or 0
         print("[DebugMenu] Formatted state:", currentState, stateTimer)
@@ -147,11 +148,12 @@ Seri        print("[DebugMenu] State changed:", newState, timer)
     debugEvent:Connect(function(kind, a, b, c)
         print("[Debug]", tostring(kind), tostring(a), tostring(b), tostring(c))
     end)
-end
-
-function self:Update()
-    if stateTimer > 0 then
-        stateTimer = math.max(0, stateTimer - Time.deltaTime)
-        UpdateLabels()
-    end
+    
+    -- Start timer to update HUD every second (like matchmaking system)
+    Timer.Every(1, function()
+        if stateTimer > 0 then
+            stateTimer = math.max(0, stateTimer - 1)
+            UpdateLabels()
+        end
+    end)
 end

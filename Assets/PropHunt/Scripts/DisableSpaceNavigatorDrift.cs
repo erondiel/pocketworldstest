@@ -46,7 +46,7 @@ public class DisableSpaceNavigatorDrift : MonoBehaviour
             if (IsSpaceNavigatorDevice(device) && !device.enabled)
             {
                 InputSystem.EnableDevice(device);
-                Debug.Log($"[SpaceNav Fix] Re-enabled device: {device.name} for editor use");
+                //Debug.Log($"[SpaceNav Fix] Re-enabled device: {device.name} for editor use");
             }
         }
     }
@@ -58,7 +58,7 @@ public class DisableSpaceNavigatorDrift : MonoBehaviour
             if (IsSpaceNavigatorDevice(device))
             {
                 InputSystem.DisableDevice(device);
-                Debug.Log($"[SpaceNav Fix] Disabled device: {device.name} (Product: {device.description.product})");
+                //Debug.Log($"[SpaceNav Fix] Disabled device: {device.name} (Product: {device.description.product})");
             }
         }
     }
@@ -69,7 +69,7 @@ public class DisableSpaceNavigatorDrift : MonoBehaviour
         if (change == InputDeviceChange.Added && IsSpaceNavigatorDevice(device))
         {
             InputSystem.DisableDevice(device);
-            Debug.Log($"[SpaceNav Fix] Disabled newly added device: {device.name}");
+            //Debug.Log($"[SpaceNav Fix] Disabled newly added device: {device.name}");
         }
     }
 
