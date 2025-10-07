@@ -4,21 +4,18 @@
     Handles state machine: Lobby → Hiding → Hunting → RoundEnd → Repeat
 ]]
 
---!Type(Server)
+--!Type(Module)
 
 -- Configuration
 --!SerializeField
 --!Tooltip("Time in seconds for the hiding phase")
 local hidePhaseTime: number = 30
-
 --!SerializeField
 --!Tooltip("Time in seconds for the hunting phase")  
 local huntPhaseTime: number = 120
-
 --!SerializeField
 --!Tooltip("Time in seconds for the round end phase")
 local roundEndTime: number = 10
-
 --!SerializeField
 --!Tooltip("Minimum players required to start a round")
 local minPlayersToStart: number = 2
@@ -46,21 +43,16 @@ local eliminatedPlayers = {}
 local propsWins = 0
 local huntersWins = 0
 
-local function getGlobalChannel(key, factory)
-    local cached = _G[key]
-    if cached then return cached end
-    local created = factory()
-    _G[key] = created
-    return created
-end
+-- Network Events (must be at module scope)
+local stateChangedEvent = Event.new("PH_StateChanged")
+local roleAssignedEvent = Event.new("PH_RoleAssigned")
+local playerTaggedEvent = Event.new("PH_PlayerTagged")
+local debugEvent = Event.new("PH_Debug")
 
-local stateChangedEvent = getGlobalChannel("__PH_EVT_STATE", function() return Event.new("PH_StateChanged") end)
-local roleAssignedEvent = getGlobalChannel("__PH_EVT_ROLE", function() return Event.new("PH_RoleAssigned") end)
-local playerTaggedEvent = getGlobalChannel("__PH_EVT_TAG", function() return Event.new("PH_PlayerTagged") end)
-local debugEvent = getGlobalChannel("__PH_EVT_DEBUG", function() return Event.new("PH_Debug") end)
-local tagRequest = getGlobalChannel("__PH_RF_TAG", function() return RemoteFunction.new("PH_TagRequest") end)
-local disguiseRequest = getGlobalChannel("__PH_RF_DISGUISE", function() return RemoteFunction.new("PH_DisguiseRequest") end)
-local forceStateRequest = getGlobalChannel("__PH_RF_FORCE", function() return RemoteFunction.new("PH_ForceState") end)
+-- Remote Functions
+local tagRequest = RemoteFunction.new("PH_TagRequest")
+local disguiseRequest = RemoteFunction.new("PH_DisguiseRequest")
+local forceStateRequest = RemoteFunction.new("PH_ForceState")
 
 -- Utility: get Player by id
 local function GetPlayerById(id)
@@ -77,6 +69,8 @@ end
 ]]
 function self:ServerStart()
     print("🎮 PropHunt Game Manager - Server Started")
+    print("⚙️ Configuration: Hide=" .. hidePhaseTime .. "s Hunt=" .. huntPhaseTime .. "s RoundEnd=" .. roundEndTime .. "s MinPlayers=" .. minPlayersToStart)
+    
     -- Ensure sane defaults if not set from Inspector
     if not hidePhaseTime or hidePhaseTime <= 0 then hidePhaseTime = 30 end
     if not huntPhaseTime or huntPhaseTime <= 0 then huntPhaseTime = 120 end
@@ -120,11 +114,7 @@ function self:ServerStart()
         return true, "Disguised"
     end
     
-    -- Listen for player connections
-    server.PlayerConnected:Connect(OnPlayerConnected)
-    server.PlayerDisconnected:Connect(OnPlayerDisconnected)
-    
-    -- Listen for scene events
+    -- Listen for scene player events (Module type uses scene, not server)
     scene.PlayerJoined:Connect(OnPlayerJoinedScene)
     scene.PlayerLeft:Connect(OnPlayerLeftScene)
     
@@ -165,7 +155,6 @@ function self:ServerFixedUpdate()
     elseif currentState == GameState.ROUND_END then
         UpdateRoundEnd()
     end
-
 end
 
 --[[
@@ -186,11 +175,16 @@ function UpdateLobby()
         else
             -- Start countdown
             stateTimer = 5 -- 5 second countdown
-            print("⏱️ Game starting in " .. math.floor(stateTimer) .. " seconds!")
+            print("⏱️ Game starting in " .. math.floor(stateTimer) .. " seconds! Players: " .. playerCount .. "/" .. minPlayersToStart)
+            BroadcastStateChange(GameState.LOBBY, stateTimer)
         end
     else
         -- Not enough players, reset timer
-        stateTimer = 0
+        if stateTimer ~= 0 then
+            stateTimer = 0
+            print("⏸️ Waiting for players... " .. playerCount .. "/" .. minPlayersToStart)
+            BroadcastStateChange(GameState.LOBBY, stateTimer)
+        end
     end
 end
 
@@ -330,25 +324,19 @@ end
 --[[
     Player Management
 ]]
-function OnPlayerConnected(player)
-    print("✅ Player connected: " .. player.name)
+function OnPlayerJoinedScene(sceneObj, player)
+    print("✅ Player joined scene: " .. player.name)
     activePlayers[player.id] = player
+    print("📊 Active players: " .. GetActivePlayerCount())
 end
 
-function OnPlayerDisconnected(player)
-    print("❌ Player disconnected: " .. player.name)
+function OnPlayerLeftScene(sceneObj, player)
+    print("❌ Player left scene: " .. player.name)
     activePlayers[player.id] = nil
     
     -- Remove from teams
     RemoveFromTeams(player)
-end
-
-function OnPlayerJoinedScene(scene, player)
-    print("🌍 Player joined scene: " .. player.name)
-end
-
-function OnPlayerLeftScene(scene, player)
-    print("🚪 Player left scene: " .. player.name)
+    print("📊 Active players: " .. GetActivePlayerCount())
 end
 
 --[[

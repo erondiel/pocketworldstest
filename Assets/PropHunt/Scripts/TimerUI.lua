@@ -3,21 +3,15 @@
     Minimal timer/state display scaffold. Replace logs with real UI bindings.
 ]]
 
---!Type(Client)
+--!Type(Module)
 
 -- last known state pushed from server (scaffold)
 local currentState = "LOBBY"
 local stateTimer = 0
-local function getGlobalChannel(key, factory)
-    local cached = _G[key]
-    if cached then return cached end
-    local created = factory()
-    _G[key] = created
-    return created
-end
 
-local stateChangedEvent = getGlobalChannel("__PH_EVT_STATE", function() return Event.new("PH_StateChanged") end)
-local roleAssignedEvent = getGlobalChannel("__PH_EVT_ROLE", function() return Event.new("PH_RoleAssigned") end)
+-- Network events (must match server names)
+local stateChangedEvent = Event.new("PH_StateChanged")
+local roleAssignedEvent = Event.new("PH_RoleAssigned")
 
 local function NormalizeState(value)
     if type(value) == "number" then

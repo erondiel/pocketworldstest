@@ -4,20 +4,13 @@
     Long-press cheats remain available, but this menu gives immediate feedback.
 ]]
 
---!Type(Client)
+--!Type(Module)
 
-local function getGlobalChannel(key, factory)
-    local cached = _G[key]
-    if cached then return cached end
-    local created = factory()
-    _G[key] = created
-    return created
-end
-
-local stateChangedEvent = getGlobalChannel("__PH_EVT_STATE", function() return Event.new("PH_StateChanged") end)
-local roleAssignedEvent = getGlobalChannel("__PH_EVT_ROLE", function() return Event.new("PH_RoleAssigned") end)
-local debugEvent = getGlobalChannel("__PH_EVT_DEBUG", function() return Event.new("PH_Debug") end)
-local forceStateRequest = getGlobalChannel("__PH_RF_FORCE", function() return RemoteFunction.new("PH_ForceState") end)
+-- Network events (must match server names)
+local stateChangedEvent = Event.new("PH_StateChanged")
+local roleAssignedEvent = Event.new("PH_RoleAssigned")
+local debugEvent = Event.new("PH_Debug")
+local forceStateRequest = RemoteFunction.new("PH_ForceState")
 
 local root = nil
 local stateLabel = nil
@@ -139,8 +132,10 @@ function self:ClientStart()
     BuildUI()
 
     stateChangedEvent:Connect(function(newState, timer)
+Seri        print("[DebugMenu] State changed:", newState, timer)
         currentState = FormatState(newState)
         stateTimer = tonumber(timer) or 0
+        print("[DebugMenu] Formatted state:", currentState, stateTimer)
         UpdateLabels()
     end)
 

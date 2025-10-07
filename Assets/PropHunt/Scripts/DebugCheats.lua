@@ -4,18 +4,11 @@
     - Provides a simple gesture-based cheat menu (long-press to enable, then tap quadrant to force state)
 ]]
 
---!Type(Client)
+--!Type(Module)
 
-local function getGlobalChannel(key, factory)
-    local cached = _G[key]
-    if cached then return cached end
-    local created = factory()
-    _G[key] = created
-    return created
-end
-
-local debugEvent = getGlobalChannel("__PH_EVT_DEBUG", function() return Event.new("PH_Debug") end)
-local forceStateRequest = getGlobalChannel("__PH_RF_FORCE", function() return RemoteFunction.new("PH_ForceState") end)
+-- Network events (must match server names)
+local debugEvent = Event.new("PH_Debug")
+local forceStateRequest = RemoteFunction.new("PH_ForceState")
 
 local cheatEnabled = false
 local forceStateRF = nil

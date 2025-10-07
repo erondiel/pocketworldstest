@@ -3,24 +3,17 @@
     Tap-to-select a prop during Hide phase, with confirm entry point.
 ]]
 
---!Type(Client)
+--!Type(Module)
 
 -- limit selection distance (meters)
 --!SerializeField
 --!Tooltip("Max distance to select a prop")
 local maxSelectDistance = 50
 
-local function getGlobalChannel(key, factory)
-    local cached = _G[key]
-    if cached then return cached end
-    local created = factory()
-    _G[key] = created
-    return created
-end
-
-local stateChangedEvent = getGlobalChannel("__PH_EVT_STATE", function() return Event.new("PH_StateChanged") end)
-local roleAssignedEvent = getGlobalChannel("__PH_EVT_ROLE", function() return Event.new("PH_RoleAssigned") end)
-local disguiseRequest = getGlobalChannel("__PH_RF_DISGUISE", function() return RemoteFunction.new("PH_DisguiseRequest") end)
+-- Network events (must match server names)
+local stateChangedEvent = Event.new("PH_StateChanged")
+local roleAssignedEvent = Event.new("PH_RoleAssigned")
+local disguiseRequest = RemoteFunction.new("PH_DisguiseRequest")
 local selectedProp = nil
 local currentState = "LOBBY"
 local localRole = "unknown"

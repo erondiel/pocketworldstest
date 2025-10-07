@@ -3,25 +3,18 @@
     Tap-to-tag logic with cooldown and raycast. Remote call is scaffolded.
 ]]
 
---!Type(Client)
+--!Type(Module)
 
 -- Cooldown between tag attempts (seconds)
 --!SerializeField
 --!Tooltip("Seconds between tag attempts")
 local shootCooldown = 2.0
 
-local function getGlobalChannel(key, factory)
-    local cached = _G[key]
-    if cached then return cached end
-    local created = factory()
-    _G[key] = created
-    return created
-end
-
-local stateChangedEvent = getGlobalChannel("__PH_EVT_STATE", function() return Event.new("PH_StateChanged") end)
-local roleAssignedEvent = getGlobalChannel("__PH_EVT_ROLE", function() return Event.new("PH_RoleAssigned") end)
-local playerTaggedEvent = getGlobalChannel("__PH_EVT_TAG", function() return Event.new("PH_PlayerTagged") end)
-local tagRequest = getGlobalChannel("__PH_RF_TAG", function() return RemoteFunction.new("PH_TagRequest") end)
+-- Network events (must match server names)
+local stateChangedEvent = Event.new("PH_StateChanged")
+local roleAssignedEvent = Event.new("PH_RoleAssigned")
+local playerTaggedEvent = Event.new("PH_PlayerTagged")
+local tagRequest = RemoteFunction.new("PH_TagRequest")
 local lastShotTime = -9999
 local currentState = "LOBBY"
 local localRole = "unknown"
