@@ -6,24 +6,12 @@
 
 --!Type(Module)
 
+local Config = require("PropHuntConfig")
+
 -- Enhanced logging
 local function Log(msg)
     print(tostring(msg))
 end
-
--- Configuration
---!Tooltip("Time in seconds for the hiding phase")
---!SerializeField
-local _hidePhaseTime : number = 30
---!Tooltip("Time in seconds for the hunting phase")
---!SerializeField
-local _huntPhaseTime : number = 120
---!Tooltip("Time in seconds for the round end phase")
---!SerializeField
-local _roundEndTime : number = 10
---!Tooltip("Minimum players required to start a round")
---!SerializeField
-local _minPlayersToStart : number = 2
 
 -- Game States
 local GameState = {
@@ -74,7 +62,7 @@ end
 ]]
 function self:ServerStart()
     Log("GM Started")
-    Log(string.format("CFG H=%ds U=%ds E=%ds P=%d", _hidePhaseTime, _huntPhaseTime, _roundEndTime, _minPlayersToStart))
+    Log(string.format("CFG H=%ds U=%ds E=%ds P=%d", Config.GetHidePhaseTime(), Config.GetHuntPhaseTime(), Config.GetRoundEndTime(), Config.GetMinPlayersToStart()))
     
     -- Handle client tag requests
     tagRequest.OnInvokeServer = function(player, targetPlayerId)
@@ -163,7 +151,7 @@ end
 function UpdateLobby()
     local playerCount = GetActivePlayerCount()
     
-    if playerCount >= _minPlayersToStart then
+    if playerCount >= Config.GetMinPlayersToStart() then
         -- Check if we should start countdown
         if stateTimer > 0 then
             stateTimer = stateTimer - Time.deltaTime
@@ -174,14 +162,14 @@ function UpdateLobby()
         else
             -- Start countdown
             stateTimer = 5 -- 5 second countdown
-            Log(string.format("START %ds [%d/%d]", math.floor(stateTimer), playerCount, _minPlayersToStart))
+            Log(string.format("START %ds [%d/%d]", math.floor(stateTimer), playerCount, Config.GetMinPlayersToStart()))
             BroadcastStateChange(GameState.LOBBY, stateTimer)
         end
     else
         -- Not enough players, reset timer
         if stateTimer ~= 0 then
             stateTimer = 0
-            Log(string.format("WAIT [%d/%d]", playerCount, _minPlayersToStart))
+            Log(string.format("WAIT [%d/%d]", playerCount, Config.GetMinPlayersToStart()))
             BroadcastStateChange(GameState.LOBBY, stateTimer)
         end
     end
@@ -241,16 +229,16 @@ function TransitionToState(newState)
         eliminatedPlayers = {}
         
     elseif newState == GameState.HIDING then
-        stateTimer = _hidePhaseTime
-        Log(string.format("HIDE %ds", _hidePhaseTime))
+        stateTimer = Config.GetHidePhaseTime()
+        Log(string.format("HIDE %ds", Config.GetHidePhaseTime()))
         
     elseif newState == GameState.HUNTING then
-        stateTimer = _huntPhaseTime
-        Log(string.format("HUNT %ds", _huntPhaseTime))
+        stateTimer = Config.GetHuntPhaseTime()
+        Log(string.format("HUNT %ds", Config.GetHuntPhaseTime()))
         
     elseif newState == GameState.ROUND_END then
-        stateTimer = _roundEndTime
-        Log(string.format("END %ds", _roundEndTime))
+        stateTimer = Config.GetRoundEndTime()
+        Log(string.format("END %ds", Config.GetRoundEndTime()))
     end
     
     -- Notify all clients of state change

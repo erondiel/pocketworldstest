@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="UnityEngine.UIElements"
+    xmlns:hr="Highrise.UI"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd"
+>
+
+  <hr:UILuaView class="prophunthud" picking-mode="Ignore">
+    <VisualElement class="container" picking-mode="Ignore">
+      <Label class="header-label" text="State: LOBBY" name="_stateLabel"/>
+      <Label class="sub-header-label" text="Time: 0s" name="_timerLabel"/>
+      <Label class="sub-header-label" text="Players: 0/0" name="_playersLabel"/>
+    </VisualElement>
+  </hr:UILuaView>
+
+</UXML>

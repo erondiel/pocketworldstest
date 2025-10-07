@@ -1,0 +1,51 @@
+:root {
+  --green-color: #00ff00;
+  --red-color: #ff0000;
+  --yellow-color: #ffff00;
+  --white-color: #ffffff;
+}
+
+.prophunthud {
+  width: 100%;
+  height: 100%;
+
+  align-items: center;
+}
+
+.container {
+  width: auto;
+  height: auto;
+
+  max-width: 300px;
+
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  border-bottom-width: 2px;
+  border-color: var(--yellow-color);
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px;
+}
+
+
+.header-label, .sub-header-label {
+  margin: 0;
+  padding: 0;
+
+  -unity-text-align: middle-center;
+  -unity-font-definition: var(--font-black);
+  font-size: 16px;
+
+  color: var(--white-color);
+  white-space: normal;
+}
+
+.header-label {
+  font-size: 18px;
+}
+
+.sub-header-label {
+  font-size: 14px;
+}
