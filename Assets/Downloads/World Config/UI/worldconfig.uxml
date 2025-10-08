@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="UnityEngine.UIElements"
+    xmlns:hr="Highrise.UI"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
+>
+
+  <hr:UILuaView class="worldconfig" picking-mode="Ignore">
+    <VisualElement class="vertical-group" name="_verticalGroup" picking-mode="Ignore">
+      <VisualElement name="_showButton" class="show-button">
+        <Label name="_showButtonLabel" text="World Config" />
+      </VisualElement>
+
+      <VisualElement class="wrapper" picking-mode="Ignore" name="_wrapper">
+        <VisualElement class="header">
+          <Label class="header-title" text="World Configuration" name="_title"/>
+        </VisualElement>
+
+        <VisualElement class="close-button" name="_closeButton">
+          <VisualElement class="button-content">
+            <Image />
+          </VisualElement>
+        </VisualElement>
+
+        <hr:UIScrollView name="_container" class="container">
+          <VisualElement class="settings-content" name="_settingsContent">
+            <!-- Dynamic content will be generated here -->
+          </VisualElement>
+        </hr:UIScrollView>
+
+        <!-- Action Buttons -->
+        <VisualElement class="action-buttons">
+          <VisualElement class="button-container reset-button" name="_resetButton">
+            <Label class="button-label" text="Reset to Defaults" />
+          </VisualElement>
+          
+          <VisualElement class="button-container save-button" name="_saveButton">
+            <Label class="button-label" text="Save Config" />
+          </VisualElement>
+        </VisualElement>
+      </VisualElement>
+
+      <!-- Text Input Modal -->
+      <VisualElement class="modal-overlay" name="_modalOverlay" picking-mode="Ignore">
+        <VisualElement class="modal-container" name="_modalContainer">
+          <VisualElement class="modal-header">
+            <Label class="modal-title" name="_modalTitle" text="Enter Text" />
+            <VisualElement class="modal-close-button" name="_modalCloseButton">
+              <Image />
+            </VisualElement>
+          </VisualElement>
+          
+          <VisualElement class="modal-content">
+            <Label class="modal-label" name="_modalLabel" text="Value:" />
+            <hr:UITextField class="modal-text-field" name="_modalTextField" />
+          </VisualElement>
+          
+          <VisualElement class="modal-actions">
+            <VisualElement class="button-container modal-cancel-button" name="_modalCancelButton">
+              <Label class="button-label" text="Cancel" />
+            </VisualElement>
+            
+            <VisualElement class="button-container modal-save-button" name="_modalSaveButton">
+              <Label class="button-label" text="Save" />
+            </VisualElement>
+          </VisualElement>
+        </VisualElement>
+      </VisualElement>
+
+      <!-- Dropdown Selection Modal -->
+      <VisualElement class="modal-overlay" name="_dropdownModalOverlay" picking-mode="Ignore">
+        <VisualElement class="modal-container" name="_dropdownModalContainer">
+          <VisualElement class="modal-header">
+            <Label class="modal-title" name="_dropdownModalTitle" text="Select Option" />
+            <VisualElement class="modal-close-button" name="_dropdownModalCloseButton">
+              <Image />
+            </VisualElement>
+          </VisualElement>
+          
+          <VisualElement class="modal-content">
+            <Label class="modal-label" name="_dropdownModalLabel" text="Choose an option:" />
+            <VisualElement class="dropdown-options-list" name="_dropdownOptionsList">
+              <!-- Options will be generated dynamically -->
+            </VisualElement>
+          </VisualElement>
+        </VisualElement>
+      </VisualElement>
+
+      <!-- Reset Confirmation Modal -->
+      <VisualElement class="modal-overlay" name="_resetModalOverlay" picking-mode="Ignore">
+        <VisualElement class="modal-container" name="_resetModalContainer">
+          <VisualElement class="modal-header">
+            <Label class="modal-title" name="_resetModalTitle" text="Reset to Defaults" />
+            <VisualElement class="modal-close-button" name="_resetModalCloseButton">
+              <Image />
+            </VisualElement>
+          </VisualElement>
+          
+          <VisualElement class="modal-content">
+            <Label class="modal-label" name="_resetModalLabel" text="Are you sure you want to reset all settings to their default values? This action cannot be undone." />
+          </VisualElement>
+          
+          <VisualElement class="modal-actions">
+            <VisualElement class="button-container modal-cancel-button" name="_resetModalCancelButton">
+              <Label class="button-label" text="Cancel" />
+            </VisualElement>
+            
+            <VisualElement class="button-container modal-save-button" name="_resetModalConfirmButton">
+              <Label class="button-label" text="Reset" />
+            </VisualElement>
+          </VisualElement>
+        </VisualElement>
+      </VisualElement>
+    </VisualElement>
+  </hr:UILuaView>
+
+</UXML>

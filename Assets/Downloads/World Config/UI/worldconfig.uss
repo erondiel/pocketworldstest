@@ -1,0 +1,523 @@
+:root {
+  /* Darker Background Colors */
+  --background-red: #B20000; 
+  --background-green: #008000; 
+  --background-blue: rgb(23, 86, 222); 
+
+  --color-white: rgb(245, 242, 249);
+  --color-white-dark: #36353b;
+  --color-black: #141317;
+  --color-gray: #4a4a4a;
+  --color-light-gray: #6a6a6a;
+  
+  /* Settings specific colors */
+  --section-bg: rgba(0, 0, 0, 0.3);
+  --setting-bg: rgba(255, 255, 255, 0.05);
+  --setting-bg-hover: rgba(255, 255, 255, 0.1);
+  --toggle-on: #4CAF50;
+  --toggle-off: #666;
+  --slider-track: #333;
+  --slider-thumb: #fff;
+  --button-primary: #4CAF50;
+  --button-secondary: #666;
+}
+
+.worldconfig {
+  display: flex;
+  overflow: visible;
+
+  align-self: center;
+  justify-content: center;
+  align-items: center;
+
+  width: 100%;
+  height: 100%;
+
+  color: white;
+  -unity-font-definition: var(--font-bold);
+  
+  padding: 10px;
+}
+
+.vertical-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+
+  width: 100%;
+  height: 100%;
+}
+
+.show-button {
+  position: absolute;
+
+  width: 150px;
+  height: 35px;
+
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+
+  align-items: center;
+  justify-content: center;
+
+  border-color: white;
+  border-bottom-width: 4px;
+}
+
+.wrapper {
+  margin: auto;
+
+  min-height: 100px;
+  min-width: 300px;
+
+  max-height: 800px;
+  max-width: 450px;
+
+  height: 100%;
+  width: 100%;
+
+  align-items: center;
+  justify-content: center;
+
+  background-color: var(--color-white-dark);
+  border-radius: 8px;
+
+  border-color: var(--color-white-dark);
+  border-bottom-width: 4px;
+}
+
+.header {
+  width: 100%;
+  height: 60px;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.header Label {
+  margin: 0;
+  padding: 0;
+
+  font-size: 20px;
+  -unity-font-definition: var(--font-black);
+  -unity-text-align: middle-center;
+
+  text-shadow: 0px 3px 0px rgba(0, 0, 0, 0.5);
+}
+
+/* Scroll View & Scroll Bar */
+.container {
+  width: 100%;
+  height: 100%;
+
+  padding: 10px;
+  background-color: var(--color-black);
+}
+
+.scroll-view__content-viewport {
+}
+
+.scroll-view__content-container {
+  align-items: center;
+  justify-content: flex-start;
+
+  flex-direction: column;
+}
+
+.scroll-bar {
+  background-color: rgba(255, 255, 255, 0.2);
+  width: 5px;
+
+  border-radius: 2px;
+}
+
+.scroll-bar__thumb {
+  background-color: rgba(255, 255, 255, 0.5);
+
+  border-radius: 2px;
+}
+
+/* Settings Content */
+.settings-content {
+  width: 100%;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.settings-section {
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: var(--section-bg);
+  border-radius: 8px;
+  border-bottom-width: 2px;
+  border-bottom-color: var(--color-gray);
+}
+
+.section-title {
+  font-size: 16px;
+  -unity-font-definition: var(--font-black);
+  -unity-text-align: middle-left;
+  color: var(--color-white);
+  text-shadow: 0px 2px 0px rgba(0, 0, 0, 0.5);
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom-width: 1px;
+  border-bottom-color: var(--color-gray);
+}
+
+.setting-item {
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  margin-bottom: 5px;
+  background-color: var(--setting-bg);
+  border-radius: 4px;
+  padding-left: 10px;
+  padding-right: 10px;
+  transition-property: background-color;
+  transition-duration: 0.2s;
+}
+
+.setting-item:hover {
+  background-color: var(--setting-bg-hover);
+}
+
+.setting-label {
+  font-size: 14px;
+  -unity-font-definition: var(--font-bold);
+  -unity-text-align: middle-left;
+  color: var(--color-white);
+  flex-grow: 1;
+}
+
+.setting-value {
+  font-size: 14px;
+  -unity-font-definition: var(--font-bold);
+  -unity-text-align: middle-right;
+  color: var(--color-light-gray);
+  margin-left: 10px;
+}
+
+/* Toggle Controls */
+.toggle-switch {
+  width: 50px;
+  height: 25px;
+  background-color: var(--toggle-off);
+  border-radius: 10px;
+  transition-property: background-color;
+  transition-duration: 0.3s;
+
+  align-items: center;
+}
+
+.toggle-switch #_thumb {
+  background-color: var(--slider-thumb);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  border-width: 0;
+  left: 2.5px;
+  transition-property: left;
+  transition-duration: 0.2s;
+}
+
+.toggle-switch:checked #_thumb {
+  left: 27px;
+}
+
+.toggle-switch:checked {
+  background-color: var(--toggle-on);
+}
+
+/* Slider Controls */
+.slider-container {
+  flex-direction: row;
+  align-items: center;
+  width: 150px;
+}
+
+.slider {
+  width: 100px;
+  height: 30px;
+  margin-right: 10px;
+}
+
+.slider .unity-slider__tracker {
+  background-color: var(--slider-track);
+  border-radius: 3px;
+  height: 6px;
+}
+
+.slider .unity-slider__dragger {
+  background-color: var(--slider-thumb);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  border-width: 0;
+}
+
+.slider .slider__knob {
+  background-color: var(--slider-thumb);
+  border-width: 0;
+  scale: 0.8;
+}
+
+.slider .slider__dot-container {
+  display: none;
+}
+
+.slider .slider__foreground {
+  background-color: var(--slider-track);
+}
+
+.slider .unity-slider__dragger:hover {
+  background-color: #e0e0e0;
+}
+
+.slider-value {
+  font-size: 12px;
+  -unity-font-definition: var(--font-bold);
+  -unity-text-align: middle-center;
+  color: var(--color-white);
+  min-width: 40px;
+}
+
+/* Dropdown Controls - Now using modal system */
+
+/* Action Buttons */
+.action-buttons {
+  width: 100%;
+  height: 50px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding: 0 10px;
+  flex-shrink: 0;
+}
+
+.button-container {
+  width: 140px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border-bottom-width: 3px;
+  transition-property: all;
+  transition-duration: 0.2s;
+}
+
+.reset-button {
+  background-color: var(--button-secondary);
+  border-bottom-color: #555;
+}
+
+.reset-button:hover {
+  background-color: #777;
+  border-bottom-color: #666;
+}
+
+.save-button {
+  background-color: var(--button-primary);
+  border-bottom-color: #45a049;
+}
+
+.save-button:hover {
+  background-color: #5cbf60;
+  border-bottom-color: #4CAF50;
+}
+
+.button-label {
+  font-size: 14px;
+  -unity-font-definition: var(--font-black);
+  -unity-text-align: middle-center;
+  color: var(--color-white);
+  text-shadow: 0px 2px 0px rgba(0, 0, 0, 0.5);
+}
+
+/* Close Button */
+.close-button {
+  position: absolute;
+
+  top: -10px;
+  right: -10px;
+
+  background-color: rgb(168, 0, 0);
+  overflow: hidden;
+
+  border-radius: 8px;
+
+  width: 30px;
+  height: 30px;
+
+  align-items: center;
+  justify-content: center;
+
+  transition-property: all;
+  transition-duration: 0.2s;
+
+  border-color: rgb(137, 0, 0);
+  border-bottom-width: 3px;
+}
+
+.close-button Image {
+  --unity-image: var(--image-icon-close);
+
+  width: 25px;
+  height: 25px;
+}
+
+.text-field .text-field__input {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  align-items: center;
+  justify-content: center;
+  display: none;
+}
+
+.modal-container {
+  width: 400px;
+  background-color: var(--color-white-dark);
+  border-radius: 12px;
+  border-bottom-width: 4px;
+  border-bottom-color: var(--color-gray);
+  padding: 20px;
+  flex-direction: column;
+}
+
+.modal-header {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom-width: 1px;
+  border-bottom-color: var(--color-gray);
+}
+
+.modal-title {
+  font-size: 18px;
+  -unity-font-definition: var(--font-black);
+  -unity-text-align: middle-left;
+  color: var(--color-white);
+  text-shadow: 0px 2px 0px rgba(0, 0, 0, 0.5);
+}
+
+.modal-close-button {
+  width: 25px;
+  height: 25px;
+  background-color: rgb(168, 0, 0);
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-button Image {
+  --unity-image: var(--image-icon-close);
+  width: 15px;
+  height: 15px;
+}
+
+.modal-content {
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.modal-label {
+  font-size: 14px;
+  -unity-font-definition: var(--font-bold);
+  -unity-text-align: middle-left;
+  color: var(--color-white);
+  margin-bottom: 8px;
+  white-space: normal;
+}
+
+.modal-text-field {
+  width: 100%;
+  height: 40px;
+}
+
+.modal-text-field .text-field__input {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+  border-width: 1px;
+  border-color: var(--color-gray);
+  color: var(--color-white);
+  font-size: 14px;
+  -unity-font-definition: var(--font-bold);
+  padding: 8px 12px;
+}
+
+.modal-actions {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-actions > * {
+  margin: 0 10px;
+}
+
+.modal-cancel-button {
+  background-color: var(--button-secondary);
+  border-bottom-color: #555;
+  width: 100px;
+}
+
+.modal-cancel-button:hover {
+  background-color: #777;
+  border-bottom-color: #666;
+}
+
+.modal-save-button {
+  background-color: var(--button-primary);
+  border-bottom-color: #45a049;
+  width: 100px;
+}
+
+.modal-save-button:hover {
+  background-color: #5cbf60;
+  border-bottom-color: #4CAF50;
+}
+
+/* Dropdown Modal Styles */
+.dropdown-options-list {
+  flex-direction: column;
+  max-height: 200px;
+  overflow: hidden;
+}
+
+.dropdown-modal-option {
+  padding: 12px 15px;
+  margin-bottom: 5px;
+  background-color: var(--setting-bg);
+  border-radius: 6px;
+  border-bottom-width: 1px;
+  border-bottom-color: var(--color-gray);
+  transition-property: background-color;
+  transition-duration: 0.2s;
+}
+
+.dropdown-modal-option:hover {
+  background-color: var(--setting-bg-hover);
+}
+
+.dropdown-modal-option-label {
+  font-size: 14px;
+  -unity-font-definition: var(--font-bold);
+  -unity-text-align: middle-left;
+  color: var(--color-white);
+}
