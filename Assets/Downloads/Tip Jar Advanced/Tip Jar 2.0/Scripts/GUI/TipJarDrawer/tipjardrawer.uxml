@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="UnityEngine.UIElements"
+    xmlns:hr="Highrise.UI"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd"
+>
+
+  <hr:UILuaView class="tipjardrawer" picking-mode="Ignore">
+    <VisualElement class="close-overlay" name="_closeOverlay" />
+    <VisualElement class="container" name="_container">
+      <VisualElement class="header" name="_header">
+        <Label class="title" text="Send a Tip to" />
+        <VisualElement class="world-owner-container" name="_worldOwnerContainer">
+          <hr:UIUserThumbnail class="world-owner-container__thumbnail" name="_worldOwnerThumbnail" online-indicator="false" />
+          <Label class="world-owner-container__name" text="iHsein" name="_worldOwnerName" />
+        </VisualElement>
+
+        <VisualElement class="gold-amount-preview" name="_goldAmountPreview">
+          <Image class="gold-amount-preview__icon" name="_goldAmountPreviewIcon" />
+          <Label class="gold-amount-preview__amount" text="100G Bar" name="_goldAmountPreviewAmount" />
+        </VisualElement>
+      </VisualElement>
+
+      <VisualElement class="footer" name="_footer">
+        <hr:UISlider class="amount-slider" name="_amountSlider" />
+
+        <VisualElement class="message-input-note hidden" name="_messageInputNote">
+          <VisualElement class="message-input-note__content">
+            <VisualElement class="message-input-note__icon">
+              <Image class="message-input-note__icon__image" />
+            </VisualElement>
+
+            <VisualElement class="message-input-note__text">
+              <Label class="message-input-note__text__label" text="Tip at least 100 Gold to leave a message with your tip!" />
+            </VisualElement>
+          </VisualElement>
+        </VisualElement>
+
+        <hr:UITextField class="message-input" name="_messageInput" maxLength="100" />
+
+        <VisualElement class="buttons-container" name="_buttonsContainer">
+          <VisualElement class="send-tip-button" name="_sendTipButton">
+            <Label class="send-tip-button__label" text="Send Tip" />
+            <Image class="send-tip-button__icon" />
+            <Label class="send-tip-button__amount" text="100" name="_sendTipButtonAmount" />
+          </VisualElement>
+
+          <VisualElement class="cancel-button" name="_cancelButton">
+            <Label class="cancel-button__label" text="Cancel" />
+          </VisualElement>
+        </VisualElement>
+      </VisualElement>
+    </VisualElement>
+  </hr:UILuaView>
+
+</UXML>

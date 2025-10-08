@@ -1,0 +1,113 @@
+:root {
+  --icon-gold: url("project://database/Packages/com.pz.studio/Assets/Sprites/Currency/gold_thumbnail.png");
+
+  /* Colors */
+  --header-color: #181A1F;
+  --navigation-color:  #141317;
+  --navigation-text-color: #7d7c88;
+  --navigation-active-text-color: #efedff;
+  --container-color: #141317;
+  --purple-color: #8561ff;
+  --tip-item-bg-color: #28272d;
+  --date-color: #36353b;
+  --tip-text-color: #cccada;
+  --tip-amount-color: #7d7c88;
+  --send-tip-background-color: #51ffa5;
+  --expensive-tip-bg-color: #ffd32f;
+  --expensive-tip-text-color: #8a5904;
+}
+
+.tipjarnotify {
+  position: absolute;
+
+  top: 0;
+
+  width: 100%;
+  height: 100%;
+
+  align-items: center;
+}
+
+.announcement {
+  display: flex;
+  position: absolute;
+
+  top: 20px;
+  
+  width: 90%;
+  height: 80px;
+
+  max-height: 100px;
+  max-width: 500px;
+
+  background-color: #181A1F;
+  color: #cccada;
+
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+
+  padding: 0 10px;
+
+  background-size: cover;
+
+  border-radius: 15px;
+
+  opacity: 1;
+  transition-property: opacity;
+  transition-duration: 0.5s;
+
+  font-size: 15px;
+  -unity-text-align: middle-left;
+
+  -unity-font-definition: var(--font-default);
+  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+
+  overflow: hidden;
+}
+
+.announcement:hover {
+  opacity: 0.8;
+}
+
+.announcement.fadeOut {
+  opacity: 0;
+}
+
+.announcement.hidden {
+  display: none;
+}
+
+.announcement-left {
+  display: flex;
+
+  
+  align-items: center;
+  justify-content: flex-start;
+
+  margin-left: 5px;
+
+  overflow: hidden;
+}
+
+.thumbnail-overlay__clicker {
+  position: absolute;
+
+  width: 100%;
+  height: 100%;
+}
+
+.announcement-right {
+  display: flex;
+  flex-grow: 1;
+
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  flex-wrap: wrap;
+  padding: 10px;
+}
+
+.tip-message {
+  white-space: normal;
+}

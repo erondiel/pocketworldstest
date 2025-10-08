@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="UnityEngine.UIElements"
+    xmlns:hr="Highrise.UI"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
+>
+
+  <hr:UILuaView class="tipjarbasic" picking-mode="Ignore">
+    <VisualElement class="tipjarbasic-close-overlay" picking-mode="Ignore" name="_closeOverlay" />
+    <VisualElement class="tipjar__container">
+      <VisualElement class="header">
+        <Label class="title" text="World Tip Jar" name="_headerTitle" />
+      </VisualElement>
+
+      <VisualElement class="tipping-close" name="_closeButton">
+        <VisualElement class="button-content">
+          <Image nhame="_closeButtonIcon" class="tip-close__icon" />
+        </VisualElement>
+      </VisualElement>
+
+      <VisualElement class="navigation">
+        <VisualElement class="navigation__item active" name="_MessagesButton">
+          <Label class="navigation__item__label" text="Messages" />
+        </VisualElement>
+
+        <VisualElement class="navigation__item" name="_TopTippersButton">
+          <Label class="navigation__item__label" text="Top Tippers" />
+        </VisualElement>
+      </VisualElement>
+
+      <hr:UIScrollView class="tipping-content" name="_content">
+
+        <VisualElement class="content-header" name="_contentHeader">
+          <VisualElement class="content-header__left">
+            <Image class="content-header__left__icon" />
+          </VisualElement>
+          <VisualElement class="content-header__right">
+            <!-- To be updated to UILabel -->
+            <Label class="content-header__right__label" text="Support this World by sending a tip! The owner of the world will receive it." name="_contentHeaderText" />
+          </VisualElement>
+        </VisualElement>
+
+        <VisualElement class="loading-container" name="_loadingContainer">
+          <VisualElement class="loading-spinner" name="_loadingSpinner" />
+          <Label class="loading-text" text="Loading..." />
+        </VisualElement>
+
+        <VisualElement class="empty-state hidden" name="_emptyState">
+          <VisualElement class="empty-state__icon">
+            <Image />
+          </VisualElement>
+          <Label class="empty-state__title" text="No Tips Yet" />
+          <Label class="empty-state__description" text="Be the first to support this world!" />
+        </VisualElement>
+
+        <VisualElement class="messages-list" name="_messagesList" />
+        <VisualElement class="top-tippers hidden" name="_TopTippers" />
+
+      </hr:UIScrollView>
+
+      <VisualElement class="send-tip-button" name="_sendTipButton">
+        <Label class="send-tip-button__label" text="Send a Tip" />
+      </VisualElement>
+
+    </VisualElement>
+
+  </hr:UILuaView>
+
+</UXML>

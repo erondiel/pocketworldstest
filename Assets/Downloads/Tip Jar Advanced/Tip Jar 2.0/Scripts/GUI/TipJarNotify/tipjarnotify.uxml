@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="UnityEngine.UIElements"
+    xmlns:hr="Highrise.UI"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd"
+>
+
+  <hr:UILuaView class="tipjarnotify" picking-mode="Ignore">
+    <VisualElement class="announcement hidden" name="_announcement">
+      <VisualElement class="announcement-left">
+        <hr:UIUserThumbnail class="announcement-left__thumbnail" name="_tipperThumbnail" online-indicator="false" />
+        <VisualElement class="thumbnail-overlay__clicker" name="_ThumbnailOverlayClicker" />
+      </VisualElement>
+
+      <VisualElement class="announcement-right" name="_announcementContent">
+        <Label class="tip-message" name="_tipMessage" text="Content Placeholder" />
+      </VisualElement>
+    </VisualElement>
+  </hr:UILuaView>
+
+</UXML>

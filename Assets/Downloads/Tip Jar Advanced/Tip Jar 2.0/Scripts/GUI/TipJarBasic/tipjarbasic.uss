@@ -1,0 +1,658 @@
+:root {
+  --icon-gold: url("project://database/Packages/com.pz.studio/Assets/Sprites/Currency/gold_thumbnail.png");
+
+  /* Colors */
+  --header-color: #181A1F;
+  --navigation-color:  #141317;
+  --navigation-text-color: #7d7c88;
+  --navigation-active-text-color: #efedff;
+  --container-color: #141317;
+  --purple-color: #8561ff;
+  --tip-item-bg-color: #28272d;
+  --date-color: #36353b;
+  --tip-text-color: #cccada;
+  --tip-amount-color: #7d7c88;
+  --send-tip-background-color: #51ffa5;
+  --expensive-tip-bg-color: #f9c746;
+  --expensive-tip-text-color: #8a5904;
+}
+
+.tipjarbasic {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+
+  align-self: center;
+  justify-content: center;
+  align-items: center;
+
+  height: 100%;
+  width: 100%;
+
+  margin: auto;
+  padding: 10px;
+}
+
+.tipjarbasic-close-overlay {
+  position: absolute;
+
+  width: 100%;
+  height: 100%;
+}
+
+.tipjar__container {
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+  
+  align-items: center;
+
+  background-color: var(--container-color);
+
+  min-height: 100px;
+  min-width: 300px;
+
+  max-height: 800px;
+  max-width: 450px;
+
+  height: 100%;
+  width: 100%;
+
+  margin: auto;
+
+  border-width: 2px;
+  border-radius: 10px;
+  border-color: rgba(0, 0, 0, .3);
+}
+
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 10px;
+  height: 50px;
+
+  width: 100%;
+
+  font-size: 20px;
+  color: white;
+  -unity-text-align: middle-center;
+  -unity-font-definition: var(--font-bold);
+
+  background-color: var(--header-color);
+}
+
+/* Navigation */
+.navigation {
+  display: flex;
+  flex-direction: row;
+
+  width: 100%;
+  font-size: 18px;
+  height: 45px;
+
+  align-items: center;
+
+  background-color: var(--navigation-color);
+  color: var(--navigation-text-color);
+
+  -unity-font-definition: var(--font-bold);
+
+  padding: 0 0 0 20px;
+}
+
+.navigation__item {
+  align-items: center;
+  justify-content: center;
+
+  height: 100%;
+  margin-right: 20px;
+
+  -unity-text-align: middle-center;
+}
+
+.navigation__item.active {
+  color: #efedff;
+
+  border-bottom-color: var(--purple-color);
+  border-bottom-width: 4px;
+}
+
+.navigation__item:hover {
+  color: #efedff;
+}
+
+/* Content */
+.tipping-content {
+  display: flex;
+  flex-direction: row;
+
+  width: 100%;
+  height: 100%;
+}
+
+.scroll-view__content-viewport {
+}
+
+.scroll-view__content-container {
+  width: auto;
+  height: auto;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  margin-bottom: 40px; /* The height of the send tip button */
+}
+
+.scroll-bar {
+  width: 4px;
+
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 2px;
+}
+
+.scroll-bar__thumb {
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 2px;
+}
+
+.scroll-bar__thumb:hover {
+  background-color: var(--purple-color);
+}
+
+.messages-list {
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  height: 100%;
+
+  padding-top: 5px;
+}
+
+.content-header {
+  display: flex;
+  flex-direction: row;
+
+  justify-content: center;
+  align-items: center;
+
+  width: 100%;
+  height: 70px;
+
+  background-color: var(--tip-item-bg-color);
+
+  padding: 0 30px 0 15px;
+  border-radius: 15px;
+
+  margin: 10px 15px 0 15px;
+}
+
+.content-header__left {
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  background-color: var(--container-color);
+  border-radius: 10px;
+
+  width: 50px;
+  height: 50px;
+
+  margin-right: 7px;
+}
+
+.content-header__left Image {
+  --unity-image: var(--image-icon-money-bag);
+
+  width: 30px;
+  height: 30px;
+}
+
+.content-header__right {
+  color: #9b9aa7;
+  flex-grow: 1;
+}
+
+.content-header__right__label {
+  white-space: normal;
+}
+
+/* Tips */
+.tip-item {
+  width: 110px;
+  height: 147px;
+
+  align-items: center;
+  margin: 0 3px 5px 3px;
+
+  background-color: var(--tip-item-bg-color);
+  border-radius: 10px;
+
+  transition-property: scale;
+  transition-duration: 0.2s;
+  overflow: hidden;
+
+  -unity-font-definition: var(--font-bold);
+}
+
+.tip-item:hover {
+  scale: 1.05;
+}
+
+.tip__item-amount {
+  display: flex;
+  position: absolute;
+  flex-direction: row;
+
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  -unity-text-align: middle-center;
+  -unity-font-definition: var(--font-black);
+
+  bottom: 0;
+  background-color: var(--send-tip-background-color);
+}
+
+.tip__item-amount__icon {
+  width: 18px;
+  height: 18px;
+
+  --unity-image: var(--icon-gold);
+}
+
+.tip__item-icon {
+  display: flex;
+  position: absolute;
+
+  width: 100%;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.tip__item-icon Image {
+  width: 100px;
+  height: 100px;
+
+  align-self: center;
+}
+
+.tip__item-price__label {
+  margin-left: 5px;
+  font-size: 16px;
+}
+
+/* Top Tippers */
+.top-tippers {
+  display: flex;
+  flex-direction: row;
+
+  width: 100%;
+  height: 100%;
+
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.top-tippers-item {
+  display: flex;
+  flex-direction: row;
+
+  padding: 5px;
+
+  justify-content: space-between;
+  align-items: center;
+
+  height: 70px;
+  width: 100%;
+}
+
+.top-tippers-item__position {
+  color: #7d7c88;
+  font-size: 15px;
+  -unity-font-definition: var(--font-regular);
+
+  width: 24px;
+}
+
+.top-tippers-item__player {
+  display: flex;
+  flex-direction: row;
+
+  align-items: center;
+  margin-left: 10px;
+  flex-grow: 1;
+}
+
+.top-tippers-item__player .top-tippers-item__player__thumbnail {
+  width: 48px;
+  height: 48px;
+
+  border-radius: 8px;
+  overflow: hidden;
+
+  background-color: #3F3E46;
+}
+
+.top-tippers-item__player__thumbnail__overlay,
+.player-avatar-container__thumbnail__overlay {
+  position: absolute;
+
+  width: 100%;
+  height: 100%;
+}
+
+.top-tippers-item__player .top-tippers-item__player__thumbnail .user-thumbnail__image-container {
+  width: 48px;
+  height: 48px;
+}
+
+.top-tippers-item__player .top-tippers-item__player__thumbnail .user-thumbnail__image-container .image-character {
+  width: 100%;
+  height: 100%;
+}
+
+.top-tippers-item__player__name {
+  color: var(--navigation-active-text-color);
+  font-size: 15px;
+  -unity-font-definition: var(--font-bold);
+  -unity-text-align: middle-left;
+
+  margin-left: 14px;
+  white-space: nowrap;
+
+  max-width: 230px;
+
+  overflow: hidden;
+}
+
+.top-tippers-item__content {
+  display: flex;
+  flex-direction: row;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #7d7c88;
+}
+
+.top-tippers-item__content Image {
+  --unity-image: var(--icon-gold);
+
+  width: 16px;
+  height: 16px;
+
+  margin-right: 3px;
+}
+
+.top-tippers-item__content__label {
+  color: #7d7c88;
+  font-size: 15px;
+  -unity-font-definition: var(--font-regular);
+  -unity-text-align: middle-left;
+}
+
+/* Close Button */
+.tipping-close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+
+  background-color: var(--tip-item-bg-color);
+  overflow: hidden;
+
+  border-radius: 8px;
+
+  width: 30px;
+  height: 30px;
+
+  align-items: center;
+  justify-content: center;
+
+  transition-property: all;
+  transition-duration: 0.2s;
+}
+
+.tipping-close Image {
+  --unity-image: var(--image-icon-close);
+
+  width: 25px;
+  height: 25px;
+}
+
+.hidden {
+  display: none;
+}
+
+.send-tip-button {
+  position: absolute;
+
+  width: 90%;
+  height: 40px;
+
+  bottom: 1%;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+  
+
+  background-color: var(--send-tip-background-color);
+
+  
+}
+
+.send-tip-button__label {
+  font-size: 18px;
+  color: #020303;
+
+  -unity-font-definition: var(--font-bold);
+  -unity-text-align: middle-center;
+}
+
+.message-item {
+  width: 100%;
+  flex-direction: row;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px;
+  border-radius: 10px;
+
+  height: 100px;
+  flex-shrink: 0;
+}
+
+.player-avatar-container {
+  width: 15%;
+  height: 100%;
+
+  align-items: center;
+}
+
+.player-avatar-container .player-avatar-container__thumbnail {
+  width: 50px;
+  height: 50px;
+}
+
+.player-avatar-container__thumbnail .user-thumbnail__image-container {
+  width: 100%;
+  height: 100%;
+}
+
+.message-content-container {
+  flex-direction: column;
+  width: 85%;
+
+  height: 100%;
+  padding: 0 5px;
+}
+
+.message-content-container-header {
+  align-items: center;
+
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.message-content-container-header .player-name {
+  color: #efecfd;
+  -unity-font-definition: var(--font-bold);
+
+  font-size: 16px;
+  padding: 0;
+}
+
+.message-content-container-header .message-time {
+  color: #7d7c88;
+  -unity-font-definition: var(--font-regular);
+
+
+  font-size: 12px;
+  padding: 0;
+}
+
+.message-content-container-body {
+  background-color: var(--tip-item-bg-color);
+
+  border-radius: 10px;
+  height: 100%;
+
+  padding: 5px 10px 5px 5px;
+  margin-top: 5px;
+
+  overflow: hidden;
+}
+
+.message-content {
+  color: #c1bfcc;
+  white-space: normal;
+}
+
+.message-tip-amount {
+  position: absolute;
+
+  bottom: 0;
+  right: 5px;
+
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  -unity-text-align: middle-center;
+}
+
+.message-tip-amount__label, .message-tip-amount__icon {
+  color: #797782;
+
+  font-size: 13px;
+  -unity-font-definition: var(--font-bold);
+}
+
+.message-item.premium .message-content-container-body {
+  background-color: var(--expensive-tip-bg-color);
+}
+
+.message-item.premium .message-content-container-body .message-content {
+  color: var(--expensive-tip-text-color);
+}
+
+.message-item.premium .message-content-container-body .message-tip-amount__label {
+  color: var(--expensive-tip-text-color);
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  
+  width: 100%;
+  height: 200px;
+  
+  color: var(--navigation-text-color);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  
+  border-width: 3px;
+  border-color: var(--purple-color);
+  border-radius: 50%;
+  
+  border-top-color: transparent;
+}
+
+.loading-text {
+  margin-top: 15px;
+  font-size: 16px;
+  -unity-font-definition: var(--font-regular);
+  -unity-text-align: middle-center;
+}
+
+.loading-container.hidden {
+  display: none;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  top: 50%;
+  
+  width: 100%;
+  height: 300px;
+  
+  color: var(--navigation-text-color);
+}
+
+.empty-state__icon {
+  margin-bottom: 20px;
+}
+
+.empty-state__icon Image {
+  --unity-image: var(--image-icon-crew-heart);
+
+  width: 100px;
+  height: 100px;
+}
+
+.empty-state__title {
+  font-size: 24px;
+  font-weight: bold;
+  -unity-font-definition: var(--font-bold);
+  -unity-text-align: middle-center;
+  
+  margin-bottom: 10px;
+  
+  color: var(--navigation-text-color);
+}
+
+.empty-state__description {
+  font-size: 16px;
+  -unity-font-definition: var(--font-regular);
+  -unity-text-align: middle-center;
+  
+  margin-bottom: 30px;
+  
+  color: var(--navigation-text-color);
+  opacity: 0.8;
+}
+
+.empty-state.hidden {
+  display: none;
+}
