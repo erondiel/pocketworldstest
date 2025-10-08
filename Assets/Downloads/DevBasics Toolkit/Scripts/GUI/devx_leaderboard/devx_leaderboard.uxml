@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="UnityEngine.UIElements"
+    xmlns:hr="Highrise.UI"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd"
+>
+
+  <hr:UILuaView class="devx_leaderboard" picking-mode="Ignore">
+    <VisualElement class="leaderboard-container" name="_LeaderboardContainer" picking-mode="Ignore">
+
+      <VisualElement class="leaderboard-header" name="_LeaderboardHeader" picking-mode="Ignore">
+        <Label class="leaderboard-header-label" name="_LeaderboardHeaderLabel" picking-mode="Ignore" text="Leaderboard" />
+        <Label class="leaderboard-header-description" name="_LeaderboardHeaderDescription" picking-mode="Ignore" text="Top 10 players by score" />
+        <VisualElement class="close-button" name="_CloseButton">
+          <VisualElement class="button-content">
+            <Image />
+          </VisualElement>
+        </VisualElement>
+      </VisualElement>
+
+  
+      <hr:UIScrollView class="leaderboard-content" name="_LeaderboardContent" picking-mode="Ignore" />
+
+      <VisualElement class="leaderboard-empty-state hidden" name="_LeaderboardEmptyState" picking-mode="Ignore">
+        <Image />
+        <Label class="leaderboard-empty-state-label" name="_LeaderboardEmptyStateLabel" picking-mode="Ignore" text="Ops, no one is on the leaderboard yet!" />
+      </VisualElement>
+
+    </VisualElement>
+  </hr:UILuaView>
+</UXML>

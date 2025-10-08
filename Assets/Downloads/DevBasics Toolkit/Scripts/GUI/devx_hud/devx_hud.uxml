@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="UnityEngine.UIElements"
+    xmlns:hr="Highrise.UI"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd"
+>
+
+  <hr:UILuaView class="devx_hud" picking-mode="Ignore">
+    <VisualElement class="left-container" name="_LeftContainer" picking-mode="Ignore">
+      <VisualElement class="currency-container" name="_CurrencyContainer" picking-mode="Ignore">
+        <Label class="currency-placeholder" name="_CurrencyPlaceholder" picking-mode="Ignore" text="Balance" />
+        <Label class="currency-label" name="_CurrencyLabel" picking-mode="Ignore" text="0" />
+      </VisualElement>
+    </VisualElement>
+
+    <VisualElement class="right-container" name="_RightContainer" picking-mode="Ignore" />
+  </hr:UILuaView>
+
+</UXML>

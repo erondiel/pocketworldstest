@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="UnityEngine.UIElements"
+    xmlns:hr="Highrise.UI"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd"
+>
+
+  <hr:UILuaView class="devx_shop" picking-mode="Ignore">
+    <VisualElement class="shop-container" name="_ShopContainer" picking-mode="Ignore">
+      <VisualElement class="shop-header" name="_ShopHeader" picking-mode="Ignore">
+        <Label class="shop-header-label" name="_ShopHeaderLabel" picking-mode="Ignore" text="Shop" />
+        <Label class="shop-header-description" name="_ShopHeaderDescription" picking-mode="Ignore" text="Buy currency with real gold" />
+        <VisualElement class="close-button" name="_CloseButton">
+          <VisualElement class="button-content">
+            <Image />
+          </VisualElement>
+        </VisualElement>
+      </VisualElement>
+
+      <hr:UIScrollView class="shop-content" name="_ShopContent" picking-mode="Ignore" />
+
+      <VisualElement class="shop-empty-state hidden" name="_ShopEmptyState" picking-mode="Ignore">
+        <Image />
+        <Label class="shop-empty-state-label" name="_ShopEmptyStateLabel" picking-mode="Ignore" text="Ops, no deals available yet!" />
+      </VisualElement>
+    </VisualElement>
+  </hr:UILuaView>
+
+</UXML>
