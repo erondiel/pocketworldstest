@@ -1,0 +1,34 @@
+.scene-switcher {
+    display: flex;
+    position: absolute;
+    align-self: center;
+    flex-grow: 1;
+    
+    bottom: 0;
+}
+
+.switch-button {
+    overflow: hidden;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 95px;
+    height: 56px;
+
+    border-bottom-left-radius: 12px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+
+    margin-bottom: 7px;
+}
+
+.button-icon {
+  width: 45px;
+  height: 45px;
+}
+
+.hide {
+    display: none;
+}
