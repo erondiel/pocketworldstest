@@ -102,8 +102,10 @@ Material:
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
-    - _BeamCount: 2.3
+    - _BeamCount: 1
     - _BeamOffset: 0.062
+    - _BeamSpacing: 0
+    - _BeamWidth: 0.439
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
@@ -121,7 +123,7 @@ Material:
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _Intensity: 2.67
-    - _LengthFade: 2.3
+    - _LengthFade: 4
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
@@ -136,13 +138,13 @@ Material:
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
-    - _TipFade: 1.053
+    - _TipFade: 0
     - _Width: 0.402
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 0.6075471, g: 0.27855465, b: 0.46798143, a: 1}
+    - _Color: {r: 0.60784316, g: 0.4254052, b: 0.2784314, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_BuildTextureStacks: []
