@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="UnityEngine.UIElements"
+    xmlns:hr="Highrise.UI"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd"
+>
+
+  <hr:UILuaView name="root" class="server-startup-u-i">
+    <VisualElement name="click_off"/>
+
+    <VisualElement name="card_container" class="inventory-container">
+
+      <VisualElement class="card-header-container">
+        <Label text="Attention" class="card-header" name="message_header" />
+      </VisualElement>
+
+      <hr:UIScrollView class="leaderboard" name="_messageScrollView">
+        <Label name="title_label" text="Big Header Text"/>
+        <Label name="message_label" text="Server Startup Info Alert here... with some longer paragrpah text and stuff like that."/>
+      </hr:UIScrollView>
+
+      <Label name="okButton" text="OK!" class="ok-button"/>
+
+      <VisualElement name="close_button" class="close-button">
+        <Image />
+      </VisualElement>
+
+    </VisualElement>
+    
+  </hr:UILuaView>
+
+</UXML>
