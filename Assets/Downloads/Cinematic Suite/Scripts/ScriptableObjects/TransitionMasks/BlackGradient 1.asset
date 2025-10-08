@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63902af3c638ba91108d23108e2ddede, type: 3}
+  m_Name: BlackGradient 1
+  m_EditorClassIdentifier: 
+  _script: {fileID: -974389366465450183, guid: d94f2a267ce7ba44aa5223c534f2de0b, type: 3}
+  _networkId: 2906805492
+  _properties: []
+  _description: Black gradient, left to right
+  _maskTexture: {fileID: 21300000, guid: fd86ea5fc349c28448619c857cf9d825, type: 3}
+  _maskColor: {r: 0, g: 0, b: 0, a: 1}
+  _enterAngle: 0
+  _exitAngle: 0
+  references:
+    version: 2
+    RefIds: []
