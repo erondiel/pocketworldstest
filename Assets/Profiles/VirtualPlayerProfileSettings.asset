@@ -14,4 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _isSubscriber: 0
   _isAgeVerifiedAbove18: 0
-  _virtualPlayerProfiles: []
+  _virtualPlayerProfiles:
+  - {fileID: 11400000, guid: 02ec09237438f5644895cb484d87e4c9, type: 2}
+  - {fileID: 11400000, guid: 0372dcba9c0b7874896d5db11c748b59, type: 2}
+  - {fileID: 11400000, guid: 00f6020afa6ef494f999573c815a4110, type: 2}
+  - {fileID: 11400000, guid: 909313b0617ce4c4d96854a8ccb0a940, type: 2}
+  - {fileID: 11400000, guid: ad497f8c8f68d6d4184b11835bf8cf03, type: 2}
+  - {fileID: 11400000, guid: 8eb40c79a58dfa749b861e9bd1df3b86, type: 2}
+  - {fileID: 11400000, guid: e2f473bdf0deff948a4b986cfd230de4, type: 2}
+  - {fileID: 11400000, guid: 95b2c3ef078b45d479ed6480dea98550, type: 2}
