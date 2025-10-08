@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="UnityEngine.UIElements"
+    xmlns:hr="Highrise.UI"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
+>
+
+  <hr:UILuaView class="ui-panels" picking-mode="Ignore">
+    <VisualElement class="panels-container" name="_panelsContainer" picking-mode="Ignore">
+      
+      <!-- Confirmation Prompt Panel -->
+      <VisualElement class="panel confirmation-panel" name="_confirmationPanel" style="display: none;">
+        <VisualElement class="panel-overlay" picking-mode="Ignore">
+          <VisualElement class="panel-content">
+            <VisualElement class="panel-header">
+              <Label class="panel-title" name="_confirmationTitle" text="Confirm Action" />
+              <VisualElement class="panel-close-button" name="_confirmationCloseButton">
+                <Image />
+              </VisualElement>
+            </VisualElement>
+            
+            <VisualElement class="panel-body">
+              <Label class="panel-message" name="_confirmationMessage" text="Are you sure you want to proceed?" />
+            </VisualElement>
+            
+            <VisualElement class="panel-actions">
+              <VisualElement class="button-container button-secondary" name="_confirmationCancelButton">
+                <Label class="button-label" text="Cancel" />
+              </VisualElement>
+              <VisualElement class="button-container button-primary" name="_confirmationConfirmButton">
+                <Label class="button-label" text="Confirm" />
+              </VisualElement>
+            </VisualElement>
+          </VisualElement>
+        </VisualElement>
+      </VisualElement>
+
+      <!-- Input Fields Panel -->
+      <VisualElement class="panel input-panel" name="_inputPanel" style="display: none;">
+        <VisualElement class="panel-overlay" picking-mode="Ignore">
+          <VisualElement class="panel-content">
+            <VisualElement class="panel-header">
+              <Label class="panel-title" name="_inputTitle" text="Enter Information" />
+              <VisualElement class="panel-close-button" name="_inputCloseButton">
+                <Image />
+              </VisualElement>
+            </VisualElement>
+            
+            <VisualElement class="panel-body">
+              <VisualElement class="input-group">
+                <Label class="input-label" name="_inputLabel" text="Value:" />
+                <hr:UITextField class="input-field" name="_inputField" placeholder="Enter value..." />
+              </VisualElement>
+              
+              <VisualElement class="input-group">
+                <Label class="input-label" name="_inputLabel2" text="Description:" />
+                <hr:UITextField class="input-field" name="_inputField2" placeholder="Enter description..." />
+              </VisualElement>
+            </VisualElement>
+            
+            <VisualElement class="panel-actions">
+              <VisualElement class="button-container button-secondary" name="_inputCancelButton">
+                <Label class="button-label" text="Cancel" />
+              </VisualElement>
+              <VisualElement class="button-container button-primary" name="_inputSubmitButton">
+                <Label class="button-label" text="Submit" />
+              </VisualElement>
+            </VisualElement>
+          </VisualElement>
+        </VisualElement>
+      </VisualElement>
+
+      <!-- Switches Panel -->
+      <VisualElement class="panel switches-panel" name="_switchesPanel" style="display: none;">
+        <VisualElement class="panel-overlay" picking-mode="Ignore">
+          <VisualElement class="panel-content">
+            <VisualElement class="panel-header">
+              <Label class="panel-title" name="_switchesTitle" text="Settings" />
+              <VisualElement class="panel-close-button" name="_switchesCloseButton">
+                <Image />
+              </VisualElement>
+            </VisualElement>
+            
+            <VisualElement class="panel-body">
+              <VisualElement class="switch-group">
+                <Label class="switch-label" text="Enable Notifications" />
+                <hr:UISwitchToggle class="toggle-switch" name="_switch1" />
+              </VisualElement>
+              
+              <VisualElement class="switch-group">
+                <Label class="switch-label" text="Auto Save" />
+                <hr:UISwitchToggle class="toggle-switch" name="_switch2" />
+              </VisualElement>
+              
+              <VisualElement class="switch-group">
+                <Label class="switch-label" text="Dark Mode" />
+                <hr:UISwitchToggle class="toggle-switch" name="_switch3" />
+              </VisualElement>
+            </VisualElement>
+            
+            <VisualElement class="panel-actions">
+              <VisualElement class="button-container button-secondary" name="_switchesCancelButton">
+                <Label class="button-label" text="Cancel" />
+              </VisualElement>
+              <VisualElement class="button-container button-primary" name="_switchesSaveButton">
+                <Label class="button-label" text="Save" />
+              </VisualElement>
+            </VisualElement>
+          </VisualElement>
+        </VisualElement>
+      </VisualElement>
+
+      <!-- Slider Panel -->
+      <VisualElement class="panel slider-panel" name="_sliderPanel" style="display: none;">
+        <VisualElement class="panel-overlay" picking-mode="Ignore">
+          <VisualElement class="panel-content">
+            <VisualElement class="panel-header">
+              <Label class="panel-title" name="_sliderTitle" text="Adjust Values" />
+              <VisualElement class="panel-close-button" name="_sliderCloseButton">
+                <Image />
+              </VisualElement>
+            </VisualElement>
+            
+            <VisualElement class="panel-body">
+              <VisualElement class="slider-group">
+                <Label class="slider-label" text="Volume" />
+                <VisualElement class="slider-container">
+                  <hr:UISlider class="slider" name="_volumeSlider" low-value="0" high-value="100" value="50" />
+                  <Label class="slider-value" name="_volumeValue" text="50" />
+                </VisualElement>
+              </VisualElement>
+              
+              <VisualElement class="slider-group">
+                <Label class="slider-label" text="Brightness" />
+                <VisualElement class="slider-container">
+                  <hr:UISlider class="slider" name="_brightnessSlider" low-value="0" high-value="100" value="75" />
+                  <Label class="slider-value" name="_brightnessValue" text="75" />
+                </VisualElement>
+              </VisualElement>
+              
+              <VisualElement class="slider-group">
+                <Label class="slider-label" text="Speed" />
+                <VisualElement class="slider-container">
+                  <hr:UISlider class="slider" name="_speedSlider" low-value="1" high-value="10" value="5" />
+                  <Label class="slider-value" name="_speedValue" text="5" />
+                </VisualElement>
+              </VisualElement>
+            </VisualElement>
+            
+            <VisualElement class="panel-actions">
+              <VisualElement class="button-container button-secondary" name="_sliderCancelButton">
+                <Label class="button-label" text="Cancel" />
+              </VisualElement>
+              <VisualElement class="button-container button-primary" name="_sliderApplyButton">
+                <Label class="button-label" text="Apply" />
+              </VisualElement>
+            </VisualElement>
+          </VisualElement>
+        </VisualElement>
+      </VisualElement>
+
+      <!-- Dropdown Panel -->
+      <VisualElement class="panel dropdown-panel" name="_dropdownPanel" style="display: none;">
+        <VisualElement class="panel-overlay" picking-mode="Ignore">
+          <VisualElement class="panel-content">
+            <VisualElement class="panel-header">
+              <Label class="panel-title" name="_dropdownTitle" text="Select Options" />
+              <VisualElement class="panel-close-button" name="_dropdownCloseButton">
+                <Image />
+              </VisualElement>
+            </VisualElement>
+            
+            <VisualElement class="panel-body">
+              <VisualElement class="dropdown-group">
+                <Label class="dropdown-label" text="Category" />
+                <VisualElement class="dropdown-container" name="_categoryDropdown">
+                  <VisualElement class="dropdown-header" name="_categoryHeader">
+                    <Label class="dropdown-selected" name="_categorySelected" text="Select Category" />
+                    <Image class="dropdown-arrow" />
+                  </VisualElement>
+                </VisualElement>
+              </VisualElement>
+              
+              <VisualElement class="dropdown-group">
+                <Label class="dropdown-label" text="Priority" />
+                <VisualElement class="dropdown-container" name="_priorityDropdown">
+                  <VisualElement class="dropdown-header" name="_priorityHeader">
+                    <Label class="dropdown-selected" name="_prioritySelected" text="Select Priority" />
+                    <Image class="dropdown-arrow" />
+                  </VisualElement>
+                </VisualElement>
+              </VisualElement>
+            </VisualElement>
+            
+            <VisualElement class="panel-actions">
+              <VisualElement class="button-container button-secondary" name="_dropdownCancelButton">
+                <Label class="button-label" text="Cancel" />
+              </VisualElement>
+              <VisualElement class="button-container button-primary" name="_dropdownApplyButton">
+                <Label class="button-label" text="Apply" />
+              </VisualElement>
+            </VisualElement>
+          </VisualElement>
+        </VisualElement>
+      </VisualElement>
+
+      <!-- Progress Panel -->
+      <VisualElement class="panel progress-panel" name="_progressPanel" style="display: none;">
+        <VisualElement class="panel-overlay" picking-mode="Ignore">
+          <VisualElement class="panel-content">
+            <VisualElement class="panel-header">
+              <Label class="panel-title" name="_progressTitle" text="Processing" />
+              <VisualElement class="panel-close-button" name="_progressCloseButton">
+                <Image />
+              </VisualElement>
+            </VisualElement>
+            
+            <VisualElement class="panel-body">
+              <Label class="progress-message" name="_progressMessage" text="Please wait while we process your request..." />
+              
+              <VisualElement class="progress-container">
+                <VisualElement class="progress-bar">
+                  <VisualElement class="progress-fill" name="_progressFill" />
+                </VisualElement>
+                <Label class="progress-percentage" name="_progressPercentage" text="0%" />
+              </VisualElement>
+              
+              <Label class="progress-status" name="_progressStatus" text="Initializing..." />
+            </VisualElement>
+            
+            <VisualElement class="panel-actions">
+              <VisualElement class="button-container button-secondary" name="_progressCancelButton">
+                <Label class="button-label" text="Cancel" />
+              </VisualElement>
+            </VisualElement>
+          </VisualElement>
+        </VisualElement>
+      </VisualElement>
+
+      <!-- Notification Panel -->
+      <VisualElement class="panel notification-panel" name="_notificationPanel" style="display: none;">
+        <VisualElement class="panel-overlay" picking-mode="Ignore">
+          <VisualElement class="panel-content notification-content">
+            <VisualElement class="notification-header">
+              <VisualElement class="notification-icon" name="_notificationIcon">
+                <Image />
+              </VisualElement>
+              <Label class="notification-title" name="_notificationTitle" text="Notification" />
+              <VisualElement class="notification-close-button" name="_notificationCloseButton">
+                <Image />
+              </VisualElement>
+            </VisualElement>
+            
+            <VisualElement class="notification-body">
+              <Label class="notification-message" name="_notificationMessage" text="This is a notification message." />
+            </VisualElement>
+          </VisualElement>
+        </VisualElement>
+      </VisualElement>
+
+      <!-- Tooltip Panel -->
+      <VisualElement class="tooltip-panel" name="_tooltipPanel" style="display: none;">
+        <VisualElement class="tooltip-content">
+          <Label class="tooltip-text" name="_tooltipText" text="Tooltip text" />
+        </VisualElement>
+      </VisualElement>
+
+      <!-- Dropdown Selection Modal -->
+      <VisualElement class="modal-overlay" name="_dropdownModalOverlay" style="display: none;" picking-mode="Ignore">
+        <VisualElement class="modal-container" name="_dropdownModalContainer">
+          <VisualElement class="modal-header">
+            <Label class="modal-title" name="_dropdownModalTitle" text="Select Option" />
+            <VisualElement class="modal-close-button" name="_dropdownModalCloseButton">
+              <Image />
+            </VisualElement>
+          </VisualElement>
+          
+          <VisualElement class="modal-content">
+            <Label class="modal-label" name="_dropdownModalLabel" text="Choose an option:" />
+            <VisualElement class="dropdown-options-list" name="_dropdownOptionsList">
+              <!-- Options will be generated dynamically -->
+            </VisualElement>
+          </VisualElement>
+        </VisualElement>
+      </VisualElement>
+
+    </VisualElement>
+  </hr:UILuaView>
+
+</UXML>
