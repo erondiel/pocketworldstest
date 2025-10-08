@@ -19,7 +19,63 @@ Assets/Create/Lua/Module
 Assets/Create/Lua/UI
 Assets/Create/Lua/ScriptableObject
 Assets/Create/Folder
+Assets/Create/Material
+Assets/Create/MonoBehaviour Script
+Assets/Create/Prefab Variant
 Assets/Create/2D/Physics Material 2D
+Assets/Create/Addressables/Content Builders/Default Build Script
+Assets/Create/Addressables/Content Builders/Use Existing Build (requires built groups)
+Assets/Create/Addressables/Content Builders/Use Asset Database (fastest)
+Assets/Create/Addressables/Content Builders/Simulate Groups (advanced)
+Assets/Create/Addressables/Initialization/Cache Initialization Settings
+Assets/Create/Addressables/Group Templates/Blank Group Template
+Assets/Create/Animation/Animator Controller
+Assets/Create/Animation/Animator Override Controller
+Assets/Create/Animation/Avatar Mask
+Assets/Create/Animation/Animation Clip
+Assets/Create/Audio/Audio Mixer
+Assets/Create/Audio/Audio Random Container
+Assets/Create/Rendering/Material
+Assets/Create/Rendering/Material Variant
+Assets/Create/Rendering/Lightmap Parameters
+Assets/Create/Rendering/Lighting Settings
+Assets/Create/Rendering/Lens Flare
+Assets/Create/Rendering/Render Texture
+Assets/Create/Rendering/Custom Render Texture
+Assets/Create/Rendering/Legacy Cubemap
+Assets/Create/Rendering/Volume Profile
+Assets/Create/Rendering/Lens Flare (SRP)
+Assets/Create/Rendering/URP Asset (with 2D Renderer)
+Assets/Create/Rendering/URP Asset (with Universal Renderer)
+Assets/Create/Rendering/URP Renderer Feature
+Assets/Create/Rendering/URP 2D Renderer
+Assets/Create/Rendering/URP Universal Renderer
+Assets/Create/Rendering/URP Post-processing Effect (Renderer Feature with Volume)
+Assets/Create/Rendering/URP Post-process Data
+Assets/Create/Rendering/Environment Library (Look Dev)
+Assets/Create/Scene/Scene
+Assets/Create/Scene/Scene Template
+Assets/Create/Scene/Scene Template From Scene
+Assets/Create/Scene/Prefab
+Assets/Create/Scene/Prefab Variant
+Assets/Create/Scene/Scene Template Pipeline
+Assets/Create/Scripting/MonoBehaviour Script
+Assets/Create/Scripting/ScriptableObject Script
+Assets/Create/Scripting/Empty C# Script
+Assets/Create/Scripting/Playables/Playable Behaviour Script
+Assets/Create/Scripting/Playables/Playable Asset Script
+Assets/Create/Scripting/Assembly Definition
+Assets/Create/Scripting/Assembly Definition Reference
+Assets/Create/Search/Assets Index
+Assets/Create/Search/Prefabs Index
+Assets/Create/Search/Scenes Index
+Assets/Create/Shader/Standard Surface Shader
+Assets/Create/Shader/Unlit Shader
+Assets/Create/Shader/Image Effect Shader
+Assets/Create/Shader/Compute Shader
+Assets/Create/Shader/Ray Tracing Shader
+Assets/Create/Shader/Custom Render Texture
+Assets/Create/Shader/Shader Variant Collection
 Assets/Create/Shader Graph/URP/Lit Shader Graph
 Assets/Create/Shader Graph/URP/Unlit Shader Graph
 Assets/Create/Shader Graph/URP/Sprite Custom Lit Shader Graph
@@ -37,13 +93,17 @@ Assets/Create/Shader Graph/Sub Graph
 Assets/Create/Shader Graph/Custom Render Texture
 Assets/Create/Shader Graph/Custom Heatmap Values/Heatmap with Default Values
 Assets/Create/Shader Graph/Custom Heatmap Values/Empty Heatmap
-Assets/Create/Shader/Standard Surface Shader
-Assets/Create/Shader/Unlit Shader
-Assets/Create/Shader/Image Effect Shader
-Assets/Create/Shader/Compute Shader
-Assets/Create/Shader/Ray Tracing Shader
-Assets/Create/Shader/Custom Render Texture
-Assets/Create/Shader/Shader Variant Collection
+Assets/Create/Testing/C# Test Script
+Assets/Create/Testing/Tests Assembly Folder
+Assets/Create/Terrain/Brush
+Assets/Create/Terrain/Terrain Layer
+Assets/Create/Text Core/Font Asset/SDF
+Assets/Create/Text Core/Font Asset/Bitmap
+Assets/Create/Text Core/Font Asset/Color
+Assets/Create/Text Core/Font Asset Variant
+Assets/Create/Text Core/Sprite Asset
+Assets/Create/Text Core/Text StyleSheet
+Assets/Create/Text Core/Color Gradient
 Assets/Create/TextMeshPro/Font Asset/SDF
 Assets/Create/TextMeshPro/Font Asset/Bitmap
 Assets/Create/TextMeshPro/Font Asset/Color
@@ -51,19 +111,7 @@ Assets/Create/TextMeshPro/Font Asset/Font Asset Variant
 Assets/Create/TextMeshPro/Sprite Asset
 Assets/Create/TextMeshPro/Style Sheet
 Assets/Create/TextMeshPro/Color Gradient
-Assets/Create/Scene/Scene
-Assets/Create/Scene/Scene Template
-Assets/Create/Scene/Scene Template From Scene
-Assets/Create/Scene/Prefab
-Assets/Create/Scene/Prefab Variant
-Assets/Create/Scene/Scene Template Pipeline
-Assets/Create/Prefab Variant
-Assets/Create/Material
-Assets/Create/Animation/Animator Controller
-Assets/Create/Animation/Animator Override Controller
-Assets/Create/Animation/Avatar Mask
-Assets/Create/Animation/Animation Clip
-Assets/Create/Custom Font
+Assets/Create/Tutorials/TutorialCallbacks Instance
 Assets/Create/UI Toolkit/Style Sheet
 Assets/Create/UI Toolkit/TSS Theme File
 Assets/Create/UI Toolkit/Default Runtime Theme File
@@ -71,25 +119,57 @@ Assets/Create/UI Toolkit/UI Document
 Assets/Create/UI Toolkit/Editor Window
 Assets/Create/UI Toolkit/Panel Settings Asset
 Assets/Create/UI Toolkit/Text Settings
+Assets/Create/Visual Scripting/State Graph
+Assets/Create/Visual Scripting/Script Graph
+Assets/Create/Physics Material
+Assets/Create/GUI Skin
+Assets/Create/Custom Font
+Assets/Create/AVPro Video/Media Reference
+Assets/Create/Spine/Spine Atlas Asset
+Assets/Create/Spine/SkeletonData Asset
+Assets/Create/Spine/Spine SpriteAtlas Asset
+Assets/Create/Spine/EventData Reference Asset
+Assets/Create/Spine/Animation Reference Asset
+Assets/Create/Spine/SkeletonData Modifiers/Blend Mode Materials
+Assets/Create/Timeline
+Assets/Create/Signal
+Assets/Create/Input Actions
+Assets/Create/Material Palette
 Assets/Show in Explorer
 Assets/Open
 Assets/Delete
 Assets/Rename
 Assets/Copy Path
 Assets/Open Scene Additive
-Assets/Open in VSCode
-Assets/Export Highrise Asset...
-Assets/Find References In Scene
+Assets/View in Package Manager
+Assets/Import New Asset...
+Assets/Import Package/Custom Package...
+Assets/Export Package...
 Assets/Highrise/Upload Item...
 Assets/Highrise/Export Character Image
+Assets/Export Highrise Asset...
+Assets/Find References In Scene
 Assets/Find References In Project
 Assets/Select Dependencies
 Assets/Refresh
 Assets/Reimport
 Assets/Reimport All
 Assets/Extract From Prefab
+Assets/Update UXML Schema
+Assets/Open C# Project
+Assets/View in Import Activity Window
+Assets/Open in VSCode
 Assets/Restore Backup
 Assets/Properties...
+Services/Sign in...
+Services/Sign out
+Services/Explore
+Services/General Settings
+Services/In-App Purchasing/Configure...
+Services/In-App Purchasing/Create IAP Button
+Services/In-App Purchasing/Create IAP Listener
+Services/In-App Purchasing/Create IAP Button (Legacy)
+Services/In-App Purchasing/IAP Catalog...
 GameObject/Create Empty
 GameObject/Create Empty Child
 GameObject/Create Empty Parent
@@ -192,42 +272,49 @@ GameObject/Move To View
 GameObject/Align With View
 GameObject/Align View to Selected
 GameObject/Toggle Active State
-Window/AI/Navigation
-Window/Animation/Animation
-Window/Animation/Animator
-Window/Animation/Animator Parameter
-Window/Audio/Audio Random Container
-Window/Audio/Audio Mixer
-Window/General/Scene
-Window/General/Game
-Window/General/Inspector
-Window/General/Hierarchy
-Window/General/Project
-Window/General/Console
-Window/General/Progress
-Window/Rendering/Lighting
-Window/Rendering/Light Explorer
-Window/Rendering/Render Pipeline Converter
+Window/Panels/Close all floating panels...
+Window/Panels/1 CharacterShadow3D
+Window/Panels/2 Clothing
+Window/Panels/3 Console
+Window/Panels/4 Hierarchy
+Window/Panels/5 Inspector
+Window/Panels/6 LUA Message Log
+Window/Panels/7 Project
+Window/Panels/8 Scene
+Window/Panels/9 Simulator
+Window/SpaceNavigator/Settings
+Window/Next Window
+Window/Previous Window
+Window/Layouts/2 by 3
+Window/Layouts/4 Split
 Window/Layouts/Default
-Window/Layouts/Other Versions/Default (6000)
+Window/Layouts/Tall
+Window/Layouts/Wide
 Window/Layouts/Other Versions/Hr_studio_simple (6000)
-Window/Layouts/Studio Default
-Window/Layouts/Studio 2 by 3
-Window/Layouts/Studio 4 Split
-Window/Layouts/Studio Center
-Window/Layouts/Studio Tall
-Window/Layouts/Studio Wide
-Window/Layouts/Studio Play
 Window/Layouts/Save Layout...
 Window/Layouts/Save Layout to File...
 Window/Layouts/Load Layout from File...
+Window/Layouts/Delete Layout/2 by 3
+Window/Layouts/Delete Layout/4 Split
 Window/Layouts/Delete Layout/Default
+Window/Layouts/Delete Layout/Tall
+Window/Layouts/Delete Layout/Wide
 Window/Layouts/Reset All Layouts
 Window/Editor Mode/Highrise Studio Advanced
 Window/Editor Mode/Highrise Studio
 Window/Editor Mode/Highrise Clothing
 Window/Editor Mode/Unity Default
+Window/AVPro Video Support
+Window/Selection History
+Window/Unity Version Control
+Window/Search/New Window
+Window/Search/Index Manager
+Window/Search/Scene
+Window/Search/Find Files
+Window/Search/Asset Store
+Window/Search/Asset Database
 Window/Asset Store
+Window/My Assets
 Window/Package Manager
 Window/Text/Font Asset Creator
 Window/Text/Sprite Importer
@@ -237,8 +324,63 @@ Window/TextMeshPro/Import TMP Essential Resources
 Window/TextMeshPro/Import TMP Examples and Extras
 Window/TextMeshPro/Project Files GUID Remapping Tool
 Window/TextMeshPro/Project Text Spacing Conversion Tool
+Window/Asset Management/Version Control
+Window/Asset Management/Addressables/Groups
+Window/Asset Management/Addressables/Addressables Report
+Window/Asset Management/Addressables/Event Viewer
+Window/Asset Management/Addressables/Profiles
+Window/Asset Management/Addressables/Settings
+Window/Asset Management/Addressables/Analyze
+Window/Asset Management/Addressables/Hosting
+Window/General/Scene
+Window/General/Game
+Window/General/Inspector
+Window/General/Hierarchy
+Window/General/Project
+Window/General/Console
+Window/General/Progress
+Window/General/Test Runner
+Window/General/Performance Test Report
+Window/General/Services
+Window/General/Device Simulator
+Window/Rendering/Lighting
+Window/Rendering/Light Explorer
+Window/Rendering/Render Pipeline Converter
+Window/Rendering/Occlusion Culling
+Window/Rendering/Look Dev
+Window/Animation/Animation
+Window/Animation/Animator
+Window/Animation/Animator Parameter
+Window/Audio/Audio Random Container
+Window/Audio/Audio Mixer
+Window/Sequencing/Timeline
+Window/Analysis/Profiler
+Window/Analysis/Profiler (Standalone Process)
+Window/Analysis/Frame Debugger
+Window/Analysis/Physics Debugger
+Window/Analysis/Import Activity
+Window/Analysis/Performance Markers
+Window/Analysis/Input Debugger
+Window/Analysis/Rendering Debugger
+Window/Analysis/Render Graph Viewer
+Window/Analysis/IMGUI Debugger
+Window/Accessibility/Hierarchy Viewer
+Window/2D/Light Batching Debugger
+Window/AI/Navigation
+Window/AI/Navigation (Obsolete)
+Window/AI/NavMesh Updater
 Window/UI Toolkit/UI Builder
+Window/UI Toolkit/Samples
 Window/UI Toolkit/Debugger
+Window/Visual Scripting/Visual Scripting Graph
+Jobs/Burst/Safety Checks/Off
+Jobs/Burst/Safety Checks/On
+Jobs/Burst/Safety Checks/Force On
+Jobs/Burst/Enable Compilation
+Jobs/Burst/Synchronous Compilation
+Jobs/Burst/Native Debug Mode Compilation
+Jobs/Burst/Show Timings
+Jobs/Burst/Open Inspector...
 Edit/Undo
 Edit/Redo
 Edit/Undo History
@@ -318,10 +460,16 @@ CONTEXT/TMP_FontAsset/Import Font Features
 CONTEXT/TMP_FontAsset/Extract Atlas
 CONTEXT/UNUSED_PROXY_ScriptContextCommands
 CONTEXT/Object/Reset
-CONTEXT/TEMPORARY-OBJECT-DISPLAY/Fly
-CONTEXT/TEMPORARY-OBJECT-DISPLAY/Orbit
-CONTEXT/TEMPORARY-OBJECT-DISPLAY/Telekinesis
-CONTEXT/TEMPORARY-OBJECT-DISPLAY/Grab Move
+CONTEXT/TEMPORARY-OBJECT-DISPLAY/Reset
+CONTEXT/TEMPORARY-OBJECT-DISPLAY/Remove Component
+CONTEXT/TEMPORARY-OBJECT-DISPLAY/Move Up
+CONTEXT/TEMPORARY-OBJECT-DISPLAY/Move Down
+CONTEXT/TEMPORARY-OBJECT-DISPLAY/Copy Component
+CONTEXT/TEMPORARY-OBJECT-DISPLAY/Paste Component As New
+CONTEXT/TEMPORARY-OBJECT-DISPLAY/Paste Component Values
+CONTEXT/TEMPORARY-OBJECT-DISPLAY/Find References In Scene
+CONTEXT/TEMPORARY-OBJECT-DISPLAY/Properties...
+CONTEXT/TEMPORARY-OBJECT-DISPLAY/Edit Script
 CONTEXT/TrueTypeFontImporter/Create Font Asset...
 CONTEXT/TrueTypeFontImporter/Create TMP Font Asset...
 CONTEXT/TrueTypeFontImporter/Create Editable Copy
@@ -484,17 +632,23 @@ Tools/ProBuilder/Export/Export Stl Binary
 Tools/ProBuilder/Actions/Strip All ProBuilder Scripts in Scene
 Tools/ProBuilder/Actions/Strip ProBuilder Scripts in Selection
 Tools/ProBuilder/Debug/Log Preferences
-Tools/Force Open SpaceNavigator
 Tools/Menu Item Window
 File/New Scene
 File/Open Scene
 File/Open Recent Scene/Missing or broken path ()
+File/Open Recent Scene/test (from Scenes)
+File/Open Recent Scene/Missing or broken path (afc9c9e3cb309be317ad10eb1842f5f3)
+File/Open Recent Scene/Missing or broken path (29f3d497ffd10674e9dd93ee39efc030)
 File/Open Recent Scene/Room (from Scenes)
 File/Save
 File/Save As...
+File/Save As Scene Template...
 File/New Project...
 File/Open Project...
 File/Save Project
+File/Build Profiles
+File/Build And Run
+File/Exit
 Highrise/Lua/Rebuild All
 Highrise/Studio/Asset Catalog
 Highrise/Studio/Clothing Window

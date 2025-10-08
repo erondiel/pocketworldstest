@@ -8,5 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/PropHunt/Scenes/test.unity
     guid: c151545964f49ba4ea24f9071869c2ec
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: 37796fde86b99f04094b46024d2bce04,
+      type: 2}
   m_UseUCBPForAssetBundles: 0

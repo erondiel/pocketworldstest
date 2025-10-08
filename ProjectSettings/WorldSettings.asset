@@ -16,7 +16,7 @@ MonoBehaviour:
   _publishedId: 
   _worldPrefab: {fileID: 9171886453793455768, guid: 569fdf5ca373dfb43bac53ec5237b9a6,
     type: 3}
-  _scenePrefab: {fileID: 4878327261546243901, guid: 285e0fed171485143a290f1a7e443be3,
+  _scenePrefab: {fileID: 8457444051872364791, guid: 4ea8fc71d0d33aa4794e860bd8a9318a,
     type: 3}
   _localizationDatabase: {fileID: 0}
   _scenes:
