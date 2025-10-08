@@ -2,14 +2,18 @@
 
 --!SerializeField
 local _HUD : GameObject = nil
+--!SerializeField
+local _ReadyButton : GameObject = nil
+
+local Config = require("PropHuntConfig")
+local GameManager = require("PropHuntGameManager")
+local PlayerManager = require("PropHuntPlayerManager")
 
 local _HudScript : PropHuntHUD = nil
+local _hudUpdateTimer : Timer | nil = nil
 
--- Game State Data
-local stateTimer = 0
-local currentState = "LOBBY"
-local playersReady = 0
-local playersTotal = 0
+-- State changed event from server
+local stateChangedEvent = Event.new("PH_StateChanged")
 
 local stateMapping = {
     [1] = "LOBBY",
@@ -22,62 +26,88 @@ local function FormatState(value)
     return stateMapping[tonumber(value)] or tostring(value)
 end
 
+local function FormatTime(seconds : number) : string
+    if seconds <= 0 then return "0s" end
+    
+    local minutes = math.floor(seconds / 60)
+    local remainingSeconds = math.floor(seconds % 60)
+    
+    if minutes > 0 then
+        return tostring(minutes) .. "m " .. tostring(remainingSeconds) .. "s"
+    else
+        return tostring(remainingSeconds) .. "s"
+    end
+end
+
+local function StopHUDTimer()
+    if _hudUpdateTimer then
+        _hudUpdateTimer:Stop()
+        _hudUpdateTimer = nil
+    end
+end
+
 local function StartHUDTimer()
-    -- Define event here to ensure it's client-only
-    local stateChangedEvent = Event.new("PH_StateChanged")
-
-    -- Timer to decrement the countdown every second
-    Timer.Every(1, function()
-        if stateTimer > 0 then
-            stateTimer = math.max(0, stateTimer - 1)
-            UpdateDisplay()
+    StopHUDTimer()
+    
+    _hudUpdateTimer = Timer.Every(1, function()
+        local gameState = GameManager.GetCurrentState()
+        local stateTimer = GameManager.GetStateTimer()
+        local playerCount = GameManager.GetActivePlayerCount()
+        local readyCount = PlayerManager.GetReadyPlayerCount()
+        local minPlayers = Config.GetMinPlayersToStart()
+        
+        local stateName = FormatState(gameState)
+        local stateText = "State: " .. stateName
+        local timerText = "Time: " .. FormatTime(math.max(0, stateTimer))
+        
+        -- Show ready count in lobby, total count during game
+        local playersText
+        if gameState == 1 then -- LOBBY
+            playersText = "Ready: " .. tostring(readyCount) .. "/" .. tostring(minPlayers)
+        else
+            playersText = "Players: " .. tostring(playerCount)
         end
-    end)
-
-    -- Listen for state changes from the server
-    stateChangedEvent:Connect(function(newState, timer, pReady, pTotal)
-        print("----------------------------------------")
-        print("[PropHuntUIManager] stateChangedEvent received!")
-        print("[PropHuntUIManager] Raw newState: " .. tostring(newState))
-        print("[PropHuntUIManager] Raw timer: " .. tostring(timer))
-        print("[PropHuntUIManager] Raw pReady: " .. tostring(pReady))
-        print("[PropHuntUIManager] Raw pTotal: " .. tostring(pTotal))
-        print("----------------------------------------")
-
-        currentState = FormatState(newState)
-        stateTimer = tonumber(timer) or 0
-        playersReady = tonumber(pReady) or 0
-        playersTotal = tonumber(pTotal) or 0
-
-        UpdateDisplay()
+        
+        if _HudScript then
+            _HudScript.UpdateHud(stateText, timerText, playersText)
+        end
     end)
 end
 
-local function UpdateDisplay()
-    if _HudScript then
-        local stateText = string.format("State: %s", currentState)
-        local timerText = string.format("Time: %.0fs", math.max(0, stateTimer))
-        local playersText = string.format("Players: %d/%d", playersReady, playersTotal)
-        _HudScript.UpdateHud(stateText, timerText, playersText)
+function EnableDisableReadyButton(state : boolean)
+    if _ReadyButton then
+        _ReadyButton:SetActive(state)
     end
 end
 
 function self:ClientAwake()
     if _HUD then
         _HudScript = _HUD:GetComponent(PropHuntHUD)
-    else
-        print("[PropHuntUIManager] Error: _HUD is not assigned.")
     end
 end
 
 function self:ClientStart()
     print("[PropHuntUIManager] ClientStart")
-
-    if not _HudScript then
-        print("[PropHuntUIManager] _HudScript not found, aborting ClientStart.")
-        return
-    end
-
+    
+    -- Start the HUD timer immediately
     StartHUDTimer()
-    UpdateDisplay() -- Initial display update
+    
+    -- Show ready button initially
+    EnableDisableReadyButton(true)
+    
+    -- Listen for state changes from server to control button visibility
+    stateChangedEvent:Connect(function(newState, timer)
+        print("[PropHuntUIManager] State changed: " .. FormatState(newState) .. " | Timer: " .. tostring(timer))
+        
+        -- Show button in LOBBY, hide during gameplay
+        if newState == 1 then -- LOBBY
+            EnableDisableReadyButton(true)
+        else
+            EnableDisableReadyButton(false)
+        end
+    end)
+end
+
+function self:OnDestroy()
+    StopHUDTimer()
 end

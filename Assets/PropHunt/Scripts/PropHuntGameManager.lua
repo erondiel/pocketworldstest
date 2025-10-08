@@ -7,6 +7,7 @@
 --!Type(Module)
 
 local Config = require("PropHuntConfig")
+local PlayerManager = require("PropHuntPlayerManager")
 
 -- Enhanced logging
 local function Log(msg)
@@ -21,9 +22,10 @@ local GameState = {
     ROUND_END = 4
 }
 
--- State variables
-local currentState = GameState.LOBBY
-local stateTimer = 0
+-- State variables (NetworkValues for automatic client sync)
+local currentState = NumberValue.new("PH_CurrentState", GameState.LOBBY)
+local stateTimer = NumberValue.new("PH_StateTimer", 0)
+local playerCount = NumberValue.new("PH_PlayerCount", 0)
 local roundNumber = 0
 
 -- Player tracking
@@ -66,7 +68,7 @@ function self:ServerStart()
     
     -- Handle client tag requests
     tagRequest.OnInvokeServer = function(player, targetPlayerId)
-        if currentState ~= GameState.HUNTING then
+        if currentState.value ~= GameState.HUNTING then
             return false, "Not hunting phase"
         end
 
@@ -89,7 +91,7 @@ function self:ServerStart()
 
     -- Handle client disguise requests
     disguiseRequest.OnInvokeServer = function(player, propIdentifier)
-        if currentState ~= GameState.HIDING then
+        if currentState.value ~= GameState.HIDING then
             return false, "Not hiding phase"
         end
         if not IsPlayerInTeam(player, propsTeam) then
@@ -133,13 +135,13 @@ end
     Server tick
 ]]
 function self:ServerFixedUpdate()
-    if currentState == GameState.LOBBY then
+    if currentState.value == GameState.LOBBY then
         UpdateLobby()
-    elseif currentState == GameState.HIDING then
+    elseif currentState.value == GameState.HIDING then
         UpdateHiding()
-    elseif currentState == GameState.HUNTING then
+    elseif currentState.value == GameState.HUNTING then
         UpdateHunting()
-    elseif currentState == GameState.ROUND_END then
+    elseif currentState.value == GameState.ROUND_END then
         UpdateRoundEnd()
     end
 end
@@ -150,26 +152,27 @@ end
 ]]
 function UpdateLobby()
     local playerCount = GetActivePlayerCount()
+    local readyCount = PlayerManager.GetReadyPlayerCount()
     
-    if playerCount >= Config.GetMinPlayersToStart() then
+    if readyCount >= Config.GetMinPlayersToStart() then
         -- Check if we should start countdown
-        if stateTimer > 0 then
-            stateTimer = stateTimer - Time.deltaTime
+        if stateTimer.value > 0 then
+            stateTimer.value = stateTimer.value - Time.deltaTime
             
-            if stateTimer <= 0 then
+            if stateTimer.value <= 0 then
                 StartNewRound()
             end
         else
             -- Start countdown
-            stateTimer = 5 -- 5 second countdown
-            Log(string.format("START %ds [%d/%d]", math.floor(stateTimer), playerCount, Config.GetMinPlayersToStart()))
+            stateTimer.value = 5 -- 5 second countdown
+            Log(string.format("START %ds [%d ready/%d total]", math.floor(stateTimer.value), readyCount, playerCount))
             BroadcastStateChange(GameState.LOBBY, stateTimer)
         end
     else
         -- Not enough players, reset timer
-        if stateTimer ~= 0 then
-            stateTimer = 0
-            Log(string.format("WAIT [%d/%d]", playerCount, Config.GetMinPlayersToStart()))
+        if stateTimer.value ~= 0 then
+            stateTimer.value = 0
+            Log(string.format("WAIT [%d ready/%d total, need %d]", readyCount, playerCount, Config.GetMinPlayersToStart()))
             BroadcastStateChange(GameState.LOBBY, stateTimer)
         end
     end
@@ -180,9 +183,9 @@ end
     Props have time to find hiding spots
 ]]
 function UpdateHiding()
-    stateTimer = stateTimer - Time.deltaTime
+    stateTimer.value = stateTimer.value - Time.deltaTime
     
-    if stateTimer <= 0 then
+    if stateTimer.value <= 0 then
         TransitionToState(GameState.HUNTING)
     end
 end
@@ -192,12 +195,12 @@ end
     Hunters search for props
 ]]
 function UpdateHunting()
-    stateTimer = stateTimer - Time.deltaTime
+    stateTimer.value = stateTimer.value - Time.deltaTime
     
     -- Check win conditions
     if AreAllPropsEliminated() then
         EndRound("hunters")
-    elseif stateTimer <= 0 then
+    elseif stateTimer.value <= 0 then
         EndRound("props")
     end
 end
@@ -207,9 +210,9 @@ end
     Display results, prepare for next round
 ]]
 function UpdateRoundEnd()
-    stateTimer = stateTimer - Time.deltaTime
+    stateTimer.value = stateTimer.value - Time.deltaTime
     
-    if stateTimer <= 0 then
+    if stateTimer.value <= 0 then
         TransitionToState(GameState.LOBBY)
     end
 end
@@ -222,22 +225,24 @@ function TransitionToState(newState)
     local newName = GetStateName(newState)
     Log(string.format("%s->%s", oldName, newName))
     
-    currentState = newState
+    currentState.value = newState
     
     if newState == GameState.LOBBY then
-        stateTimer = 0
+        stateTimer.value = 0
         eliminatedPlayers = {}
+        -- Reset ready status when returning to lobby after a round
+        PlayerManager.ResetAllPlayers()
         
     elseif newState == GameState.HIDING then
-        stateTimer = Config.GetHidePhaseTime()
+        stateTimer.value = Config.GetHidePhaseTime()
         Log(string.format("HIDE %ds", Config.GetHidePhaseTime()))
         
     elseif newState == GameState.HUNTING then
-        stateTimer = Config.GetHuntPhaseTime()
+        stateTimer.value = Config.GetHuntPhaseTime()
         Log(string.format("HUNT %ds", Config.GetHuntPhaseTime()))
         
     elseif newState == GameState.ROUND_END then
-        stateTimer = Config.GetRoundEndTime()
+        stateTimer.value = Config.GetRoundEndTime()
         Log(string.format("END %ds", Config.GetRoundEndTime()))
     end
     
@@ -314,12 +319,14 @@ end
 ]]
 function OnPlayerJoinedScene(sceneObj, player)
     activePlayers[player.id] = player
+    UpdatePlayerCount()
     local count = GetActivePlayerCount()
     Log(string.format("JOIN %s (%d)", player.name, count))
 end
 
 function OnPlayerLeftScene(sceneObj, player)
     activePlayers[player.id] = nil
+    UpdatePlayerCount()
     RemoveFromTeams(player)
     local count = GetActivePlayerCount()
     Log(string.format("LEFT %s (%d)", player.name, count))
@@ -351,7 +358,7 @@ function OnPlayerTagged(hunter, prop)
     debugEvent:FireAllClients("TAG", hunter.id, prop.id)
     
     -- Check if round should end
-    if currentState == GameState.HUNTING and AreAllPropsEliminated() then
+    if currentState.value == GameState.HUNTING and AreAllPropsEliminated() then
         EndRound("hunters")
     end
 end
@@ -459,5 +466,20 @@ end
 
 function self:TagPlayer(hunter, prop)
     OnPlayerTagged(hunter, prop)
+end
+
+--[[
+    Public Getters for UI/Client Scripts
+]]
+function GetCurrentState() : number
+    return currentState.value
+end
+
+function GetStateTimer() : number
+    return stateTimer.value
+end
+
+function UpdatePlayerCount()
+    playerCount.value = GetActivePlayerCount()
 end
 

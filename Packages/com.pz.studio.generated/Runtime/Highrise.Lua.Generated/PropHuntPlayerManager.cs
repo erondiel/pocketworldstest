@@ -19,15 +19,13 @@ using UnityEditor;
 
 namespace Highrise.Lua.Generated
 {
-    [AddComponentMenu("Lua/PropHuntUIManager")]
-    [LuaRegisterType(0x9f0d7b38b79658ea, typeof(LuaBehaviour))]
-    public class PropHuntUIManager : LuaBehaviourThunk
+    [AddComponentMenu("Lua/PropHuntPlayerManager")]
+    [LuaRegisterType(0x239dd35d51b395ef, typeof(LuaBehaviour))]
+    public class PropHuntPlayerManager : LuaBehaviourThunk
     {
-        private const string s_scriptGUID = "4713727bf26fa3d44b60ddea26d4eb3a";
+        private const string s_scriptGUID = "f48968851949ac14cb3f974ebb4b0e88";
         public override string ScriptGUID => s_scriptGUID;
 
-        [SerializeField] public UnityEngine.GameObject _HUD = default;
-        [SerializeField] public UnityEngine.GameObject _ReadyButton = default;
 
         protected override SerializedPropertyValue[] SerializeProperties()
         {
@@ -36,13 +34,11 @@ namespace Highrise.Lua.Generated
 
             return new SerializedPropertyValue[]
             {
-                CreateSerializedProperty(_script.GetPropertyAt(0), _HUD),
-                CreateSerializedProperty(_script.GetPropertyAt(1), _ReadyButton),
             };
         }
         
 #if HR_STUDIO
-        [MenuItem("CONTEXT/PropHuntUIManager/Edit Script")]
+        [MenuItem("CONTEXT/PropHuntPlayerManager/Edit Script")]
         private static void EditScript()
         {
             VisualStudioCodeOpener.OpenPath(AssetDatabase.GUIDToAssetPath(s_scriptGUID));
