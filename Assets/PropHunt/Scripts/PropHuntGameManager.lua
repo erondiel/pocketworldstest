@@ -8,10 +8,10 @@
 
 local Config = require("PropHuntConfig")
 local PlayerManager = require("PropHuntPlayerManager")
-local ScoringSystem = require("Modules.PropHuntScoringSystem")
-local Teleporter = require("Modules.PropHuntTeleporter")
-local ZoneManager = require("Modules.ZoneManager")
-local VFXManager = require("Modules.PropHuntVFXManager")
+local ScoringSystem = require("PropHuntScoringSystem")
+local Teleporter = require("PropHuntTeleporter")
+local ZoneManager = require("ZoneManager")
+local VFXManager = require("PropHuntVFXManager")
 
 -- Enhanced logging
 local function Log(msg)

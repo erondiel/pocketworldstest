@@ -7,7 +7,7 @@
 
 -- Import required modules
 local Config = require("PropHuntConfig")
-local VFXManager = require("Modules.PropHuntVFXManager")
+local VFXManager = require("PropHuntVFXManager")
 
 -- Cooldown between tag attempts (seconds) - Now uses Config
 --!SerializeField

@@ -18,7 +18,7 @@
 
 --!Type(Server)
 
-local ZoneManager = require("Modules.ZoneManager")
+local ZoneManager = require("ZoneManager")
 
 --!Tooltip("Name of the zone: NearSpawn, Mid, or Far")
 --!SerializeField

@@ -6,7 +6,7 @@
 --!Type(Module)
 
 -- Import VFXManager for visual effects
-local VFXManager = require("Modules.PropHuntVFXManager")
+local VFXManager = require("PropHuntVFXManager")
 
 -- limit selection distance (meters)
 --!SerializeField
