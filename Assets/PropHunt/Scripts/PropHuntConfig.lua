@@ -90,15 +90,6 @@ local _tauntReward : number = 20
 --!SerializeField
 local _enableDebug : boolean = true
 
--- ========== TELEPORTER SPAWN POINTS ==========
---!Tooltip("Lobby spawn position - drag LobbySpawn GameObject here")
---!SerializeField
-local _lobbySpawnPosition : Transform = nil
-
---!Tooltip("Arena spawn position - drag ArenaSpawn GameObject here")
---!SerializeField
-local _arenaSpawnPosition : Transform = nil
-
 -- ========== GETTERS: LOBBY ==========
 function GetMinPlayersToStart() : number
     return _minPlayersToStart
@@ -210,15 +201,6 @@ function DebugLog(message : string)
     end
 end
 
--- ========== GETTERS: TELEPORTER ==========
-function GetLobbySpawnPosition() : Transform
-    return _lobbySpawnPosition
-end
-
-function GetArenaSpawnPosition() : Transform
-    return _arenaSpawnPosition
-end
-
 -- ========== MODULE EXPORTS ==========
 
 return {
@@ -263,10 +245,6 @@ return {
 
     -- Debug
     IsDebugEnabled = IsDebugEnabled,
-    DebugLog = DebugLog,
-
-    -- Teleporter
-    GetLobbySpawnPosition = GetLobbySpawnPosition,
-    GetArenaSpawnPosition = GetArenaSpawnPosition
+    DebugLog = DebugLog
 }
 

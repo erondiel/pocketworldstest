@@ -15,18 +15,30 @@
 .button-container {
   position: absolute;
   bottom: 0;
-  
+
   width: 100px;
   height: 40px;
 
   background-color: rgba(0, 0, 0, 0.5);
   border-bottom-width: 2px;
-  border-color: var(--green-color);
+  border-bottom-color: var(--green-color);
 
   border-radius: 10px;
 
   align-items: center;
   justify-content: center;
+
+  transition-property: border-bottom-color, background-color;
+  transition-duration: 0.3s;
+}
+
+.button-container:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.button-container:active {
+  scale: 0.95;
+  transition-duration: 0.1s;
 }
 
 .button-label {

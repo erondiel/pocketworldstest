@@ -16,8 +16,17 @@
 
 --!Type(Module)
 
--- Import Config to get spawn positions
-local Config = require("PropHuntConfig")
+-- ========== SERIALIZE FIELDS: SPAWN POINTS ==========
+--!Tooltip("Lobby spawn position - drag LobbySpawn GameObject here")
+--!SerializeField
+local _lobbySpawnPosition : GameObject = nil
+
+--!Tooltip("Arena spawn position - drag ArenaSpawn GameObject here")
+--!SerializeField
+local _arenaSpawnPosition : GameObject = nil
+
+-- ========== NETWORK EVENTS ==========
+local teleportEvent = Event.new("PH_TeleportPlayer")
 
 --[[
     Debug logging
@@ -28,6 +37,8 @@ end
 
 --[[
     Helper: Teleport player to a position
+    Uses server-to-client event to trigger client-side Teleport() call
+    Server sets position, then broadcasts to all clients for sync
 ]]
 local function TeleportPlayerToPosition(player, targetPosition)
     if player == nil or player.character == nil then
@@ -43,8 +54,13 @@ local function TeleportPlayerToPosition(player, targetPosition)
     -- Get Vector3 position from Transform
     local pos = targetPosition.position
 
-    -- Move player character to position
+    -- Server-side: Set transform position for server authority
     player.character.transform.position = pos
+
+    -- Broadcast to ALL clients so everyone sees the teleport
+    -- Each client will call player.character:Teleport(pos)
+    teleportEvent:FireAllClients(player, pos)
+
     return true
 end
 
@@ -54,15 +70,27 @@ end
 
 -- Teleport a single player to the Arena
 function TeleportToArena(player)
-    local arenaSpawn = Config.GetArenaSpawnPosition()
-    if arenaSpawn == nil then
-        Log("ERROR: Arena spawn position not configured in PropHuntConfig!")
-        return false
-    end
-
     if player == nil then
         Log("ERROR: Cannot teleport nil player to Arena")
         return false
+    end
+
+    -- Get arena spawn from SerializeField
+    local arenaSpawn = nil
+    if _arenaSpawnPosition ~= nil then
+        arenaSpawn = _arenaSpawnPosition.transform
+    else
+        -- Fallback: Try to find by name if SerializeField is not configured
+        Log("WARNING: Arena spawn not configured, attempting GameObject.Find(\"ArenaSpawn\")...")
+        local arenaGO = GameObject.Find("ArenaSpawn")
+        if arenaGO ~= nil then
+            arenaSpawn = arenaGO.transform
+            Log("Found ArenaSpawn via GameObject.Find")
+        else
+            Log("ERROR: Arena spawn position not configured and GameObject.Find(\"ArenaSpawn\") failed!")
+            Log("SOLUTION: In Unity, select PropHuntModules → PropHuntTeleporter component → Drag 'ArenaSpawn' GameObject to Arena Spawn Position field")
+            return false
+        end
     end
 
     Log(string.format("Teleporting %s to Arena", player.name))
@@ -71,15 +99,27 @@ end
 
 -- Teleport a single player to the Lobby
 function TeleportToLobby(player)
-    local lobbySpawn = Config.GetLobbySpawnPosition()
-    if lobbySpawn == nil then
-        Log("ERROR: Lobby spawn position not configured in PropHuntConfig!")
-        return false
-    end
-
     if player == nil then
         Log("ERROR: Cannot teleport nil player to Lobby")
         return false
+    end
+
+    -- Get lobby spawn from SerializeField
+    local lobbySpawn = nil
+    if _lobbySpawnPosition ~= nil then
+        lobbySpawn = _lobbySpawnPosition.transform
+    else
+        -- Fallback: Try to find by name if SerializeField is not configured
+        Log("WARNING: Lobby spawn not configured, attempting GameObject.Find(\"LobbySpawn\")...")
+        local lobbyGO = GameObject.Find("LobbySpawn")
+        if lobbyGO ~= nil then
+            lobbySpawn = lobbyGO.transform
+            Log("Found LobbySpawn via GameObject.Find")
+        else
+            Log("ERROR: Lobby spawn position not configured and GameObject.Find(\"LobbySpawn\") failed!")
+            Log("SOLUTION: In Unity, select PropHuntModules → PropHuntTeleporter component → Drag 'LobbySpawn' GameObject to Lobby Spawn Position field")
+            return false
+        end
     end
 
     Log(string.format("Teleporting %s to Lobby", player.name))
@@ -159,6 +199,30 @@ end
 
 function GetArenaSceneName()
     return "Arena" -- Not used in single-scene mode
+end
+
+--[[
+    Client-Side Teleport Handler
+    Listens for server teleport events and executes client-side Teleport() call
+    Receives player object and position, so all clients see the movement
+]]
+function self:ClientStart()
+    teleportEvent:Connect(function(player, position)
+        -- Execute client-side teleport for the specified player
+        if player and player.character then
+            player.character:Teleport(position)
+
+            -- If this is the local player, also recenter the camera
+            if player == client.localPlayer then
+                Log(string.format("Client teleported to (%.1f, %.1f, %.1f)", position.x, position.y, position.z))
+
+                -- Trigger camera reset to snap to new position
+                -- The client.Reset event tells the RTS camera to recenter on the player
+                client.Reset:Fire()
+                Log("Camera reset triggered")
+            end
+        end
+    end)
 end
 
 --[[

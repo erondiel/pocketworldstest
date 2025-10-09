@@ -79,7 +79,10 @@ end
 function self:ServerStart()
     Log("GM Started")
     Log(string.format("CFG H=%ds U=%ds E=%ds P=%d", Config.GetHidePhaseTime(), Config.GetHuntPhaseTime(), Config.GetRoundEndTime(), Config.GetMinPlayersToStart()))
-    
+
+    -- Register spectator toggle callback
+    PlayerManager.RegisterSpectatorToggleCallback(OnSpectatorToggled)
+
     -- Handle client tag requests
     tagRequest.OnInvokeServer = function(player, targetPlayerId)
         if currentState.value ~= GameState.HUNTING then
@@ -222,7 +225,7 @@ function UpdateLobby()
             end
         else
             -- Start countdown
-            stateTimer.value = 5 -- 5 second countdown
+            stateTimer.value = Config.GetLobbyCountdown()
             Log(string.format("START %ds [%d ready/%d total]", math.floor(stateTimer.value), readyCount, playerCount))
             BroadcastStateChange(GameState.LOBBY, stateTimer)
         end
@@ -319,7 +322,14 @@ function TransitionToState(newState)
         possessedProps = {}
 
         -- Teleport props to arena
-        Teleporter.TeleportToArena(propsTeam)
+        Teleporter.TeleportAllToArena(propsTeam)
+
+        -- Teleport spectators to arena as well
+        local spectators = GetSpectatorPlayers()
+        if #spectators > 0 then
+            Teleporter.TeleportAllToArena(spectators)
+            Log(string.format("Teleported %d spectators to Arena", #spectators))
+        end
 
         -- Trigger hide phase VFX
         VFXManager.TriggerHidePhaseStart(propsTeam)
@@ -329,7 +339,7 @@ function TransitionToState(newState)
         Log(string.format("HUNT %ds", Config.GetHuntPhaseTime()))
 
         -- Teleport hunters to arena
-        Teleporter.TeleportToArena(huntersTeam)
+        Teleporter.TeleportAllToArena(huntersTeam)
 
         -- Initialize scoring timer
         lastTickTime = Time.time
@@ -420,15 +430,36 @@ end
 --[[
     Role Assignment
     Split players into Props and Hunters
+    Spectators are excluded from role assignment
 ]]
 function AssignRoles()
     propsTeam = {}
     huntersTeam = {}
 
     local players = GetActivePlayers()
-    local playerCount = #players
 
-    -- V1 SPEC: Role distribution based on player count
+    -- Filter out spectators from role assignment
+    local playingPlayers = {}
+    local spectators = {}
+    for _, player in ipairs(players) do
+        if PlayerManager.IsPlayerSpectator(player) then
+            table.insert(spectators, player)
+            NotifyPlayerRole(player, "spectator")
+            Log(string.format("SPECTATOR: %s", player.name))
+        else
+            table.insert(playingPlayers, player)
+        end
+    end
+
+    local playerCount = #playingPlayers
+
+    -- Need at least 2 players to start (excluding spectators)
+    if playerCount < 2 then
+        Log(string.format("WARN: Only %d non-spectator players, need 2 minimum", playerCount))
+        return
+    end
+
+    -- V1 SPEC: Role distribution based on player count (excluding spectators)
     local huntersCount = 1  -- Default
 
     if playerCount == 2 then
@@ -446,10 +477,10 @@ function AssignRoles()
     end
 
     -- Shuffle players for random assignment
-    ShuffleTable(players)
+    ShuffleTable(playingPlayers)
 
     -- Assign roles
-    for i, player in ipairs(players) do
+    for i, player in ipairs(playingPlayers) do
         if i <= huntersCount then
             table.insert(huntersTeam, player)
             NotifyPlayerRole(player, "hunter")
@@ -463,8 +494,8 @@ function AssignRoles()
         end
     end
 
-    Log(string.format("ROLES: %d Hunters, %d Props (total %d players)",
-        #huntersTeam, #propsTeam, playerCount))
+    Log(string.format("ROLES: %d Hunters, %d Props, %d Spectators (total %d players)",
+        #huntersTeam, #propsTeam, #spectators, #players))
 end
 
 --[[
@@ -680,6 +711,37 @@ function IsPlayerInOriginalPropsTeam(player)
         end
     end
     return false
+end
+
+--[[
+    Spectator Helper Functions
+]]
+function GetSpectatorPlayers()
+    local spectators = {}
+    local allPlayers = GetActivePlayers()
+    for _, player in ipairs(allPlayers) do
+        if PlayerManager.IsPlayerSpectator(player) then
+            table.insert(spectators, player)
+        end
+    end
+    return spectators
+end
+
+-- Server-side handler for spectator toggle
+-- Teleports spectator to arena when they toggle spectator mode ON
+function OnSpectatorToggled(player, isNowSpectator)
+    if isNowSpectator then
+        -- Player became spectator - teleport to arena
+        Teleporter.TeleportToArena(player)
+        Log(string.format("SPECTATOR ON: %s teleported to Arena", player.name))
+    else
+        -- Player left spectator mode
+        -- If in lobby, teleport to lobby (they might be stuck in arena)
+        if currentState.value == GameState.LOBBY then
+            Teleporter.TeleportToLobby(player)
+            Log(string.format("SPECTATOR OFF: %s teleported to Lobby", player.name))
+        end
+    end
 end
 
 -- ========== MODULE EXPORTS ==========
