@@ -41,12 +41,19 @@ end
 
 local function IsValidProp(go)
     if not go then return false end
-    -- Check for Possessable marker on self or parent
-    local poss = go:GetComponent(Possessable)
-    if (not poss) and go.transform then
-        poss = go.transform:GetComponentInParent(Possessable)
+    -- Check if GameObject has "Prop" tag (client-side check)
+    -- Server validates actual Possessable component
+    if go.tag == "Prop" then
+        return true
     end
-    return poss ~= nil
+    -- Also check parent
+    if go.transform and go.transform.parent then
+        local parent = go.transform.parent.gameObject
+        if parent and parent.tag == "Prop" then
+            return true
+        end
+    end
+    return false
 end
 
 local function ShowConfirmationUI(go)
