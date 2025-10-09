@@ -249,3 +249,31 @@ function PrintDebugInfo()
 
     print("[ZoneManager] =====================")
 end
+
+-- ========== MODULE EXPORTS ==========
+
+return {
+    -- Zone registration
+    RegisterZone = RegisterZone,
+    UnregisterZone = UnregisterZone,
+
+    -- Player zone tracking
+    OnPlayerEnterZone = OnPlayerEnterZone,
+    OnPlayerExitZone = OnPlayerExitZone,
+
+    -- Zone queries
+    GetPlayerZone = GetPlayerZone,
+    GetPlayerZoneName = GetPlayerZoneName,
+    GetAllPlayerZones = GetAllPlayerZones,
+    GetZoneInfo = GetZoneInfo,
+
+    -- Zone management
+    ClearAllPlayerZones = ClearAllPlayerZones,
+    RemovePlayer = RemovePlayer,
+
+    -- Utilities
+    GetZoneStats = GetZoneStats,
+    GetZoneWeightByName = GetZoneWeightByName,
+    SetDebugEnabled = SetDebugEnabled,
+    PrintDebugInfo = PrintDebugInfo
+}

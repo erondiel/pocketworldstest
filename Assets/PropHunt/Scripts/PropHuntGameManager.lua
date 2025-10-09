@@ -684,3 +684,21 @@ function IsPlayerInOriginalPropsTeam(player)
     return false
 end
 
+-- ========== MODULE EXPORTS ==========
+-- Public API for other scripts (UIManager, ValidationTest, etc.)
+
+return {
+    -- State queries
+    GetCurrentState = GetCurrentState,
+    GetStateTimer = GetStateTimer,
+    GetActivePlayerCount = GetActivePlayerCount,
+    GetActivePlayers = GetActivePlayers,
+
+    -- Team queries
+    GetPropsTeam = function() return propsTeam end,
+    GetHuntersTeam = function() return huntersTeam end,
+
+    -- Game state
+    GameState = GameState
+}
+

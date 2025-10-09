@@ -93,8 +93,8 @@ function OnConfirmDisguise()
         local playerCharacter = client.localPlayer and client.localPlayer.character
         local playerPos = playerCharacter and playerCharacter.transform.position or Vector3.zero
 
-        -- For now send a basic identifier (name). Replace with a stable ID if available.
-        local identifier = selectedProp.name or tostring(selectedProp)
+        -- Use GameObject instance ID as unique identifier (not name-based!)
+        local identifier = selectedProp:GetInstanceID()
         disguiseRequest:InvokeServer(identifier, function(ok, msg)
             print("[PropDisguiseSystem] Disguise result:", ok, msg)
 

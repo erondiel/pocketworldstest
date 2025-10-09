@@ -496,6 +496,85 @@ function TagMissVFX(position, normal)
     -- end)
 end
 
+-- ========== PHASE TRANSITION VFX ==========
+-- These functions trigger VFX for major game state transitions
+-- Currently placeholders - will be enhanced with full VFX in future versions
+
+--[[
+  TriggerLobbyTransition: Plays VFX when transitioning to Lobby state
+
+  Spec from GDD:
+    - World desaturates in Lobby area
+    - Arena area remains neutral
+    - Subtle ambient particles in lobby
+
+  @return void
+]]
+function TriggerLobbyTransition()
+    DebugVFX("TriggerLobbyTransition - Entering Lobby state")
+
+    -- PLACEHOLDER: Log the transition
+    print("[VFX PLACEHOLDER] Lobby transition - desaturate world, spawn lobby particles")
+
+    -- TODO: Implement lobby transition VFX:
+    -- 1. Apply desaturation LUT to lobby area cameras
+    -- 2. Spawn ambient particles in lobby
+    -- 3. Fade in lobby UI elements
+end
+
+--[[
+  TriggerHidePhaseStart: Plays VFX when Hide phase begins
+
+  Spec from GDD:
+    - Arena gains quick pulse-in gradient
+    - Teleport beams on Props and Spectators
+    - Green outlines enable on all possessable props
+
+  @param propsTeam: table - List of players assigned to prop role
+  @return void
+]]
+function TriggerHidePhaseStart(propsTeam)
+    DebugVFX("TriggerHidePhaseStart - Hide phase starting with " .. tostring(#propsTeam) .. " props")
+
+    -- PLACEHOLDER: Log the transition
+    print("[VFX PLACEHOLDER] Hide phase start - pulse arena, teleport beams, enable outlines")
+
+    -- TODO: Implement hide phase VFX:
+    -- 1. Play arena pulse gradient (radial from center, 0.5s)
+    -- 2. Spawn teleport beam VFX at each prop player position
+    -- 3. Enable green outline shader on all Possessable objects
+    -- 4. Play ambient "hiding music" transition
+
+    -- For now, just log the prop team size
+    if propsTeam then
+        print("[VFX] Props team size: " .. tostring(#propsTeam))
+    end
+end
+
+--[[
+  TriggerHuntPhaseStart: Plays VFX when Hunt phase begins
+
+  Spec from GDD:
+    - Arena vignette expands
+    - All green outlines globally fade with synchronized dissolve sweep
+    - Tension music ramps up
+
+  @return void
+]]
+function TriggerHuntPhaseStart()
+    DebugVFX("TriggerHuntPhaseStart - Hunt phase starting")
+
+    -- PLACEHOLDER: Log the transition
+    print("[VFX PLACEHOLDER] Hunt phase start - expand vignette, fade outlines, tension music")
+
+    -- TODO: Implement hunt phase VFX:
+    -- 1. Expand arena vignette (from 0.3 to 0.7 over 1.0s)
+    -- 2. Fade all green outlines with synchronized dissolve sweep
+    -- 3. Disable outline shader keywords on all Possessable objects
+    -- 4. Ramp up tension music track
+    -- 5. Play hunt horn sound effect
+end
+
 -- ========== ADVANCED ANIMATION HELPERS ==========
 
 --[[
@@ -577,6 +656,11 @@ return {
     RejectionVFX = RejectionVFX,
     TagHitVFX = TagHitVFX,
     TagMissVFX = TagMissVFX,
+
+    -- Phase Transition VFX
+    TriggerLobbyTransition = TriggerLobbyTransition,
+    TriggerHidePhaseStart = TriggerHidePhaseStart,
+    TriggerHuntPhaseStart = TriggerHuntPhaseStart,
 
     -- Advanced Helpers
     CreateSequence = CreateSequence,

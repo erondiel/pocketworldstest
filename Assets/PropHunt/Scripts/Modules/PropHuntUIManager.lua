@@ -111,3 +111,11 @@ end
 function self:OnDestroy()
     StopHUDTimer()
 end
+
+-- ========== MODULE EXPORTS ==========
+-- Note: This module is not currently required by other scripts,
+-- but exports are included for future extensibility
+
+return {
+    EnableDisableReadyButton = EnableDisableReadyButton
+}

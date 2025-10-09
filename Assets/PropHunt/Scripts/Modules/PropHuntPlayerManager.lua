@@ -118,3 +118,17 @@ function self:ServerAwake()
     ReadyUpRequest:Connect(ReadyUpPlayerRequest)
 end
 
+-- ========== MODULE EXPORTS ==========
+
+return {
+    -- Public API
+    GetReadyPlayersEvent = GetReadyPlayersEvent,
+    GetReadyPlayers = GetReadyPlayers,
+    GetPlayerInfo = GetPlayerInfo,
+    GetReadyPlayerCount = GetReadyPlayerCount,
+    ResetAllPlayers = ResetAllPlayers,
+
+    -- Network event (for client-side usage)
+    ReadyUpRequest = ReadyUpRequest
+}
+

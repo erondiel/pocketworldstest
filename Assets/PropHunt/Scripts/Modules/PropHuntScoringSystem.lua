@@ -448,3 +448,133 @@ function CleanupPlayer(player)
 
     PropHuntConfig.DebugLog("ScoringSystem: Cleaned up player " .. playerId)
 end
+
+-- ========== WRAPPER FUNCTIONS ==========
+-- Convenience wrappers that match PropHuntGameManager's calling conventions
+
+--- Initialize a single player (wrapper for InitializeScores)
+--- @param playerId string The player ID
+function InitializePlayer(playerId)
+    -- Find player by ID
+    local player = server:GetPlayerByUserId(playerId)
+    if player then
+        InitializeScores({player})
+    end
+end
+
+--- Award prop tick (wrapper accepting playerId)
+--- @param playerId string The prop player ID
+--- @param zoneWeight number Zone multiplier
+function AwardPropTick(playerId, zoneWeight)
+    local player = server:GetPlayerByUserId(playerId)
+    if player then
+        AwardPropTickScore(player, zoneWeight)
+    end
+end
+
+--- Award survival bonus (wrapper accepting playerId)
+--- @param playerId string The prop player ID
+function AwardSurvivalBonus(playerId)
+    local player = server:GetPlayerByUserId(playerId)
+    if player then
+        AwardPropSurvivalBonus(player)
+    end
+end
+
+--- Award hunter tag (wrapper accepting playerId)
+--- @param playerId string The hunter player ID
+--- @param zoneWeight number Zone multiplier
+function AwardHunterTag(playerId, zoneWeight)
+    local player = server:GetPlayerByUserId(playerId)
+    if player then
+        AwardHunterTagScore(player, zoneWeight)
+    end
+end
+
+--- Apply miss penalty (wrapper accepting playerId)
+--- @param playerId string The hunter player ID
+function ApplyMissPenalty(playerId)
+    local player = server:GetPlayerByUserId(playerId)
+    if player then
+        ApplyHunterMissPenalty(player)
+    end
+end
+
+--- Award team bonus (wrapper for individual team bonuses)
+--- @param playerId string The player ID
+--- @param bonusType string "hunter" | "prop_survivor" | "prop_eliminated"
+function AwardTeamBonus(playerId, bonusType)
+    local player = server:GetPlayerByUserId(playerId)
+    if not player then return end
+
+    local scoreData = playerScores[playerId]
+    if not scoreData then return end
+
+    local bonus = 0
+    if bonusType == "hunter" then
+        bonus = PropHuntConfig.GetHunterTeamWinBonus()
+    elseif bonusType == "prop_survivor" then
+        bonus = PropHuntConfig.GetPropTeamWinBonusSurvived()
+    elseif bonusType == "prop_eliminated" then
+        bonus = PropHuntConfig.GetPropTeamWinBonusFound()
+    end
+
+    scoreData.score = scoreData.score + bonus
+    scoreData.lastScoreTime = Time.time
+
+    if scoreValues[playerId] then
+        scoreValues[playerId].value = scoreData.score
+    end
+
+    PropHuntConfig.DebugLog(string.format(
+        "ScoringSystem: Player %s team bonus (%s) +%d | Total: %d",
+        player.name, bonusType, bonus, scoreData.score
+    ))
+end
+
+--- Award accuracy bonus (wrapper accepting playerId)
+--- @param playerId string The hunter player ID
+function AwardAccuracyBonus(playerId)
+    local player = server:GetPlayerByUserId(playerId)
+    if player then
+        AwardHunterAccuracyBonus(player)
+    end
+end
+
+-- ========== MODULE EXPORTS ==========
+
+return {
+    -- Core initialization
+    InitializeScores = InitializeScores,
+    InitializePlayer = InitializePlayer,
+    ResetAllScores = ResetAllScores,
+
+    -- Prop scoring
+    AwardPropTickScore = AwardPropTickScore,
+    AwardPropTick = AwardPropTick,
+    AwardPropSurvivalBonus = AwardPropSurvivalBonus,
+    AwardSurvivalBonus = AwardSurvivalBonus,
+
+    -- Hunter scoring
+    AwardHunterTagScore = AwardHunterTagScore,
+    AwardHunterTag = AwardHunterTag,
+    ApplyHunterMissPenalty = ApplyHunterMissPenalty,
+    ApplyMissPenalty = ApplyMissPenalty,
+    TrackHunterHit = TrackHunterHit,
+    TrackHunterMiss = TrackHunterMiss,
+    AwardHunterAccuracyBonus = AwardHunterAccuracyBonus,
+    AwardAccuracyBonus = AwardAccuracyBonus,
+
+    -- Team bonuses
+    AwardTeamBonuses = AwardTeamBonuses,
+    AwardTeamBonus = AwardTeamBonus,
+
+    -- Winner determination
+    GetWinner = GetWinner,
+    GetPlayerScore = GetPlayerScore,
+    GetAllScores = GetAllScores,
+    GetPlayerScoreData = GetPlayerScoreData,
+
+    -- Cleanup
+    CleanupPlayer = CleanupPlayer
+}

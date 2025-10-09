@@ -1,12 +1,14 @@
 --[[
     PropHunt Teleporter Module
-    Wraps the Scene Teleporter asset for PropHunt-specific Lobby <-> Arena transitions
-
-    Dependencies:
-    - Scene Teleporter asset (SceneManager.lua)
-    - Requires scene names to be configured in SceneManager GameObject
+    Single-scene position-based teleportation (mobile-friendly)
 
     Usage:
+    1. In Unity, create two empty GameObjects:
+       - LobbySpawn (position where lobby is, e.g. 0,0,0)
+       - ArenaSpawn (position where arena is, e.g. 100,0,0)
+    2. Attach this script to PropHuntModules GameObject
+    3. In Inspector, drag spawn points to the fields
+
     local Teleporter = require("PropHuntTeleporter")
     Teleporter.TeleportToArena(player)
     Teleporter.TeleportAllToLobby(playersList)
@@ -14,12 +16,14 @@
 
 --!Type(Module)
 
--- Configuration: Scene names (must match SceneManager configuration in Unity)
-local LOBBY_SCENE_NAME = "Lobby"
-local ARENA_SCENE_NAME = "Arena"
+-- SerializeFields for spawn positions
+--!SerializeField
+--!Tooltip("Lobby spawn position - drag LobbySpawn GameObject here")
+local lobbySpawnPosition : Transform = nil
 
--- Import the Scene Teleporter system
-local SceneManager = require("SceneManager")
+--!SerializeField
+--!Tooltip("Arena spawn position - drag ArenaSpawn GameObject here")
+local arenaSpawnPosition : Transform = nil
 
 --[[
     Debug logging
@@ -29,34 +33,64 @@ local function Log(msg)
 end
 
 --[[
+    Helper: Teleport player to a position
+]]
+local function TeleportPlayerToPosition(player, targetPosition)
+    if player == nil or player.character == nil then
+        Log("ERROR: Cannot teleport nil player or character")
+        return false
+    end
+
+    if targetPosition == nil then
+        Log("ERROR: Target position is nil")
+        return false
+    end
+
+    -- Get Vector3 position from Transform
+    local pos = targetPosition.position
+
+    -- Move player character to position
+    player.character.transform.position = pos
+    return true
+end
+
+--[[
     Core Teleportation Functions
 ]]
 
--- Teleport a single player to the Arena scene
+-- Teleport a single player to the Arena
 function TeleportToArena(player)
+    if arenaSpawnPosition == nil then
+        Log("ERROR: Arena spawn position not configured!")
+        return false
+    end
+
     if player == nil then
         Log("ERROR: Cannot teleport nil player to Arena")
         return false
     end
 
     Log(string.format("Teleporting %s to Arena", player.name))
-    SceneManager.movePlayerToScene(ARENA_SCENE_NAME)
-    return true
+    return TeleportPlayerToPosition(player, arenaSpawnPosition)
 end
 
--- Teleport a single player to the Lobby scene
+-- Teleport a single player to the Lobby
 function TeleportToLobby(player)
+    if lobbySpawnPosition == nil then
+        Log("ERROR: Lobby spawn position not configured!")
+        return false
+    end
+
     if player == nil then
         Log("ERROR: Cannot teleport nil player to Lobby")
         return false
     end
 
     Log(string.format("Teleporting %s to Lobby", player.name))
-    SceneManager.movePlayerToScene(LOBBY_SCENE_NAME)
-    return true
+    return TeleportPlayerToPosition(player, lobbySpawnPosition)
 end
 
--- Teleport multiple players to the Arena scene
+-- Teleport multiple players to the Arena
 function TeleportAllToArena(players)
     if players == nil or #players == 0 then
         Log("WARN: No players to teleport to Arena")
@@ -65,11 +99,7 @@ function TeleportAllToArena(players)
 
     local count = 0
     for _, player in ipairs(players) do
-        if player ~= nil then
-            -- Note: SceneManager.movePlayerToScene is client-side (FireServer)
-            -- For server-side bulk teleports, we need to call server.MovePlayerToScene directly
-            -- This function assumes it's called from client context or per-player
-            TeleportToArena(player)
+        if player ~= nil and TeleportToArena(player) then
             count = count + 1
         end
     end
@@ -78,7 +108,7 @@ function TeleportAllToArena(players)
     return count
 end
 
--- Teleport multiple players to the Lobby scene
+-- Teleport multiple players to the Lobby
 function TeleportAllToLobby(players)
     if players == nil or #players == 0 then
         Log("WARN: No players to teleport to Lobby")
@@ -87,8 +117,7 @@ function TeleportAllToLobby(players)
 
     local count = 0
     for _, player in ipairs(players) do
-        if player ~= nil then
-            TeleportToLobby(player)
+        if player ~= nil and TeleportToLobby(player) then
             count = count + 1
         end
     end
@@ -124,23 +153,16 @@ function TeleportAllPlayersToLobby(allPlayers)
 end
 
 --[[
-    Configuration Helpers
+    Configuration Helpers (for backward compatibility)
 ]]
 
--- Set custom scene names (call this in ServerAwake if using different names)
-function SetSceneNames(lobbyName, arenaName)
-    LOBBY_SCENE_NAME = lobbyName
-    ARENA_SCENE_NAME = arenaName
-    Log(string.format("Scene names updated: Lobby='%s', Arena='%s'", lobbyName, arenaName))
-end
-
--- Get current scene name configuration
+-- Get scene names (legacy - returns dummy values for single-scene setup)
 function GetLobbySceneName()
-    return LOBBY_SCENE_NAME
+    return "Lobby" -- Not used in single-scene mode
 end
 
 function GetArenaSceneName()
-    return ARENA_SCENE_NAME
+    return "Arena" -- Not used in single-scene mode
 end
 
 --[[
@@ -159,8 +181,7 @@ return {
     TeleportHuntersToArena = TeleportHuntersToArena,
     TeleportAllPlayersToLobby = TeleportAllPlayersToLobby,
 
-    -- Configuration
-    SetSceneNames = SetSceneNames,
+    -- Configuration (legacy compatibility)
     GetLobbySceneName = GetLobbySceneName,
     GetArenaSceneName = GetArenaSceneName
 }

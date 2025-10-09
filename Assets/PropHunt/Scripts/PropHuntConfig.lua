@@ -201,3 +201,50 @@ function DebugLog(message : string)
     end
 end
 
+-- ========== MODULE EXPORTS ==========
+
+return {
+    -- Lobby settings
+    GetMinPlayersToStart = GetMinPlayersToStart,
+    GetLobbyCountdown = GetLobbyCountdown,
+
+    -- Phase timers
+    GetHidePhaseTime = GetHidePhaseTime,
+    GetHuntPhaseTime = GetHuntPhaseTime,
+    GetRoundEndTime = GetRoundEndTime,
+
+    -- Tagging settings
+    GetTagRange = GetTagRange,
+    GetTagCooldown = GetTagCooldown,
+
+    -- Prop scoring
+    GetPropTickSeconds = GetPropTickSeconds,
+    GetPropTickPoints = GetPropTickPoints,
+    GetPropSurviveBonus = GetPropSurviveBonus,
+
+    -- Hunter scoring
+    GetHunterFindBase = GetHunterFindBase,
+    GetHunterMissPenalty = GetHunterMissPenalty,
+    GetHunterAccuracyBonusMax = GetHunterAccuracyBonusMax,
+
+    -- Zone weights
+    GetZoneWeightNearSpawn = GetZoneWeightNearSpawn,
+    GetZoneWeightMid = GetZoneWeightMid,
+    GetZoneWeightFar = GetZoneWeightFar,
+
+    -- Team bonuses
+    GetHunterTeamWinBonus = GetHunterTeamWinBonus,
+    GetPropTeamWinBonusSurvived = GetPropTeamWinBonusSurvived,
+    GetPropTeamWinBonusFound = GetPropTeamWinBonusFound,
+
+    -- Taunt system
+    IsTauntEnabled = IsTauntEnabled,
+    GetTauntCooldown = GetTauntCooldown,
+    GetTauntWindow = GetTauntWindow,
+    GetTauntReward = GetTauntReward,
+
+    -- Debug
+    IsDebugEnabled = IsDebugEnabled,
+    DebugLog = DebugLog
+}
+
