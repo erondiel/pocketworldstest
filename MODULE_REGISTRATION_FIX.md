@@ -24,12 +24,41 @@ module 'Modules.PropHuntScoringSystem' is not registered in the scene or world
 
 With `PropHuntModules` selected, click **Add Component** and add these scripts **one by one**:
 
-1. Add Component → Search: `PropHuntScoringSystem` → Add
-2. Add Component → Search: `PropHuntVFXManager` → Add
-3. Add Component → Search: `ZoneManager` → Add
-4. Add Component → Search: `PropHuntTeleporter` → Add
-5. Add Component → Search: `PropHuntPlayerManager` → Add
-6. Add Component → Search: `PropHuntUIManager` → Add
+1. Add Component → Search: `PropHuntConfig` → Add ⚠️ **CRITICAL - Add this first!**
+2. Add Component → Search: `PropHuntScoringSystem` → Add
+3. Add Component → Search: `PropHuntVFXManager` → Add
+4. Add Component → Search: `ZoneManager` → Add
+5. Add Component → Search: `PropHuntTeleporter` → Add
+6. Add Component → Search: `PropHuntPlayerManager` → Add
+7. Add Component → Search: `PropHuntUIManager` → Add
+
+### Step 2b: Add DevBasics Tweens (if available)
+
+If you have DevBasics Toolkit installed:
+
+1. Navigate to: `Assets/Downloads/DevBasics Toolkit/Scripts/Shared/`
+2. Find `devx_tweens.lua`
+3. Drag it onto the `PropHuntModules` GameObject (or add as component)
+
+**If you DON'T have DevBasics Toolkit:**
+- VFX animations will be disabled (placeholder logs only)
+- Game will still work, just without visual effects
+- You can install it later from Highrise asset library
+
+### Step 2c: Add Scene Teleporter (if available)
+
+If you have Scene Teleporter asset installed:
+
+1. Navigate to: `Assets/Downloads/Scene Teleporter/Scripts/`
+2. Find `SceneManager.lua`
+3. Create a separate GameObject named `SceneManager`
+4. Add the `SceneManager` component to it
+5. Configure scene names: `["Lobby", "Arena"]`
+
+**If you DON'T have Scene Teleporter:**
+- Teleportation between Lobby/Arena will be disabled
+- Players will spawn in place
+- You can install it later from Highrise asset library
 
 ### Step 3: Verify
 
@@ -73,14 +102,17 @@ Only **Module** type scripts need scene registration.
 
 All PropHunt modules that need registration:
 
-| Module Script | Location |
-|---------------|----------|
-| PropHuntScoringSystem | `Assets/PropHunt/Scripts/Modules/` |
-| PropHuntVFXManager | `Assets/PropHunt/Scripts/Modules/` |
-| ZoneManager | `Assets/PropHunt/Scripts/Modules/` |
-| PropHuntTeleporter | `Assets/PropHunt/Scripts/Modules/` |
-| PropHuntPlayerManager | `Assets/PropHunt/Scripts/` |
-| PropHuntUIManager | `Assets/PropHunt/Scripts/Modules/` |
+| Module Script | Location | Required? |
+|---------------|----------|-----------|
+| **PropHuntConfig** | `Assets/PropHunt/Scripts/` | ✅ **REQUIRED** |
+| PropHuntScoringSystem | `Assets/PropHunt/Scripts/Modules/` | ✅ Required |
+| PropHuntVFXManager | `Assets/PropHunt/Scripts/Modules/` | ✅ Required |
+| ZoneManager | `Assets/PropHunt/Scripts/Modules/` | ✅ Required |
+| PropHuntTeleporter | `Assets/PropHunt/Scripts/Modules/` | ✅ Required |
+| PropHuntPlayerManager | `Assets/PropHunt/Scripts/` | ✅ Required |
+| PropHuntUIManager | `Assets/PropHunt/Scripts/Modules/` | ✅ Required |
+| devx_tweens | `Assets/Downloads/DevBasics Toolkit/Scripts/Shared/` | ⚠️ Optional (VFX) |
+| SceneManager | `Assets/Downloads/Scene Teleporter/Scripts/` | ⚠️ Optional (Teleport) |
 
 ---
 
