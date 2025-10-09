@@ -20,11 +20,7 @@
 
 local ZoneManager = require("ZoneManager")
 
---!Tooltip("Name of the zone: NearSpawn, Mid, or Far")
---!SerializeField
-local zoneName : string = "Mid"
-
---!Tooltip("Score multiplier for this zone (NearSpawn=1.5, Mid=1.0, Far=0.6)")
+--!Tooltip("Score multiplier for this zone (e.g., 1.5, 1.0, 0.6)")
 --!SerializeField
 local zoneWeight : number = 1.0
 
@@ -38,19 +34,7 @@ local playersInZone : { [Player]: boolean } = {}
 -- Debug logging
 local function DebugLog(message : string)
     if enableDebug then
-        print("[ZoneVolume:" .. zoneName .. "] " .. message)
-    end
-end
-
--- Validate zone configuration
-local function ValidateZone()
-    if zoneName ~= "NearSpawn" and zoneName ~= "Mid" and zoneName ~= "Far" then
-        print("[ZoneVolume] WARNING: Invalid zoneName '" .. zoneName .. "'. Should be NearSpawn, Mid, or Far")
-    end
-
-    if zoneWeight <= 0 then
-        print("[ZoneVolume] WARNING: zoneWeight must be positive, got: " .. tostring(zoneWeight))
-        zoneWeight = 1.0
+        print("[ZoneVolume:" .. self.gameObject.name .. "] " .. message)
     end
 end
 
@@ -79,7 +63,7 @@ function self:OnTriggerEnter(other : Collider)
     DebugLog("Player " .. player.name .. " entered zone (weight: " .. tostring(zoneWeight) .. ")")
 
     -- Notify ZoneManager
-    ZoneManager.OnPlayerEnterZone(player, zoneName, zoneWeight, self.gameObject)
+    ZoneManager.OnPlayerEnterZone(player, self.gameObject.name, zoneWeight, self.gameObject)
 end
 
 -- Handle player exiting zone
@@ -130,21 +114,20 @@ function GetPlayersInZone() : { [Player]: boolean }
 end
 
 -- Get zone info
-function GetZoneName() : string
-    return zoneName
-end
-
 function GetZoneWeight() : number
     return zoneWeight
 end
 
 -- Lifecycle
 function self:ServerAwake()
-    ValidateZone()
-    DebugLog("Zone initialized: " .. zoneName .. " (weight: " .. tostring(zoneWeight) .. ")")
+    if zoneWeight <= 0 then
+        print("[ZoneVolume] WARNING: zoneWeight must be positive, got: " .. tostring(zoneWeight))
+        zoneWeight = 1.0
+    end
+    DebugLog("Zone initialized: " .. self.gameObject.name .. " (weight: " .. tostring(zoneWeight) .. ")")
 
     -- Register with ZoneManager
-    ZoneManager.RegisterZone(self.gameObject, zoneName, zoneWeight)
+    ZoneManager.RegisterZone(self.gameObject, self.gameObject.name, zoneWeight)
 end
 
 function self:OnDestroy()
