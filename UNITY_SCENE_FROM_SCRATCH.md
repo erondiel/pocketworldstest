@@ -47,12 +47,13 @@ With `PropHuntModules` selected, add these components **in this exact order**:
    - Element 0: `Lobby`
    - Element 1: `Arena`
 
-### Step 1.5: Create Game Manager
+### Step 1.5: Add PropHuntGameManager to Modules
 
-1. Hierarchy → Create Empty → Name: `PropHuntGameManager`
-2. Position: `0, 0, 0`
-3. Add Component → `PropHuntGameManager`
-4. *Leave fields empty for now - we'll wire them up later*
+**IMPORTANT:** PropHuntGameManager is also a Module, so it goes with the others!
+
+1. Select `PropHuntModules` GameObject
+2. Add Component → `PropHuntGameManager`
+3. *We'll wire references later in Part 6*
 
 ---
 
@@ -241,12 +242,14 @@ Props are objects that players can disguise as during Hide phase.
 
 Now connect everything to the Game Manager.
 
-1. Select `PropHuntGameManager` GameObject
-2. In Inspector, find **PropHuntGameManager** component
+1. Select `PropHuntModules` GameObject
+2. Scroll down in Inspector to find **PropHuntGameManager** component
 3. Wire these fields:
    - **Lobby Spawn** → Drag `LobbySpawn` GameObject here
    - **Arena Spawn** → Drag `ArenaSpawn` GameObject here
    - **Possessables Parent** → Drag `Possessables` GameObject here
+
+**Note:** PropHuntGameManager is on the same GameObject as the other modules!
 
 ---
 
@@ -348,11 +351,10 @@ Hierarchy
 │   ├── PropHuntTeleporter
 │   ├── PropHuntVFXManager
 │   ├── PropHuntUIManager
+│   ├── PropHuntGameManager ← Also a module!
 │   └── devx_tweens
 ├── SceneManager
 │   └── SceneManager (component)
-├── PropHuntGameManager
-│   └── PropHuntGameManager (component)
 ├── GroundPlane
 ├── SpawnPoints
 │   ├── LobbySpawn
@@ -456,6 +458,15 @@ Far: 0.6 (safe - far from spawn)
 
 ### Can't find Possessable component
 → Edit any .lua file, save, wait 30s for Unity to regenerate C# wrappers
+
+### "module 'PropHuntGameManager' is not registered"
+→ Part 1.5: Make sure PropHuntGameManager is added to PropHuntModules GameObject (it's also a Module!)
+
+### "failed to load scene 'Lobby'" (SceneManager warning)
+→ **This is EXPECTED and safe to ignore**
+→ Scene Teleporter looks for separate Unity scenes, but we're using one scene with two areas
+→ Teleportation will still work by moving players to different world positions
+→ You can ignore this warning during V1 testing
 
 ---
 
