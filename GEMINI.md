@@ -62,18 +62,6 @@ The project follows a set of development conventions to maintain code quality an
     *   `PH_` prefix for network events (e.g., `PH_StateChanged`).
 *   **C#**: Follows standard C# and Unity conventions.
 
-### Commit Messages
-
-The project uses **Conventional Commits** via `commitizen`. To commit changes, use the following command:
-
-```bash
-npm run commit
-```
-
-This will launch an interactive prompt to guide you through creating a compliant commit message. The commit message format is as follows:
-
-*   `fix(Component): description` for bug fixes.
-*   `feat(Component): description` for new features.
 
 ### Testing and Debugging
 
