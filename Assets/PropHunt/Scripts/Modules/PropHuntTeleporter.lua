@@ -16,14 +16,18 @@
 
 --!Type(Module)
 
--- SerializeFields for spawn positions
---!SerializeField
---!Tooltip("Lobby spawn position - drag LobbySpawn GameObject here")
-local lobbySpawnPosition : Transform = nil
+-- Find spawn points by GameObject name (fallback if SerializeFields don't work)
+local function FindSpawnPoint(name)
+    local obj = GameObject.Find(name)
+    if obj then
+        return obj.transform
+    end
+    return nil
+end
 
---!SerializeField
---!Tooltip("Arena spawn position - drag ArenaSpawn GameObject here")
-local arenaSpawnPosition : Transform = nil
+-- Get spawn positions (tries to find them if not set)
+local lobbySpawnPosition = FindSpawnPoint("LobbySpawn")
+local arenaSpawnPosition = FindSpawnPoint("ArenaSpawn")
 
 --[[
     Debug logging
