@@ -16,18 +16,17 @@
 
 --!Type(Module)
 
--- Find spawn points by GameObject name (fallback if SerializeFields don't work)
-local function FindSpawnPoint(name)
-    local obj = GameObject.Find(name)
-    if obj then
-        return obj.transform
-    end
-    return nil
+-- Get config from the Server component (must be attached to same GameObject)
+local TeleporterConfig = require("PropHuntTeleporterConfig")
+
+-- Lazy-load spawn positions from config
+local function GetLobbySpawn()
+    return TeleporterConfig.GetLobbySpawn()
 end
 
--- Get spawn positions (tries to find them if not set)
-local lobbySpawnPosition = FindSpawnPoint("LobbySpawn")
-local arenaSpawnPosition = FindSpawnPoint("ArenaSpawn")
+local function GetArenaSpawn()
+    return TeleporterConfig.GetArenaSpawn()
+end
 
 --[[
     Debug logging
@@ -64,7 +63,8 @@ end
 
 -- Teleport a single player to the Arena
 function TeleportToArena(player)
-    if arenaSpawnPosition == nil then
+    local arenaSpawn = GetArenaSpawn()
+    if arenaSpawn == nil then
         Log("ERROR: Arena spawn position not configured!")
         return false
     end
@@ -75,12 +75,13 @@ function TeleportToArena(player)
     end
 
     Log(string.format("Teleporting %s to Arena", player.name))
-    return TeleportPlayerToPosition(player, arenaSpawnPosition)
+    return TeleportPlayerToPosition(player, arenaSpawn)
 end
 
 -- Teleport a single player to the Lobby
 function TeleportToLobby(player)
-    if lobbySpawnPosition == nil then
+    local lobbySpawn = GetLobbySpawn()
+    if lobbySpawn == nil then
         Log("ERROR: Lobby spawn position not configured!")
         return false
     end
@@ -91,7 +92,7 @@ function TeleportToLobby(player)
     end
 
     Log(string.format("Teleporting %s to Lobby", player.name))
-    return TeleportPlayerToPosition(player, lobbySpawnPosition)
+    return TeleportPlayerToPosition(player, lobbySpawn)
 end
 
 -- Teleport multiple players to the Arena
