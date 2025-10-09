@@ -1,0 +1,66 @@
+.player-stat-gui {
+  position: absolute;
+  top: 0;
+  left: 0;
+  flex-direction: column;
+}
+.container {
+  padding: 8px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 10px;
+  margin-left: 10px;
+  background-color: rgba(0,0,0,.25);
+  border-radius: 10px;
+}
+
+.icon {
+  width: 32px;
+  height: 32px;
+  margin-right: 10px;
+}
+
+.number {
+  font-size: 24px;
+  -unity-font-style: bold;
+  /*
+  -unity-text-outline-width: 2px;
+  -unity-text-outline-color: white;
+  */
+}
+
+.button {
+  width: 32px;
+  height: 32px;
+  margin-left: 10px;
+  background-color: rgba(0,0,0,.2);
+}
+
+.player-stat-gui #cashIcon{
+    background-image: url("project://database/Assets/Template/Art/Icons/cash_Icon.png");
+}
+
+.player-stat-gui #cashCount{
+    color: white;
+}
+
+.player-stat-gui #roleIcon{
+    background-image: url("project://database/Assets/Template/Art/Icons/role_Icon.png");
+}
+
+.player-stat-gui #roleTitle{
+    color: white;
+}
+
+.player-stat-gui #roleButton{
+    background-image: url("project://database/Assets/Template/Art/Icons/swap_Icon.png");
+}
+
+.player-stat-gui #xpIcon{
+    background-image: url("project://database/Assets/Template/Art/Icons/xp_Icon.png");
+}
+
+.player-stat-gui #xpCount{
+    color: white;
+}

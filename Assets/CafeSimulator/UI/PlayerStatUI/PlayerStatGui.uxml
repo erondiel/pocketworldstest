@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="UnityEngine.UIElements"
+    xmlns:hr="Highrise.UI"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd"
+>
+
+  <hr:UILuaView class="player-stat-gui">
+      <VisualElement class="container">
+        <hr:UIImage class="icon" name="roleIcon"/>
+        <hr:UILabel class="number" name="roleTitle"/>
+        <hr:UIButton class="button" name="roleButton"/>
+      </VisualElement>
+
+      <VisualElement class="container">
+        <hr:UIImage class="icon" name="xpIcon"/>
+        <hr:UILabel class="number" name="xpCount"/>
+      </VisualElement>
+
+      <VisualElement class="container">
+        <hr:UIImage class="icon" name="cashIcon"/>
+        <hr:UILabel class="number" name="cashCount"/>
+      </VisualElement>
+  </hr:UILuaView>
+
+</UXML>

@@ -1,0 +1,33 @@
+.create-order-gui {
+    margin : 10px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.order-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 5px;
+    background-color: rgba(0,0,0,.25);
+    border-radius: 10px;
+}
+
+.title {
+    font-size: 16px;
+    margin: 5px;
+    color: white;
+}
+
+
+#Orders_Root {
+    flex-shrink: 1;
+    max-width: none;
+    background-color: rgba(0,0,0,.25);
+    border-radius: 10px;
+    overflow: scroll;
+}
+
+.hidden {
+    display: none;
+}
