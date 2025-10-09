@@ -1,0 +1,109 @@
+╔════════════════════════════════════════════════════════════════════╗
+║              PROPHUNT ZONE SYSTEM - QUICK REFERENCE                ║
+╠════════════════════════════════════════════════════════════════════╣
+║                                                                    ║
+║  ZONE TYPES & WEIGHTS                                              ║
+║  ━━━━━━━━━━━━━━━━━━━━━                                              ║
+║  NearSpawn → 1.5x (High risk, high reward)                         ║
+║  Mid       → 1.0x (Balanced)                                       ║
+║  Far       → 0.6x (Low risk, low reward)                           ║
+║  None      → 1.0x (Default fallback)                               ║
+║                                                                    ║
+║  SCORING EXAMPLES                                                  ║
+║  ━━━━━━━━━━━━━━━━                                                  ║
+║  Prop Tick (every 5s, base 10 pts):                                ║
+║    NearSpawn: 10 × 1.5 = 15 points                                 ║
+║    Mid:       10 × 1.0 = 10 points                                 ║
+║    Far:       10 × 0.6 =  6 points                                 ║
+║                                                                    ║
+║  Hunter Find (base 120 pts):                                       ║
+║    NearSpawn: 120 × 1.5 = 180 points                               ║
+║    Mid:       120 × 1.0 = 120 points                               ║
+║    Far:       120 × 0.6 =  72 points                               ║
+║                                                                    ║
+║  UNITY SETUP (5 STEPS)                                             ║
+║  ━━━━━━━━━━━━━━━━━━━━━━                                             ║
+║  1. Create Empty GameObject                                        ║
+║  2. Add Collider → Is Trigger ✓                                    ║
+║  3. Set Layer → CharacterTrigger                                   ║
+║  4. Add ZoneVolume Script                                          ║
+║  5. Configure: Zone Name + Zone Weight                             ║
+║                                                                    ║
+║  CORE API                                                          ║
+║  ━━━━━━━━━━                                                        ║
+║  GetPlayerZone(player) → number                                    ║
+║    Returns: 1.5, 1.0, 0.6, or 1.0                                  ║
+║                                                                    ║
+║  GetPlayerZoneName(player) → string                                ║
+║    Returns: "NearSpawn", "Mid", "Far", or "None"                   ║
+║                                                                    ║
+║  ClearAllPlayerZones()                                             ║
+║    Call on round end                                               ║
+║                                                                    ║
+║  RemovePlayer(player)                                              ║
+║    Call on disconnect                                              ║
+║                                                                    ║
+║  INTEGRATION CODE                                                  ║
+║  ━━━━━━━━━━━━━━━━━                                                 ║
+║  -- Prop Scoring                                                   ║
+║  local weight = ZoneManager.GetPlayerZone(prop)                    ║
+║  local points = basePoints * weight                                ║
+║                                                                    ║
+║  -- Hunter Scoring (use PROP's zone)                               ║
+║  local weight = ZoneManager.GetPlayerZone(prop)                    ║
+║  local points = basePoints * weight                                ║
+║                                                                    ║
+║  -- UI Display                                                     ║
+║  local name = ZoneManager.GetPlayerZoneName(player)                ║
+║  local weight = ZoneManager.GetPlayerZone(player)                  ║
+║  text = "Zone: " .. name .. " (" .. weight .. "x)"                 ║
+║                                                                    ║
+║  -- Round Cleanup                                                  ║
+║  ZoneManager.ClearAllPlayerZones()                                 ║
+║                                                                    ║
+║  DEBUG COMMANDS                                                    ║
+║  ━━━━━━━━━━━━━━━                                                   ║
+║  ZoneManager.SetDebugEnabled(true)                                 ║
+║  ZoneManager.PrintDebugInfo()                                      ║
+║                                                                    ║
+║  Or in Unity Inspector:                                            ║
+║  ZoneVolume → Enable Debug: ✓                                      ║
+║                                                                    ║
+║  IMPORTANT BEHAVIORS                                               ║
+║  ━━━━━━━━━━━━━━━━━━━━                                              ║
+║  • First-Zone Priority: Player stays in first zone entered         ║
+║  • Server-Side Only: No client performance impact                  ║
+║  • Auto-Register: Zones register on ServerAwake                    ║
+║  • Default Weight: 1.0 if not in any zone                          ║
+║                                                                    ║
+║  COMMON GOTCHAS                                                    ║
+║  ━━━━━━━━━━━━━━━                                                   ║
+║  ✓ Layer MUST be CharacterTrigger                                  ║
+║  ✓ Collider MUST have "Is Trigger" enabled                         ║
+║  ✓ Zone names are case-sensitive                                   ║
+║  ✓ Clear zones on round end                                        ║
+║  ✓ Use prop's zone for hunter scoring (not hunter's)               ║
+║                                                                    ║
+║  FILES                                                             ║
+║  ━━━━━━━                                                           ║
+║  /Assets/PropHunt/Scripts/                                         ║
+║    ZoneVolume.lua               Component script                   ║
+║    Modules/ZoneManager.lua      Manager module                     ║
+║                                                                    ║
+║  /Assets/PropHunt/Documentation/                                   ║
+║    ZONE_SYSTEM.md               Complete reference                 ║
+║    ZONE_INTEGRATION_QUICK_START.md   Setup guide                   ║
+║    ZONE_SYSTEM_DIAGRAM.md       Visual diagrams                    ║
+║    ZONE_CODE_EXAMPLES.lua       Code snippets                      ║
+║                                                                    ║
+║  TESTING CHECKLIST                                                 ║
+║  ━━━━━━━━━━━━━━━━━━                                                ║
+║  □ Zones visible in Scene (Gizmos on)                              ║
+║  □ Walk through zones, check console                               ║
+║  □ Verify scoring weights                                          ║
+║  □ Test zone transitions                                           ║
+║  □ Test overlapping zones                                          ║
+║  □ Test round reset                                                ║
+║  □ Test disconnects                                                ║
+║                                                                    ║
+╚════════════════════════════════════════════════════════════════════╝
