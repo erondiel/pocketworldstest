@@ -1,15 +1,13 @@
 --[[
     Possessable (Module)
     Marker component attached to props that can be possessed by players.
+
+    This is a simple marker component - the GameObject's InstanceID is used for identification.
+    No manual configuration needed!
 ]]
 
 --!Type(Module)
 
---!SerializeField
---!Tooltip("Identifier used for server-side disguise validation")
-local propId: string = ""
-
-function self:GetPropId()
-    return propId ~= nil and propId or ""
-end
+-- This component has no configuration fields
+-- Props are identified by GameObject:GetInstanceID() in the game logic
 
