@@ -16,17 +16,8 @@
 
 --!Type(Module)
 
--- Get config from the Server component (must be attached to same GameObject)
-local TeleporterConfig = require("PropHuntTeleporterConfig")
-
--- Lazy-load spawn positions from config
-local function GetLobbySpawn()
-    return TeleporterConfig.GetLobbySpawn()
-end
-
-local function GetArenaSpawn()
-    return TeleporterConfig.GetArenaSpawn()
-end
+-- Import Config to get spawn positions
+local Config = require("PropHuntConfig")
 
 --[[
     Debug logging
@@ -63,9 +54,9 @@ end
 
 -- Teleport a single player to the Arena
 function TeleportToArena(player)
-    local arenaSpawn = GetArenaSpawn()
+    local arenaSpawn = Config.GetArenaSpawnPosition()
     if arenaSpawn == nil then
-        Log("ERROR: Arena spawn position not configured!")
+        Log("ERROR: Arena spawn position not configured in PropHuntConfig!")
         return false
     end
 
@@ -80,9 +71,9 @@ end
 
 -- Teleport a single player to the Lobby
 function TeleportToLobby(player)
-    local lobbySpawn = GetLobbySpawn()
+    local lobbySpawn = Config.GetLobbySpawnPosition()
     if lobbySpawn == nil then
-        Log("ERROR: Lobby spawn position not configured!")
+        Log("ERROR: Lobby spawn position not configured in PropHuntConfig!")
         return false
     end
 
