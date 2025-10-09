@@ -5,6 +5,9 @@
 
 --!Type(Module)
 
+-- Import VFXManager for visual effects
+local VFXManager = require("Modules.PropHuntVFXManager")
+
 -- limit selection distance (meters)
 --!SerializeField
 --!Tooltip("Max distance to select a prop")
@@ -17,6 +20,9 @@ local disguiseRequest = RemoteFunction.new("PH_DisguiseRequest")
 local selectedProp = nil
 local currentState = "LOBBY"
 local localRole = "unknown"
+
+-- One-Prop Rule tracking: prevent unpossess after first possession
+local hasPossessedThisRound = false
 
 local function NormalizeState(value)
     if type(value) == "number" then
@@ -71,11 +77,39 @@ local function OnTapToSelect(tap)
 end
 
 function OnConfirmDisguise()
+    -- Check if player has already possessed a prop this round (One-Prop Rule)
+    if hasPossessedThisRound then
+        print("[PropDisguiseSystem] Already possessed a prop this round - unpossess disabled")
+        -- Show rejection VFX on the selected prop
+        if selectedProp then
+            local propPos = selectedProp.transform.position
+            VFXManager.RejectionVFX(propPos, selectedProp)
+        end
+        return
+    end
+
     if selectedProp then
+        -- Get player position for vanish VFX
+        local playerCharacter = client.localPlayer and client.localPlayer.character
+        local playerPos = playerCharacter and playerCharacter.transform.position or Vector3.zero
+
         -- For now send a basic identifier (name). Replace with a stable ID if available.
         local identifier = selectedProp.name or tostring(selectedProp)
         disguiseRequest:InvokeServer(identifier, function(ok, msg)
             print("[PropDisguiseSystem] Disguise result:", ok, msg)
+
+            if ok then
+                -- Mark that we've possessed a prop this round (One-Prop Rule)
+                hasPossessedThisRound = true
+
+                -- Trigger possession VFX
+                VFXManager.PlayerVanishVFX(playerPos, playerCharacter)
+                VFXManager.PropInfillVFX(selectedProp.transform.position, selectedProp)
+            else
+                -- Server rejected (e.g., prop already taken by another player)
+                print("[PropDisguiseSystem] Possession rejected: " .. tostring(msg))
+                VFXManager.RejectionVFX(selectedProp.transform.position, selectedProp)
+            end
         end)
     end
 end
@@ -86,7 +120,14 @@ function self:ClientStart()
 
     -- Listen for state/role updates
     stateChangedEvent:Connect(function(newState, timer)
+        local oldState = currentState
         currentState = NormalizeState(newState)
+
+        -- Reset possession tracking when entering HIDING phase
+        if currentState == "HIDING" and oldState ~= "HIDING" then
+            hasPossessedThisRound = false
+            print("[PropDisguiseSystem] Entered HIDING phase - possession tracking reset")
+        end
     end)
 
     roleAssignedEvent:Connect(function(role)

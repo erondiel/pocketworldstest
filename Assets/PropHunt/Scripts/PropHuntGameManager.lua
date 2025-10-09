@@ -8,6 +8,10 @@
 
 local Config = require("PropHuntConfig")
 local PlayerManager = require("PropHuntPlayerManager")
+local ScoringSystem = require("Modules.PropHuntScoringSystem")
+local Teleporter = require("Modules.PropHuntTeleporter")
+local ZoneManager = require("Modules.ZoneManager")
+local VFXManager = require("Modules.PropHuntVFXManager")
 
 -- Enhanced logging
 local function Log(msg)
@@ -34,20 +38,30 @@ local propsTeam = {}
 local huntersTeam = {}
 local eliminatedPlayers = {}
 
+-- Prop possession tracking (One-Prop Rule)
+-- Maps propIdentifier -> playerId to ensure only one player per prop
+local possessedProps = {}
+
 -- Statistics
 local propsWins = 0
 local huntersWins = 0
+
+-- Scoring tick timer
+local propScoringTimer = nil
+local lastTickTime = 0
 
 -- Network Events (must be at module scope)
 local stateChangedEvent = Event.new("PH_StateChanged")
 local roleAssignedEvent = Event.new("PH_RoleAssigned")
 local playerTaggedEvent = Event.new("PH_PlayerTagged")
 local debugEvent = Event.new("PH_Debug")
+local recapScreenEvent = Event.new("PH_RecapScreen")
 
 -- Remote Functions
 local tagRequest = RemoteFunction.new("PH_TagRequest")
 local disguiseRequest = RemoteFunction.new("PH_DisguiseRequest")
 local forceStateRequest = RemoteFunction.new("PH_ForceState")
+local tagMissedRequest = RemoteFunction.new("PH_TagMissed")
 
 -- Utility: get Player by id
 local function GetPlayerById(id)
@@ -84,6 +98,18 @@ function self:ServerStart()
             return false, "Target not a prop"
         end
 
+        -- Server-side distance validation (V1 SPEC: R_tag = 4.0m)
+        if player.character and target.character then
+            local hunterPos = player.character.transform.position
+            local targetPos = target.character.transform.position
+            local distance = Vector3.Distance(hunterPos, targetPos)
+
+            if distance > Config.GetTagRange() then
+                Log(string.format("TAG DENIED: %s -> %s (%.2fm > %.2fm)", player.name, target.name, distance, Config.GetTagRange()))
+                return false, "Too far"
+            end
+        end
+
         -- Process tag
         OnPlayerTagged(player, target)
         return true, "Tagged"
@@ -97,9 +123,27 @@ function self:ServerStart()
         if not IsPlayerInTeam(player, propsTeam) then
             return false, "Not a prop"
         end
-        -- TODO: Validate propIdentifier and apply disguise on player's character
-        -- Placeholder success
-        print("[Server] Disguise requested by", player.name, "->", tostring(propIdentifier))
+
+        -- One-Prop Rule: Check if this prop is already possessed by another player
+        if possessedProps[propIdentifier] then
+            local ownerPlayerId = possessedProps[propIdentifier]
+            if ownerPlayerId ~= player.id then
+                Log(string.format("PROP CONFLICT: %s tried to possess '%s' (owned by player %s)",
+                    player.name, tostring(propIdentifier), tostring(ownerPlayerId)))
+                return false, "Prop already possessed"
+            else
+                -- Same player trying to re-select the same prop (allowed, no-op)
+                Log(string.format("PROP RESELECT: %s re-selected their prop '%s'", player.name, tostring(propIdentifier)))
+                return true, "Already possessed"
+            end
+        end
+
+        -- Mark prop as possessed by this player
+        possessedProps[propIdentifier] = player.id
+        Log(string.format("PROP POSSESSED: %s -> '%s'", player.name, tostring(propIdentifier)))
+
+        -- TODO: Apply disguise on player's character (teleport player to prop, hide character, etc.)
+
         return true, "Disguised"
     end
     
@@ -125,6 +169,20 @@ function self:ServerStart()
         end
         TransitionToState(target)
         return true, "OK"
+    end
+
+    -- Handle tag miss reporting
+    tagMissedRequest.OnInvokeServer = function(player)
+        if currentState.value ~= GameState.HUNTING then
+            return false, "Not hunting phase"
+        end
+
+        if not IsPlayerInTeam(player, huntersTeam) then
+            return false, "Not a hunter"
+        end
+
+        OnPlayerTagMissed(player)
+        return true, "Miss recorded"
     end
 
     -- Initialize lobby state
@@ -196,7 +254,14 @@ end
 ]]
 function UpdateHunting()
     stateTimer.value = stateTimer.value - Time.deltaTime
-    
+
+    -- Award prop tick scores every 5 seconds
+    local currentTime = Time.time
+    if currentTime - lastTickTime >= Config.GetPropTickSeconds() then
+        lastTickTime = currentTime
+        AwardPropTickScores()
+    end
+
     -- Check win conditions
     if AreAllPropsEliminated() then
         EndRound("hunters")
@@ -224,28 +289,62 @@ function TransitionToState(newState)
     local oldName = GetStateName(currentState)
     local newName = GetStateName(newState)
     Log(string.format("%s->%s", oldName, newName))
-    
+
     currentState.value = newState
-    
+
     if newState == GameState.LOBBY then
         stateTimer.value = 0
         eliminatedPlayers = {}
+
+        -- Teleport all players to lobby
+        Teleporter.TeleportAllToLobby(GetActivePlayers())
+
+        -- Reset scores for all players
+        ScoringSystem.ResetAllScores()
+
+        -- Clear zone tracking
+        ZoneManager.ClearAllZones()
+
         -- Reset ready status when returning to lobby after a round
         PlayerManager.ResetAllPlayers()
-        
+
+        -- Trigger lobby VFX
+        VFXManager.TriggerLobbyTransition()
+
     elseif newState == GameState.HIDING then
         stateTimer.value = Config.GetHidePhaseTime()
         Log(string.format("HIDE %ds", Config.GetHidePhaseTime()))
-        
+
+        -- Reset prop possession tracking for new round
+        possessedProps = {}
+
+        -- Teleport props to arena
+        Teleporter.TeleportToArena(propsTeam)
+
+        -- Trigger hide phase VFX
+        VFXManager.TriggerHidePhaseStart(propsTeam)
+
     elseif newState == GameState.HUNTING then
         stateTimer.value = Config.GetHuntPhaseTime()
         Log(string.format("HUNT %ds", Config.GetHuntPhaseTime()))
-        
+
+        -- Teleport hunters to arena
+        Teleporter.TeleportToArena(huntersTeam)
+
+        -- Initialize scoring timer
+        lastTickTime = Time.time
+
+        -- Trigger hunt phase VFX
+        VFXManager.TriggerHuntPhaseStart()
+
     elseif newState == GameState.ROUND_END then
         stateTimer.value = Config.GetRoundEndTime()
         Log(string.format("END %ds", Config.GetRoundEndTime()))
+
+        -- Clear zone tracking
+        ZoneManager.ClearAllZones()
     end
-    
+
     -- Notify all clients of state change
     BroadcastStateChange(newState, stateTimer)
     debugEvent:FireAllClients("STATE", newName, stateTimer, roundNumber)
@@ -257,10 +356,19 @@ end
 function StartNewRound()
     roundNumber = roundNumber + 1
     Log(string.format("ROUND %d", roundNumber))
-    
+
+    -- Initialize scores for all players
+    local players = GetActivePlayers()
+    for _, player in ipairs(players) do
+        ScoringSystem.InitializePlayer(player.id)
+    end
+
+    -- Clear zone tracking from previous round
+    ZoneManager.ClearAllZones()
+
     -- Assign roles
     AssignRoles()
-    
+
     -- Transition to hiding phase
     TransitionToState(GameState.HIDING)
     debugEvent:FireAllClients("ROUND_START", roundNumber)
@@ -270,13 +378,43 @@ function EndRound(winner)
     if winner == "hunters" then
         huntersWins = huntersWins + 1
         Log("HUNTERS WIN!")
+
+        -- Award team bonuses to hunters
+        for _, hunter in ipairs(huntersTeam) do
+            ScoringSystem.AwardTeamBonus(hunter.id, "hunter")
+        end
+
+        -- Award accuracy bonuses to hunters
+        for _, hunter in ipairs(huntersTeam) do
+            ScoringSystem.AwardAccuracyBonus(hunter.id)
+        end
+
     else
         propsWins = propsWins + 1
         Log("PROPS WIN!")
+
+        -- Award survival bonuses to alive props
+        for _, prop in ipairs(propsTeam) do
+            ScoringSystem.AwardSurvivalBonus(prop.id)
+            ScoringSystem.AwardTeamBonus(prop.id, "prop_survivor")
+        end
+
+        -- Award partial team bonuses to eliminated props
+        for _, prop in ipairs(eliminatedPlayers) do
+            if IsPlayerInOriginalPropsTeam(prop) then
+                ScoringSystem.AwardTeamBonus(prop.id, "prop_eliminated")
+            end
+        end
     end
-    
+
     Log(string.format("SCORE Props:%d Hunt:%d", propsWins, huntersWins))
-    
+
+    -- Get winner from scoring system
+    local winnerData = ScoringSystem.GetWinner()
+
+    -- Fire recap screen event with winner data
+    recapScreenEvent:FireAllClients(winner, winnerData)
+
     TransitionToState(GameState.ROUND_END)
     debugEvent:FireAllClients("ROUND_END", winner, propsWins, huntersWins)
 end
@@ -288,30 +426,47 @@ end
 function AssignRoles()
     propsTeam = {}
     huntersTeam = {}
-    
+
     local players = GetActivePlayers()
     local playerCount = #players
-    
-    -- Calculate team sizes (roughly 60% props, 40% hunters)
-    local propsCount = math.max(1, math.floor(playerCount * 0.6))
-    
-    -- Shuffle players
+
+    -- V1 SPEC: Role distribution based on player count
+    local huntersCount = 1  -- Default
+
+    if playerCount == 2 then
+        huntersCount = 1  -- 1 Hunter, 1 Prop
+    elseif playerCount == 3 then
+        huntersCount = 1  -- 1 Hunter, 2 Props
+    elseif playerCount == 4 then
+        huntersCount = 1  -- 1 Hunter, 3 Props
+    elseif playerCount == 5 then
+        huntersCount = 1  -- 1 Hunter, 4 Props
+    elseif playerCount >= 6 and playerCount <= 10 then
+        huntersCount = 2  -- 2 Hunters, rest Props
+    elseif playerCount > 10 then
+        huntersCount = 3  -- 3 Hunters, rest Props
+    end
+
+    -- Shuffle players for random assignment
     ShuffleTable(players)
-    
+
     -- Assign roles
     for i, player in ipairs(players) do
-        if i <= propsCount then
-            table.insert(propsTeam, player)
-            NotifyPlayerRole(player, "prop")
-            Log(string.format("PROP: %s", player.name))
-            debugEvent:FireAllClients("ROLE", player.id, "prop")
-        else
+        if i <= huntersCount then
             table.insert(huntersTeam, player)
             NotifyPlayerRole(player, "hunter")
             Log(string.format("HUNTER: %s", player.name))
             debugEvent:FireAllClients("ROLE", player.id, "hunter")
+        else
+            table.insert(propsTeam, player)
+            NotifyPlayerRole(player, "prop")
+            Log(string.format("PROP: %s", player.name))
+            debugEvent:FireAllClients("ROLE", player.id, "prop")
         end
     end
+
+    Log(string.format("ROLES: %d Hunters, %d Props (total %d players)",
+        #huntersTeam, #propsTeam, playerCount))
 end
 
 --[[
@@ -328,6 +483,10 @@ function OnPlayerLeftScene(sceneObj, player)
     activePlayers[player.id] = nil
     UpdatePlayerCount()
     RemoveFromTeams(player)
+
+    -- Remove player from zones
+    ZoneManager.RemovePlayerFromAllZones(player.id)
+
     local count = GetActivePlayerCount()
     Log(string.format("LEFT %s (%d)", player.name, count))
 end
@@ -341,26 +500,48 @@ function OnPlayerTagged(hunter, prop)
         print("⚠️ Invalid tag: " .. hunter.name .. " is not a hunter")
         return
     end
-    
+
     if not IsPlayerInTeam(prop, propsTeam) then
         print("⚠️ Invalid tag: " .. prop.name .. " is not a prop")
         return
     end
-    
+
     -- Valid tag
     print("💥 " .. hunter.name .. " tagged " .. prop.name .. "!")
-    
+
+    -- Get prop's zone weight for scoring
+    local zoneWeight = ZoneManager.GetPlayerZoneWeight(prop.id)
+
+    -- Award hunter tag score with zone weight
+    ScoringSystem.AwardHunterTag(hunter.id, zoneWeight)
+
+    -- Track hunter hit for accuracy
+    ScoringSystem.TrackHunterHit(hunter.id)
+
     table.insert(eliminatedPlayers, prop)
     RemoveFromTeams(prop)
-    
+
+    -- Remove prop from zone tracking
+    ZoneManager.RemovePlayerFromAllZones(prop.id)
+
     -- Notify clients
     BroadcastPlayerTagged(hunter, prop)
     debugEvent:FireAllClients("TAG", hunter.id, prop.id)
-    
+
     -- Check if round should end
     if currentState.value == GameState.HUNTING and AreAllPropsEliminated() then
         EndRound("hunters")
     end
+end
+
+function OnPlayerTagMissed(hunter)
+    -- Apply miss penalty
+    ScoringSystem.ApplyMissPenalty(hunter.id)
+
+    -- Track hunter miss for accuracy
+    ScoringSystem.TrackHunterMiss(hunter.id)
+
+    Log(string.format("MISS: %s", hunter.name))
 end
 
 --[[
@@ -481,5 +662,25 @@ end
 
 function UpdatePlayerCount()
     playerCount.value = GetActivePlayerCount()
+end
+
+--[[
+    Scoring Helper Functions
+]]
+function AwardPropTickScores()
+    for _, prop in ipairs(propsTeam) do
+        local zoneWeight = ZoneManager.GetPlayerZoneWeight(prop.id)
+        ScoringSystem.AwardPropTick(prop.id, zoneWeight)
+    end
+end
+
+function IsPlayerInOriginalPropsTeam(player)
+    -- Check eliminated players list to see if they were originally a prop
+    for _, p in ipairs(eliminatedPlayers) do
+        if p.id == player.id then
+            return true
+        end
+    end
+    return false
 end
 
