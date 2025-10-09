@@ -303,7 +303,7 @@ function TransitionToState(newState)
         ScoringSystem.ResetAllScores()
 
         -- Clear zone tracking
-        ZoneManager.ClearAllZones()
+        ZoneManager.ClearAllPlayerZones()
 
         -- Reset ready status when returning to lobby after a round
         PlayerManager.ResetAllPlayers()
@@ -342,7 +342,7 @@ function TransitionToState(newState)
         Log(string.format("END %ds", Config.GetRoundEndTime()))
 
         -- Clear zone tracking
-        ZoneManager.ClearAllZones()
+        ZoneManager.ClearAllPlayerZones()
     end
 
     -- Notify all clients of state change
@@ -364,7 +364,7 @@ function StartNewRound()
     end
 
     -- Clear zone tracking from previous round
-    ZoneManager.ClearAllZones()
+    ZoneManager.ClearAllPlayerZones()
 
     -- Assign roles
     AssignRoles()
@@ -485,7 +485,7 @@ function OnPlayerLeftScene(sceneObj, player)
     RemoveFromTeams(player)
 
     -- Remove player from zones
-    ZoneManager.RemovePlayerFromAllZones(player.id)
+    ZoneManager.RemovePlayer(player)
 
     local count = GetActivePlayerCount()
     Log(string.format("LEFT %s (%d)", player.name, count))
@@ -510,7 +510,7 @@ function OnPlayerTagged(hunter, prop)
     print("💥 " .. hunter.name .. " tagged " .. prop.name .. "!")
 
     -- Get prop's zone weight for scoring
-    local zoneWeight = ZoneManager.GetPlayerZoneWeight(prop.id)
+    local zoneWeight = ZoneManager.GetPlayerZone(prop)
 
     -- Award hunter tag score with zone weight
     ScoringSystem.AwardHunterTag(hunter.id, zoneWeight)
@@ -522,7 +522,7 @@ function OnPlayerTagged(hunter, prop)
     RemoveFromTeams(prop)
 
     -- Remove prop from zone tracking
-    ZoneManager.RemovePlayerFromAllZones(prop.id)
+    ZoneManager.RemovePlayer(prop)
 
     -- Notify clients
     BroadcastPlayerTagged(hunter, prop)
@@ -669,7 +669,7 @@ end
 ]]
 function AwardPropTickScores()
     for _, prop in ipairs(propsTeam) do
-        local zoneWeight = ZoneManager.GetPlayerZoneWeight(prop.id)
+        local zoneWeight = ZoneManager.GetPlayerZone(prop)
         ScoringSystem.AwardPropTick(prop.id, zoneWeight)
     end
 end
