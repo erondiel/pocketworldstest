@@ -60,37 +60,37 @@ local spawnConfigs = {
     }
 }
 
--- Example prop configuration
+-- Example prop configuration (using string names for primitive types)
 local propConfigs = {
     {
         name = "Prop_Cube_1",
         position = Vector3.new(95, 0.5, 5),
         scale = Vector3.new(1, 1, 1),
-        primitiveType = PrimitiveType.Cube
+        primitiveType = "Cube"
     },
     {
         name = "Prop_Sphere_1",
         position = Vector3.new(100, 0.5, -3),
         scale = Vector3.new(1.2, 1.2, 1.2),
-        primitiveType = PrimitiveType.Sphere
+        primitiveType = "Sphere"
     },
     {
         name = "Prop_Capsule_1",
         position = Vector3.new(110, 1, 2),
         scale = Vector3.new(0.8, 0.8, 0.8),
-        primitiveType = PrimitiveType.Capsule
+        primitiveType = "Capsule"
     },
     {
         name = "Prop_Cube_2",
         position = Vector3.new(120, 0.5, -5),
         scale = Vector3.new(1.5, 0.5, 1.5),
-        primitiveType = PrimitiveType.Cube
+        primitiveType = "Cube"
     },
     {
         name = "Prop_Cylinder_1",
         position = Vector3.new(130, 0.5, 3),
         scale = Vector3.new(1, 1.5, 1),
-        primitiveType = PrimitiveType.Cylinder
+        primitiveType = "Cylinder"
     }
 }
 
@@ -147,7 +147,17 @@ function CreateSceneManager()
 end
 
 function CreatePossessableProp(config)
-    local propObj = GameObject.CreatePrimitive(config.primitiveType)
+    -- Map string to PrimitiveType enum
+    local primitiveTypeMap = {
+        Cube = PrimitiveType.Cube,
+        Sphere = PrimitiveType.Sphere,
+        Capsule = PrimitiveType.Capsule,
+        Cylinder = PrimitiveType.Cylinder,
+        Plane = PrimitiveType.Plane
+    }
+
+    local primitiveType = primitiveTypeMap[config.primitiveType] or PrimitiveType.Cube
+    local propObj = GameObject.CreatePrimitive(primitiveType)
     propObj.name = config.name
     propObj.transform.position = config.position
     propObj.transform.localScale = config.scale
