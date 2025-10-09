@@ -359,9 +359,7 @@ function StartNewRound()
 
     -- Initialize scores for all players
     local players = GetActivePlayers()
-    for _, player in ipairs(players) do
-        ScoringSystem.InitializePlayer(player.id)
-    end
+    ScoringSystem.InitializeScores(players)
 
     -- Clear zone tracking from previous round
     ZoneManager.ClearAllPlayerZones()
@@ -381,12 +379,12 @@ function EndRound(winner)
 
         -- Award team bonuses to hunters
         for _, hunter in ipairs(huntersTeam) do
-            ScoringSystem.AwardTeamBonus(hunter.id, "hunter")
+            ScoringSystem.AwardTeamBonus(hunter, "hunter")
         end
 
         -- Award accuracy bonuses to hunters
         for _, hunter in ipairs(huntersTeam) do
-            ScoringSystem.AwardAccuracyBonus(hunter.id)
+            ScoringSystem.AwardHunterAccuracyBonus(hunter)
         end
 
     else
@@ -395,14 +393,14 @@ function EndRound(winner)
 
         -- Award survival bonuses to alive props
         for _, prop in ipairs(propsTeam) do
-            ScoringSystem.AwardSurvivalBonus(prop.id)
-            ScoringSystem.AwardTeamBonus(prop.id, "prop_survivor")
+            ScoringSystem.AwardPropSurvivalBonus(prop)
+            ScoringSystem.AwardTeamBonus(prop, "prop_survivor")
         end
 
         -- Award partial team bonuses to eliminated props
         for _, prop in ipairs(eliminatedPlayers) do
             if IsPlayerInOriginalPropsTeam(prop) then
-                ScoringSystem.AwardTeamBonus(prop.id, "prop_eliminated")
+                ScoringSystem.AwardTeamBonus(prop, "prop_eliminated")
             end
         end
     end
@@ -513,10 +511,10 @@ function OnPlayerTagged(hunter, prop)
     local zoneWeight = ZoneManager.GetPlayerZone(prop)
 
     -- Award hunter tag score with zone weight
-    ScoringSystem.AwardHunterTag(hunter.id, zoneWeight)
+    ScoringSystem.AwardHunterTagScore(hunter, zoneWeight)
 
     -- Track hunter hit for accuracy
-    ScoringSystem.TrackHunterHit(hunter.id)
+    ScoringSystem.TrackHunterHit(hunter)
 
     table.insert(eliminatedPlayers, prop)
     RemoveFromTeams(prop)
@@ -536,10 +534,10 @@ end
 
 function OnPlayerTagMissed(hunter)
     -- Apply miss penalty
-    ScoringSystem.ApplyMissPenalty(hunter.id)
+    ScoringSystem.ApplyHunterMissPenalty(hunter)
 
     -- Track hunter miss for accuracy
-    ScoringSystem.TrackHunterMiss(hunter.id)
+    ScoringSystem.TrackHunterMiss(hunter)
 
     Log(string.format("MISS: %s", hunter.name))
 end
@@ -670,7 +668,7 @@ end
 function AwardPropTickScores()
     for _, prop in ipairs(propsTeam) do
         local zoneWeight = ZoneManager.GetPlayerZone(prop)
-        ScoringSystem.AwardPropTick(prop.id, zoneWeight)
+        ScoringSystem.AwardPropTickScore(prop, zoneWeight)
     end
 end
 

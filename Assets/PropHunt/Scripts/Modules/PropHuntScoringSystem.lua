@@ -449,64 +449,15 @@ function CleanupPlayer(player)
     PropHuntConfig.DebugLog("ScoringSystem: Cleaned up player " .. playerId)
 end
 
--- ========== WRAPPER FUNCTIONS ==========
--- Convenience wrappers that match PropHuntGameManager's calling conventions
+-- ========== TEAM BONUSES (INDIVIDUAL) ==========
 
---- Initialize a single player (wrapper for InitializeScores)
---- @param playerId string The player ID
-function InitializePlayer(playerId)
-    -- Find player by ID
-    local player = server:GetPlayerByUserId(playerId)
-    if player then
-        InitializeScores({player})
-    end
-end
-
---- Award prop tick (wrapper accepting playerId)
---- @param playerId string The prop player ID
---- @param zoneWeight number Zone multiplier
-function AwardPropTick(playerId, zoneWeight)
-    local player = server:GetPlayerByUserId(playerId)
-    if player then
-        AwardPropTickScore(player, zoneWeight)
-    end
-end
-
---- Award survival bonus (wrapper accepting playerId)
---- @param playerId string The prop player ID
-function AwardSurvivalBonus(playerId)
-    local player = server:GetPlayerByUserId(playerId)
-    if player then
-        AwardPropSurvivalBonus(player)
-    end
-end
-
---- Award hunter tag (wrapper accepting playerId)
---- @param playerId string The hunter player ID
---- @param zoneWeight number Zone multiplier
-function AwardHunterTag(playerId, zoneWeight)
-    local player = server:GetPlayerByUserId(playerId)
-    if player then
-        AwardHunterTagScore(player, zoneWeight)
-    end
-end
-
---- Apply miss penalty (wrapper accepting playerId)
---- @param playerId string The hunter player ID
-function ApplyMissPenalty(playerId)
-    local player = server:GetPlayerByUserId(playerId)
-    if player then
-        ApplyHunterMissPenalty(player)
-    end
-end
-
---- Award team bonus (wrapper for individual team bonuses)
---- @param playerId string The player ID
+--- Award team bonus for individual team bonuses
+--- @param player Player The player object
 --- @param bonusType string "hunter" | "prop_survivor" | "prop_eliminated"
-function AwardTeamBonus(playerId, bonusType)
-    local player = server:GetPlayerByUserId(playerId)
+function AwardTeamBonus(player, bonusType)
     if not player then return end
 
+    local playerId = player.user.id
     local scoreData = playerScores[playerId]
     if not scoreData then return end
 
@@ -532,38 +483,23 @@ function AwardTeamBonus(playerId, bonusType)
     ))
 end
 
---- Award accuracy bonus (wrapper accepting playerId)
---- @param playerId string The hunter player ID
-function AwardAccuracyBonus(playerId)
-    local player = server:GetPlayerByUserId(playerId)
-    if player then
-        AwardHunterAccuracyBonus(player)
-    end
-end
-
 -- ========== MODULE EXPORTS ==========
 
 return {
     -- Core initialization
     InitializeScores = InitializeScores,
-    InitializePlayer = InitializePlayer,
     ResetAllScores = ResetAllScores,
 
     -- Prop scoring
     AwardPropTickScore = AwardPropTickScore,
-    AwardPropTick = AwardPropTick,
     AwardPropSurvivalBonus = AwardPropSurvivalBonus,
-    AwardSurvivalBonus = AwardSurvivalBonus,
 
     -- Hunter scoring
     AwardHunterTagScore = AwardHunterTagScore,
-    AwardHunterTag = AwardHunterTag,
     ApplyHunterMissPenalty = ApplyHunterMissPenalty,
-    ApplyMissPenalty = ApplyMissPenalty,
     TrackHunterHit = TrackHunterHit,
     TrackHunterMiss = TrackHunterMiss,
     AwardHunterAccuracyBonus = AwardHunterAccuracyBonus,
-    AwardAccuracyBonus = AwardAccuracyBonus,
 
     -- Team bonuses
     AwardTeamBonuses = AwardTeamBonuses,
