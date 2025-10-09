@@ -4,34 +4,45 @@ This folder contains all assets and scripts for the PropHunt multiplayer game bu
 
 ## 📚 Documentation
 
-- **[IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)** - Comprehensive system-by-system implementation guide with code examples
-- **[INPUT_SYSTEM.md](INPUT_SYSTEM.md)** - Input handling patterns for Highrise Studio
-- **[Game Design Document](../Docs/)** - Complete V1 specifications (PDF)
-- **[DEVELOPMENT_PLAN.md](/DEVELOPMENT_PLAN.md)** - Project timeline and milestones
+### Primary Guides
+- **[COMPLETE_UNITY_SETUP.md](../COMPLETE_UNITY_SETUP.md)** - **START HERE** - Comprehensive Unity scene setup checklist
+- **[SINGLE_SCENE_SETUP.md](../SINGLE_SCENE_SETUP.md)** - Teleportation system reference (single-scene approach)
+- **[IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)** - System-by-system implementation guide with code examples
 - **[CLAUDE.md](/CLAUDE.md)** - Architecture reference for AI assistants
+
+### System Documentation
+- **[ZONE_SYSTEM.md](ZONE_SYSTEM.md)** - Zone-based scoring multiplier system
+- **[VFX_SYSTEM.md](VFX_SYSTEM.md)** - Visual effects system (V1: placeholder implementation)
+- **[INPUT_SYSTEM.md](INPUT_SYSTEM.md)** - Input handling patterns for Highrise Studio
+
+### Reference
+- **[Game Design Document](Prop_Hunt__V1_Game_Design_Document_(Tech_ArtFocused).pdf)** - Complete V1 specifications (PDF)
 
 ## 📊 Current Implementation Status
 
-### ✅ Complete
+### ✅ Complete (V1)
 - Core game loop (LOBBY → HIDING → HUNTING → ROUND_END)
 - State machine with phase timers
 - Player management (ready system, join/leave)
 - Network synchronization (Events, RemoteFunctions)
-- Basic HUD with live updates
+- Possession system with One-Prop Rule
+- Hunter tagging (4.0m range, 0.5s cooldown, server validation)
+- Zone system (NearSpawn/Mid/Far with scoring multipliers)
+- Scoring system (zone-weighted, passive prop points, team bonuses)
+- Teleportation (single-scene position-based)
+- Basic UI (HUD, ready button)
 
-### ⚠️ In Progress
-- **Possession System** - Basic scaffolding exists, needs full implementation per GDD
-- Hunter tagging - Needs alignment with GDD spec (raycast origin, R_tag distance)
+### ⚠️ Placeholder (V2+)
+- **VFX System** - Framework complete, but using basic tweens instead of particle systems
+- **Custom Shaders** - Outline, dissolve, emissive shaders not implemented
 
-### ❌ Not Started
-- Zone system (NearSpawn, Mid, Far)
-- Scoring system (zone-weighted, passive prop points)
-- Teleportation between Lobby/Arena
-- Visual systems (shaders, VFX, phase transitions)
-- Spectator mode
-- UI enhancements (kill feed, recap screen)
+### ❌ Not Implemented
+- Recap screen (nice-to-have)
+- Spectator mode (nice-to-have)
+- Kill feed (nice-to-have)
+- Taunt system (nice-to-have, disabled by default)
 
-**See [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) for detailed system breakdowns.**
+**See [CLAUDE.md](/CLAUDE.md) for complete architecture overview.**
 
 ## 🗂️ Folder Structure
 

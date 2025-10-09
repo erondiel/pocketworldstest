@@ -1,6 +1,8 @@
-# Single Scene Setup Guide (Mobile-Friendly)
+# PropHunt Teleportation System - Single Scene Setup
 
-The PropHuntTeleporter now uses **position-based teleportation** in a single Unity scene. No separate scenes needed!
+**This is the AUTHORITATIVE GUIDE for PropHunt teleportation.**
+
+The PropHuntTeleporter uses **position-based teleportation** in a single Unity scene. No separate scenes or SceneManager asset needed!
 
 ---
 
@@ -20,15 +22,20 @@ The PropHuntTeleporter now uses **position-based teleportation** in a single Uni
 
 ## Step 2: Configure PropHuntTeleporter
 
-1. In Unity, select the **PropHuntModules** GameObject
-2. In the Inspector, find the **PropHuntTeleporter** component
-3. You'll see two fields:
-   - **Lobby Spawn Position**
-   - **Arena Spawn Position**
+**IMPORTANT:** The teleporter configuration is in **PropHuntConfig.lua**, NOT a separate SceneManager!
 
-4. **Drag and drop**:
+1. In Unity, select the **PropHuntModules** GameObject
+2. In the Inspector, find the **PropHuntConfig** component (should be first in the list)
+3. Scroll down to find the **Teleporter Settings** section
+4. You'll see two SerializeFields:
+   - **Lobby Spawn Position** (GameObject)
+   - **Arena Spawn Position** (GameObject)
+
+5. **Drag and drop**:
    - Drag `LobbySpawn` GameObject → **Lobby Spawn Position** field
    - Drag `ArenaSpawn` GameObject → **Arena Spawn Position** field
+
+**Note:** PropHuntTeleporter module reads these values from PropHuntConfig at runtime.
 
 ---
 
@@ -51,14 +58,21 @@ The PropHuntTeleporter now uses **position-based teleportation** in a single Uni
 
 ---
 
-## Step 4: Optional - Set Player Spawn Point
+## Step 4: How It Works
 
-If you want to control where **new players** initially spawn:
+**Implementation Details:**
 
-1. In Unity: **GameObject → Create Empty**
-2. Name it **`PlayerSpawnPoint`**
-3. Position it in the Lobby area (near LobbySpawn)
-4. Set this as your Highrise player spawn point
+The PropHuntTeleporter module (`Assets/PropHunt/Scripts/Modules/PropHuntTeleporter.lua`) uses:
+- `player.character.transform.position = targetSpawn.transform.position`
+- Simple position updates, no scene loading overhead
+- Server-authoritative teleportation (happens in PropHuntGameManager state transitions)
+
+**Game Flow:**
+1. **LOBBY → HIDING:** Props teleport to ArenaSpawn
+2. **HIDING → HUNTING:** Hunters teleport to ArenaSpawn
+3. **ROUND_END → LOBBY:** All players teleport to LobbySpawn
+
+**Note:** Initial player spawn on join is controlled by Highrise SDK defaults (usually world origin). Players will be teleported to LobbySpawn when game state initializes.
 
 ---
 
@@ -80,9 +94,9 @@ Your Unity Scene
 │   └── Zone_Far (BoxCollider, trigger)
 │
 └── PropHuntModules
-    ├── PropHuntConfig
+    ├── PropHuntConfig ← Configure spawn positions here!
     ├── PropHuntGameManager
-    ├── PropHuntTeleporter ← Configure spawn positions here!
+    ├── PropHuntTeleporter (reads from PropHuntConfig)
     └── ... (other modules)
 ```
 
@@ -107,9 +121,10 @@ Your Unity Scene
 ```
 
 ### If you see errors:
-- **"Arena spawn position not configured!"** → Drag ArenaSpawn to Inspector field
-- **"Lobby spawn position not configured!"** → Drag LobbySpawn to Inspector field
+- **"Arena spawn position not configured!"** → Drag ArenaSpawn to PropHuntConfig Inspector field
+- **"Lobby spawn position not configured!"** → Drag LobbySpawn to PropHuntConfig Inspector field
 - **"Cannot teleport nil player"** → Player character might not be spawned yet (usually harmless)
+- **"failed to load scene 'Lobby'"** → This error is OBSOLETE (from old SceneManager system), ignore it or check for old teleporter docs that weren't deleted
 
 ---
 
@@ -122,17 +137,21 @@ Your Unity Scene
 
 ---
 
-## What Changed
+## Implementation Notes
 
-**Before** (Scene Teleporter asset):
-- Required separate Lobby.unity and Arena.unity scenes
-- Used SceneManager to load scenes additively
-- More memory overhead
+**Current System (V1):**
+- One Unity scene with two spatial areas (Lobby and Arena)
+- Position-based teleportation via `player.character.transform.position`
+- Spawn positions configured in PropHuntConfig.lua SerializeFields
+- No SceneManager asset or scene loading required
+- Lightweight, mobile-friendly approach
 
-**After** (Single scene):
-- One Unity scene with two areas
-- Simple position-based teleportation
-- Uses `player.character.transform.position = targetPosition`
+**Why Not Use Scene Teleporter Asset?**
+- Simpler setup (no build settings configuration)
+- Faster iteration (no scene switching)
+- Lower memory overhead (one scene in memory)
+- Better for mobile performance
+- Easier debugging (everything visible in one scene hierarchy)
 
 ---
 

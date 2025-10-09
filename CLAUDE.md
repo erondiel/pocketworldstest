@@ -189,6 +189,8 @@ Recent commits follow pattern:
 - `fix(Component): description` for bug fixes
 - `feat(Component): description` for new features
 
+**IMPORTANT:** Do NOT create git commits automatically. Only commit when explicitly requested by the user.
+
 Modified files tracked in git status show extensive work-in-progress on:
 - Cinematic Suite integration
 - DevBasics Toolkit integration

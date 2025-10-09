@@ -1,5 +1,9 @@
 # PropHunt VFX System Documentation
 
+**⚠️ V1 STATUS: PLACEHOLDER IMPLEMENTATION**
+
+The VFX system framework is complete, but particle systems and custom shaders are **not implemented in V1**. Current implementation uses basic tweens for testing. See "Replacing Placeholders with Particle Systems" section below for V2+ implementation.
+
 ## Overview
 
 The PropHunt VFX system is built on top of the **DevBasics Toolkit's Tweens system** (`devx_tweens.lua`). It provides a modular, easy-to-use interface for all visual effects in the game, from UI animations to gameplay VFX.
@@ -7,6 +11,13 @@ The PropHunt VFX system is built on top of the **DevBasics Toolkit's Tweens syst
 **Module Location:** `/Assets/PropHunt/Scripts/Modules/PropHuntVFXManager.lua`
 
 **Type:** Module (Shared - can be used by both Client and Server scripts)
+
+**Current State:**
+- ✅ DevBasics Tweens integration complete
+- ✅ UI animation wrappers complete
+- ⚠️ Gameplay VFX are **placeholders** (scale/position tweens only)
+- ❌ Particle systems **not created** (V2+)
+- ❌ Custom shaders **not created** (V2+)
 
 ---
 

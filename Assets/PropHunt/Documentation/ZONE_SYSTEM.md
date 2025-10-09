@@ -543,6 +543,97 @@ local _zoneWeightFar : number = 0.6
 - Per-zone sound ambience/music
 - Zone hazards or power-ups
 
+## Code Examples
+
+### Prop Scoring Integration
+
+```lua
+--!Type(Server)
+local ZoneManager = require("Modules.ZoneManager")
+local Config = require("PropHuntConfig")
+
+-- Award points every 5 seconds
+function AwardPropTickPoints()
+    local aliveProps = GetAliveProps()
+
+    for _, prop in ipairs(aliveProps) do
+        local basePoints = Config.GetPropTickPoints()  -- 10
+        local zoneWeight = ZoneManager.GetPlayerZone(prop)
+        local totalPoints = basePoints * zoneWeight
+
+        AddPlayerScore(prop, totalPoints)
+    end
+end
+```
+
+### Hunter Scoring Integration
+
+```lua
+--!Type(Server)
+function OnPropTagged(hunter : Player, prop : Player)
+    local basePoints = Config.GetHunterFindBase()  -- 120
+    local zoneWeight = ZoneManager.GetPlayerZone(prop)  -- Use prop's zone!
+    local totalPoints = basePoints * zoneWeight
+
+    AddPlayerScore(hunter, totalPoints)
+
+    local zoneName = ZoneManager.GetPlayerZoneName(prop)
+    print(hunter.name .. " found " .. prop.name .. " for " .. totalPoints .. " (" .. zoneName .. ")")
+end
+```
+
+### UI Integration
+
+```lua
+--!Type(Client)
+local ZoneManager = require("Modules.ZoneManager")
+
+function UpdateZoneDisplay()
+    local player = client.localPlayer
+    if not player then return end
+
+    local zoneName = ZoneManager.GetPlayerZoneName(player)
+    local zoneWeight = ZoneManager.GetPlayerZone(player)
+
+    -- Display: "Zone: NearSpawn (1.5x)"
+    local zoneText = "Zone: " .. zoneName
+    if zoneName ~= "None" then
+        zoneText = zoneText .. " (" .. string.format("%.1fx", zoneWeight) .. ")"
+    end
+
+    UpdateHUDZoneLabel(zoneText)
+end
+```
+
+### Round Management
+
+```lua
+--!Type(Server)
+function OnRoundEnd()
+    -- Clear all zone tracking
+    ZoneManager.ClearAllPlayerZones()
+    print("Zone tracking reset for new round")
+end
+
+function OnPlayerDisconnect(player : Player)
+    ZoneManager.RemovePlayer(player)
+end
+```
+
+## Quick Reference Table
+
+| Zone Type  | Weight | Risk Level | Points/5s (Prop) | Points/Find (Hunter) |
+|-----------|--------|------------|------------------|----------------------|
+| NearSpawn | 1.5x   | High       | 15 pts           | 180 pts              |
+| Mid       | 1.0x   | Medium     | 10 pts           | 120 pts              |
+| Far       | 0.6x   | Low        | 6 pts            | 72 pts               |
+| None      | 1.0x   | N/A        | 10 pts           | 120 pts              |
+
+**Strategy Tips:**
+- **Early Game**: Risk NearSpawn zones for fast points
+- **Late Game**: Hide in Far zones for survival bonus
+- **Hunter Perspective**: Finding props in NearSpawn worth 2.5x more than Far zones
+
 ## Support
 
 For issues or questions:
@@ -554,5 +645,5 @@ For issues or questions:
 ## Related Documentation
 
 - **PropHunt Config**: `/Assets/PropHunt/Scripts/PropHuntConfig.lua`
-- **Input System**: `/Assets/PropHunt/Documentation/INPUT_SYSTEM.md`
-- **Game Design Doc**: `/Assets/PropHunt/Docs/Prop_Hunt__V1_Game_Design_Document_(Tech_ArtFocused).pdf`
+- **Complete Unity Setup**: `/Assets/PropHunt/COMPLETE_UNITY_SETUP.md`
+- **Game Design Doc**: `/Assets/PropHunt/Documentation/Prop_Hunt__V1_Game_Design_Document_(Tech_ArtFocused).pdf`
