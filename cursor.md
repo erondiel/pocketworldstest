@@ -148,3 +148,4 @@ PropHuntModules (all module scripts)
 - Cinematic Suite (camera/animation system)
 
 **VFX System**: Integrated via `PropHuntVFXManager.lua` with DevBasics Tweens for animations.
+

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 123689159, guid: a1d32ecfae27fdc4a8347da428bbc54a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _version: 1
+  _version: 2
   _publishedId: 
   _worldPrefab: {fileID: 9171886453793455768, guid: 569fdf5ca373dfb43bac53ec5237b9a6,
     type: 3}
@@ -20,15 +20,16 @@ MonoBehaviour:
     type: 3}
   _localizationDatabase: {fileID: 0}
   _scenes:
-  - Name: test
-    Scene: {fileID: 102900000, guid: c151545964f49ba4ea24f9071869c2ec, type: 3}
-    LoadingImage: {fileID: 2800000, guid: 6f9235fd7c31aea498918ab44c186b79, type: 3}
+  - Name: CFXRF Demo
+    Scene: {fileID: 102900000, guid: 04a677eab942f3842bc623749775964d, type: 3}
+    LoadingImage: {fileID: 0}
   _minVolumeDistance: 10
   _maxVolumeDistance: 7
   _highQualityAvatars: 0
   _hideVirtualPlayerScenes: 1
   _enableRealTimeLight: 0
   _useRemoteServer: 0
+  _localServerPorts: a10f0000
   _remoteServerUserIds: []
   _checkStudioUpdatesOnLaunch: 1
   _enableSceneButtons: 1

@@ -26,14 +26,52 @@ namespace Highrise.Lua.Generated
         private const string s_scriptGUID = "a0ab8357b9247ad47b44d724a2ace8c1";
         public override string ScriptGUID => s_scriptGUID;
 
-        [Tooltip("Time in seconds for the hiding phase")]
-        [SerializeField] public System.Double _hidePhaseTime = 30;
-        [Tooltip("Time in seconds for the hunting phase")]
-        [SerializeField] public System.Double _huntPhaseTime = 120;
-        [Tooltip("Time in seconds for the round end phase")]
-        [SerializeField] public System.Double _roundEndTime = 10;
         [Tooltip("Minimum players required to start a round")]
         [SerializeField] public System.Double _minPlayersToStart = 2;
+        [Tooltip("Lobby countdown time in seconds")]
+        [SerializeField] public System.Double _lobbyCountdown = 30;
+        [Tooltip("Time in seconds for the hiding phase")]
+        [SerializeField] public System.Double _hidePhaseTime = 35;
+        [Tooltip("Time in seconds for the hunting phase")]
+        [SerializeField] public System.Double _huntPhaseTime = 240;
+        [Tooltip("Time in seconds for the round end phase")]
+        [SerializeField] public System.Double _roundEndTime = 15;
+        [Tooltip("Maximum tag range in meters")]
+        [SerializeField] public System.Double _tagRange = 4;
+        [Tooltip("Tag cooldown in seconds")]
+        [SerializeField] public System.Double _tagCooldown = 0.5;
+        [Tooltip("Seconds between prop tick scoring")]
+        [SerializeField] public System.Double _propTickSeconds = 5;
+        [Tooltip("Base points per tick")]
+        [SerializeField] public System.Double _propTickPoints = 10;
+        [Tooltip("Bonus for surviving the round")]
+        [SerializeField] public System.Double _propSurviveBonus = 100;
+        [Tooltip("Base points for finding a prop")]
+        [SerializeField] public System.Double _hunterFindBase = 120;
+        [Tooltip("Penalty for missing a tag")]
+        [SerializeField] public System.Double _hunterMissPenalty = -8;
+        [Tooltip("Maximum accuracy bonus")]
+        [SerializeField] public System.Double _hunterAccuracyBonusMax = 50;
+        [Tooltip("Zone weight for Near Spawn areas")]
+        [SerializeField] public System.Double _zoneWeightNearSpawn = 1.5;
+        [Tooltip("Zone weight for Mid areas")]
+        [SerializeField] public System.Double _zoneWeightMid = 1;
+        [Tooltip("Zone weight for Far areas")]
+        [SerializeField] public System.Double _zoneWeightFar = 0.6;
+        [Tooltip("Hunter team win bonus per hunter")]
+        [SerializeField] public System.Double _hunterTeamWinBonus = 50;
+        [Tooltip("Prop team win bonus for survivors")]
+        [SerializeField] public System.Double _propTeamWinBonusSurvived = 30;
+        [Tooltip("Prop team win bonus for found props")]
+        [SerializeField] public System.Double _propTeamWinBonusFound = 15;
+        [Tooltip("Enable taunt system")]
+        [SerializeField] public System.Boolean _tauntEnabled = false;
+        [Tooltip("Taunt cooldown in seconds")]
+        [SerializeField] public System.Double _tauntCooldown = 13;
+        [Tooltip("Taunt window in seconds")]
+        [SerializeField] public System.Double _tauntWindow = 10;
+        [Tooltip("Taunt reward points")]
+        [SerializeField] public System.Double _tauntReward = 20;
         [Tooltip("Enable debug logging")]
         [SerializeField] public System.Boolean _enableDebug = true;
 
@@ -44,11 +82,30 @@ namespace Highrise.Lua.Generated
 
             return new SerializedPropertyValue[]
             {
-                CreateSerializedProperty(_script.GetPropertyAt(0), _hidePhaseTime),
-                CreateSerializedProperty(_script.GetPropertyAt(1), _huntPhaseTime),
-                CreateSerializedProperty(_script.GetPropertyAt(2), _roundEndTime),
-                CreateSerializedProperty(_script.GetPropertyAt(3), _minPlayersToStart),
-                CreateSerializedProperty(_script.GetPropertyAt(4), _enableDebug),
+                CreateSerializedProperty(_script.GetPropertyAt(0), _minPlayersToStart),
+                CreateSerializedProperty(_script.GetPropertyAt(1), _lobbyCountdown),
+                CreateSerializedProperty(_script.GetPropertyAt(2), _hidePhaseTime),
+                CreateSerializedProperty(_script.GetPropertyAt(3), _huntPhaseTime),
+                CreateSerializedProperty(_script.GetPropertyAt(4), _roundEndTime),
+                CreateSerializedProperty(_script.GetPropertyAt(5), _tagRange),
+                CreateSerializedProperty(_script.GetPropertyAt(6), _tagCooldown),
+                CreateSerializedProperty(_script.GetPropertyAt(7), _propTickSeconds),
+                CreateSerializedProperty(_script.GetPropertyAt(8), _propTickPoints),
+                CreateSerializedProperty(_script.GetPropertyAt(9), _propSurviveBonus),
+                CreateSerializedProperty(_script.GetPropertyAt(10), _hunterFindBase),
+                CreateSerializedProperty(_script.GetPropertyAt(11), _hunterMissPenalty),
+                CreateSerializedProperty(_script.GetPropertyAt(12), _hunterAccuracyBonusMax),
+                CreateSerializedProperty(_script.GetPropertyAt(13), _zoneWeightNearSpawn),
+                CreateSerializedProperty(_script.GetPropertyAt(14), _zoneWeightMid),
+                CreateSerializedProperty(_script.GetPropertyAt(15), _zoneWeightFar),
+                CreateSerializedProperty(_script.GetPropertyAt(16), _hunterTeamWinBonus),
+                CreateSerializedProperty(_script.GetPropertyAt(17), _propTeamWinBonusSurvived),
+                CreateSerializedProperty(_script.GetPropertyAt(18), _propTeamWinBonusFound),
+                CreateSerializedProperty(_script.GetPropertyAt(19), _tauntEnabled),
+                CreateSerializedProperty(_script.GetPropertyAt(20), _tauntCooldown),
+                CreateSerializedProperty(_script.GetPropertyAt(21), _tauntWindow),
+                CreateSerializedProperty(_script.GetPropertyAt(22), _tauntReward),
+                CreateSerializedProperty(_script.GetPropertyAt(23), _enableDebug),
             };
         }
         
