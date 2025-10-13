@@ -7,7 +7,7 @@
 >
   <!-- Spectator Toggle Switch -->
   <hr:UILuaView class="prophuntspectatorbutton" picking-mode="Ignore">
-    <VisualElement class="spectator-container">
+    <VisualElement class="spectator-container" name="_container">
       <Label class="spectator-label" text="Spectator" />
       <hr:UISwitchToggle class="spectator-toggle" name="_toggle" />
     </VisualElement>

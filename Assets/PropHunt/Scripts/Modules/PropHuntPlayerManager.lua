@@ -212,6 +212,44 @@ function RegisterSpectatorToggleCallback(callback)
     OnSpectatorToggleCallback = callback
 end
 
+-- Server-side function to force a player into spectator mode (for mid-game joins)
+function ForceSpectatorMode(player : Player)
+    if not players[player] then
+        print("[PlayerManager] Cannot force spectator - player not tracked: " .. player.name)
+        return false
+    end
+
+    if players[player].isSpectator.value then
+        print("[PlayerManager] Player already spectator: " .. player.name)
+        return true
+    end
+
+    print("[PlayerManager] Forcing spectator mode: " .. player.name)
+
+    -- Set spectator state
+    players[player].isSpectator.value = true
+
+    -- Un-ready if they were ready
+    if players[player].isReady.value then
+        players[player].isReady.value = false
+        local readyPlayersTable = readyPlayers.value
+        readyPlayersTable[player] = nil
+        readyPlayers.value = readyPlayersTable
+    end
+
+    -- Add to spectator list
+    local spectatorPlayersTable = spectatorPlayers.value
+    spectatorPlayersTable[player] = true
+    spectatorPlayers.value = spectatorPlayersTable
+
+    -- Notify GameManager callback
+    if OnSpectatorToggleCallback then
+        OnSpectatorToggleCallback(player, true)
+    end
+
+    return true
+end
+
 function self:ServerAwake()
     TrackPlayersServer()
     ReadyUpRequest:Connect(ReadyUpPlayerRequest)
@@ -231,6 +269,7 @@ return {
     IsPlayerSpectator = IsPlayerSpectator,
     ResetAllPlayers = ResetAllPlayers,
     RegisterSpectatorToggleCallback = RegisterSpectatorToggleCallback,
+    ForceSpectatorMode = ForceSpectatorMode,
 
     -- Network events (for client-side usage)
     ReadyUpRequest = ReadyUpRequest,

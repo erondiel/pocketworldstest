@@ -506,6 +506,24 @@ function OnPlayerJoinedScene(sceneObj, player)
     UpdatePlayerCount()
     local count = GetActivePlayerCount()
     Log(string.format("JOIN %s (%d)", player.name, count))
+
+    -- If game is in progress (not lobby), force player into spectator mode
+    if currentState.value ~= GameState.LOBBY then
+        Log(string.format("MID-GAME JOIN: %s → forcing spectator mode", player.name))
+
+        -- Small delay to ensure player is fully tracked by PlayerManager
+        Timer.After(0.5, function()
+            -- Force spectator mode (will trigger auto-teleport via OnSpectatorToggled callback)
+            local success = PlayerManager.ForceSpectatorMode(player)
+            if success then
+                Log(string.format("Mid-game joiner %s set as spectator and teleported to Arena", player.name))
+            else
+                -- Fallback: just teleport if forcing spectator failed
+                Teleporter.TeleportToArena(player)
+                Log(string.format("Mid-game player %s teleported to Arena (fallback)", player.name))
+            end
+        end)
+    end
 end
 
 function OnPlayerLeftScene(sceneObj, player)
