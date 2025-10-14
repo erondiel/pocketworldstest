@@ -30,6 +30,7 @@ local _AnimationSpeed : number = 1.5
 
 -- Import required modules
 local Config = require("PropHuntConfig")
+local PlayerManager = require("PropHuntPlayerManager")
 
 -- Use DevBasics Toolkit tween system (compatible with Range Indicator asset)
 local devx_tweens = require("devx_tweens")
@@ -39,6 +40,9 @@ local Easing = devx_tweens.Easing
 -- Network events (match PropHuntGameManager)
 local stateChangedEvent = Event.new("PH_StateChanged")
 local roleAssignedEvent = Event.new("PH_RoleAssigned")
+
+-- Network values for persistent state
+local currentStateValue = nil
 
 -- State tracking
 local currentState = "LOBBY"
@@ -259,10 +263,39 @@ function self:ClientStart()
               ") doesn't match Config.GetTagRange() (" .. configRange .. ")")
     end
 
-    -- Listen for state changes
+    -- Setup NetworkValue tracking after a short delay
+    Timer.After(0.5, function()
+        -- Track game state via NetworkValue
+        currentStateValue = NumberValue.new("PH_CurrentState", 1)
+        if currentStateValue then
+            currentState = NormalizeState(currentStateValue.value)
+            print("[PropHuntRangeIndicator] Initial state from NetworkValue: " .. currentState)
+
+            currentStateValue.Changed:Connect(function(newState, oldState)
+                OnStateChanged(newState, 0)
+            end)
+        end
+
+        -- Track player role via PlayerManager
+        local localPlayer = client.localPlayer
+        if localPlayer then
+            local playerInfo = PlayerManager.GetPlayerInfo(localPlayer)
+            if playerInfo and playerInfo.role then
+                localRole = playerInfo.role.value
+                print("[PropHuntRangeIndicator] Initial role from NetworkValue: " .. localRole)
+                UpdateIndicatorVisibility()
+
+                playerInfo.role.Changed:Connect(function(newRole, oldRole)
+                    OnRoleAssigned(newRole)
+                end)
+            end
+        end
+    end)
+
+    -- Listen for state changes (backup event system)
     stateChangedEvent:Connect(OnStateChanged)
 
-    -- Listen for role assignment
+    -- Listen for role assignment (backup event system)
     roleAssignedEvent:Connect(OnRoleAssigned)
 end
 

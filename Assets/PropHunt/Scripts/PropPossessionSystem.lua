@@ -38,11 +38,16 @@
 ]]
 
 local VFXManager = require("PropHuntVFXManager")
+local PlayerManager = require("PropHuntPlayerManager")
 
--- Network events
+-- Network events (kept for backward compatibility)
 local stateChangedEvent = Event.new("PH_StateChanged")
 local roleAssignedEvent = Event.new("PH_RoleAssigned")
 local possessionRequest = RemoteFunction.new("PH_PossessionRequest")
+
+-- Network values for persistent state
+local currentStateValue = nil
+local playerRoleValue = nil
 
 -- Local state
 local currentState = "LOBBY"
@@ -60,7 +65,7 @@ local outlineRenderer = nil
 function self:Awake()
     propGameObject = self.gameObject
 
-    print("[PropPossessionSystem] Initialized on prop: " .. propGameObject.name)
+    print("[PropPossessionSystem] ===== AWAKE CALLED ===== Prop: " .. propGameObject.name)
 
     -- Get renderer for emission control
     propRenderer = propGameObject:GetComponent(MeshRenderer)
@@ -95,10 +100,66 @@ function self:Awake()
         print("[PropPossessionSystem] WARNING: No TapHandler component found!")
     end
 
-    -- Listen for state changes
+    -- Setup NetworkValue tracking for game state
+    Timer.After(0.5, function()
+        print("[PropPossessionSystem] Setting up NetworkValue tracking for: " .. propGameObject.name)
+
+        -- Track game state via NetworkValue
+        currentStateValue = NumberValue.new("PH_CurrentState", 1)
+        if currentStateValue then
+            -- Read initial state
+            currentState = NormalizeState(currentStateValue.value)
+            print("[PropPossessionSystem] Initial state from NetworkValue: " .. currentState)
+
+            -- Listen for state changes
+            currentStateValue.Changed:Connect(function(newStateNum, oldStateNum)
+                local oldState = currentState
+                currentState = NormalizeState(newStateNum)
+                print("[PropPossessionSystem] State changed via NetworkValue: " .. oldState .. " -> " .. currentState)
+
+                -- Reset possession tracking when entering HIDING phase
+                if currentState == "HIDING" and oldState ~= "HIDING" then
+                    hasPossessedThisRound = false
+                    isPossessed = false
+                    RestorePropVisuals()
+                    print("[PropPossessionSystem] Reset for new HIDING phase")
+                end
+
+                -- Show prop visuals during HIDING phase
+                if currentState == "HIDING" then
+                    RestorePropVisuals()
+                end
+            end)
+        else
+            print("[PropPossessionSystem] ERROR: Could not create state NetworkValue")
+        end
+
+        -- Track player role via PlayerManager
+        local localPlayer = client.localPlayer
+        if localPlayer then
+            local playerInfo = PlayerManager.GetPlayerInfo(localPlayer)
+            if playerInfo and playerInfo.role then
+                -- Read initial role
+                localRole = playerInfo.role.value
+                print("[PropPossessionSystem] Initial role from NetworkValue: " .. localRole)
+
+                -- Listen for role changes
+                playerInfo.role.Changed:Connect(function(newRole, oldRole)
+                    localRole = newRole
+                    print("[PropPossessionSystem] Role changed via NetworkValue: " .. oldRole .. " -> " .. localRole)
+                end)
+            else
+                print("[PropPossessionSystem] WARNING: Could not get player info for role tracking")
+            end
+        end
+    end)
+
+    -- Listen for state changes (backup event system)
     stateChangedEvent:Connect(function(newState, timer)
+        print("[PropPossessionSystem] STATE EVENT RECEIVED: " .. tostring(newState) .. " (timer: " .. tostring(timer) .. ")")
         local oldState = currentState
         currentState = NormalizeState(newState)
+        print("[PropPossessionSystem] State updated via event: " .. oldState .. " -> " .. currentState)
 
         -- Reset possession tracking when entering HIDING phase
         if currentState == "HIDING" and oldState ~= "HIDING" then
@@ -114,21 +175,12 @@ function self:Awake()
         end
     end)
 
-    -- Listen for role assignment
+    -- Listen for role assignment (backup event system)
     roleAssignedEvent:Connect(function(role)
+        print("[PropPossessionSystem] ROLE EVENT RECEIVED: " .. tostring(role))
         localRole = tostring(role)
-        print("[PropPossessionSystem] Local role: " .. localRole)
+        print("[PropPossessionSystem] Local role updated via event: " .. localRole)
     end)
-end
-
-function self:Start()
-    -- Query current state from NetworkValue on startup
-    -- This handles the case where the script loads after state changes
-    local stateNumberValue = NumberValue.new("PH_CurrentState", 1)
-    if stateNumberValue then
-        currentState = NormalizeState(stateNumberValue.value)
-        print("[PropPossessionSystem] Initial state on Start: " .. currentState)
-    end
 end
 
 function NormalizeState(value)
@@ -143,9 +195,11 @@ function NormalizeState(value)
 end
 
 function OnPropTapped()
+    print("[PropPossessionSystem] Prop tapped! currentState=" .. currentState .. ", localRole=" .. localRole)
+
     -- Only allow possession during HIDING phase
     if currentState ~= "HIDING" then
-        print("[PropPossessionSystem] Cannot possess outside HIDING phase")
+        print("[PropPossessionSystem] Cannot possess outside HIDING phase (current: " .. currentState .. ")")
         return
     end
 
@@ -177,9 +231,10 @@ function OnPropTapped()
 end
 
 function RequestPossession()
-    local propInstanceID = propGameObject:GetInstanceID()
+    -- Use GameObject name as unique identifier (scene prop names should be unique)
+    local propIdentifier = propGameObject.name
 
-    possessionRequest:InvokeServer(propInstanceID, function(ok, msg)
+    possessionRequest:InvokeServer(propIdentifier, function(ok, msg)
         print("[PropPossessionSystem] Possession response: " .. tostring(ok) .. ", " .. tostring(msg))
 
         if ok then
