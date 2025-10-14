@@ -57,8 +57,8 @@ local function StartHUDTimer()
         local minPlayers = Config.GetMinPlayersToStart()
         
         local stateName = FormatState(gameState)
-        local stateText = "State: " .. stateName
-        local timerText = "Time: " .. FormatTime(math.max(0, stateTimer))
+        local stateText = stateName  -- Removed "State:" prefix
+        local timerText = FormatTime(math.max(0, stateTimer))  -- Removed "Time:" prefix
         
         -- Show ready count in lobby, total count during game
         local playersText
