@@ -38,7 +38,7 @@ namespace PropHunt.Editor
         {
             EditorGUILayout.Space(10);
             EditorGUILayout.LabelField("PropHunt Outline Setup", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox("Creates outline child meshes for possessable props.", MessageType.Info);
+            EditorGUILayout.HelpBox("Creates outline child meshes for possessable props (tagged 'Possessable').", MessageType.Info);
 
             EditorGUILayout.Space(10);
 
