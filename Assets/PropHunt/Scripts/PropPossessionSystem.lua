@@ -218,43 +218,45 @@ local function OnPossessionResult(playerId, propName, success, message)
         return  -- Prop not tracked on this client
     end
 
-    -- Check if this is our player's request
-    local localPlayer = client.localPlayer
-    if not localPlayer or playerId ~= localPlayer.id then
-        -- Another player possessed this prop
-        if success then
-            propData.isPossessed = true
-            print("[PropPossessionSystem] Prop " .. propName .. " possessed by another player: " .. tostring(playerId))
+    -- Only process successful possessions
+    if not success then
+        -- Check if this was our failed attempt
+        local localPlayer = client.localPlayer
+        if localPlayer and playerId == localPlayer.id then
+            print("[PropPossessionSystem] Possession rejected: " .. tostring(message))
+            VFXManager.RejectionVFX(propData.gameObject.transform.position, propData.gameObject)
         end
         return
     end
 
-    -- This is our player's result
-    print("[PropPossessionSystem] Possession response for " .. propName .. ": " .. tostring(success) .. ", " .. tostring(message))
+    -- Success - mark prop as possessed on all clients
+    propData.isPossessed = true
 
-    if success then
-        -- Success! Possess the prop
+    -- Check if this is our player's possession
+    local localPlayer = client.localPlayer
+    local isLocalPlayer = localPlayer and playerId == localPlayer.id
+
+    if isLocalPlayer then
+        -- This is our player's successful possession
+        print("[PropPossessionSystem] Possession response for " .. propName .. ": SUCCESS")
         hasPossessedThisRound = true
-        propData.isPossessed = true
 
-        -- Visual effects
-        local player = client.localPlayer
-        local playerPos = player.character.transform.position
-        VFXManager.PlayerVanishVFX(playerPos, player.character)
+        -- Visual effects for local player
+        local playerPos = localPlayer.character.transform.position
+        VFXManager.PlayerVanishVFX(playerPos, localPlayer.character)
         VFXManager.PropInfillVFX(propData.gameObject.transform.position, propData.gameObject)
 
-        -- Hide player avatar and disable movement
+        -- Hide player avatar and disable movement (local player only)
         HidePlayerAvatar()
-
-        -- Hide prop visuals (blend in)
-        HidePropVisuals(propName)
 
         print("[PropPossessionSystem] ✓✓✓ POSSESSION COMPLETE: " .. propName .. " ✓✓✓")
     else
-        -- Server rejected
-        print("[PropPossessionSystem] Possession rejected: " .. tostring(message))
-        VFXManager.RejectionVFX(propData.gameObject.transform.position, propData.gameObject)
+        -- Another player possessed this prop
+        print("[PropPossessionSystem] Prop " .. propName .. " possessed by player: " .. tostring(playerId))
     end
+
+    -- Hide prop visuals for ALL clients (so everyone sees the prop blend in)
+    HidePropVisuals(propName)
 end
 
 --[[
