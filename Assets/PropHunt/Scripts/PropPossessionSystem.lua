@@ -9,7 +9,7 @@
     FEATURES:
     - Click-to-possess interaction using TapHandler
     - Automatic player movement via TapHandler (moveTo = true)
-    - Avatar hidden and movement disabled
+    - Avatar hidden and movement disabled (remote execution)
     - Prop emission turned off (blends in)
     - Prop outline disabled
     - One-Prop Rule: Can only possess once per round
@@ -29,6 +29,13 @@
     This Module dynamically finds all props with "Possessable" tag and
     sets up tap handlers for them. All Event code (client + server)
     lives in this single file to avoid module loading order issues.
+    
+    REMOTE EXECUTION:
+    Avatar visibility changes use the same pattern as ReadyUpButton:
+    1. Client requests via Event:FireServer()
+    2. Server validates (role, game state)
+    3. Server executes on target client via Event:Connect()
+    This prevents unauthorized GameObject manipulation.
 ]]
 
 print("[PropPossessionSystem] ===== MODULE LOADING =====")
@@ -42,6 +49,10 @@ print("[PropPossessionSystem] Dependencies loaded successfully")
 -- Network Events (Module-scoped, accessible within this file only)
 local possessionRequestEvent = Event.new("PH_PossessionRequest")
 local possessionResultEvent = Event.new("PH_PossessionResult")
+local hideAvatarRequest = Event.new("PH_HideAvatarRequest")
+local restoreAvatarRequest = Event.new("PH_RestoreAvatarRequest")
+local hideAvatarCommand = Event.new("PH_HideAvatarCommand")
+local restoreAvatarCommand = Event.new("PH_RestoreAvatarCommand")
 
 print("[PropPossessionSystem] Events created successfully")
 
@@ -158,6 +169,32 @@ local function DiscoverAndSetupProps()
 end
 
 --[[
+    CLIENT - Avatar Visibility Control (Request)
+    Forward declaration - defined here before OnPossessionResult uses it
+]]
+local function RequestHideAvatar()
+    local player = client.localPlayer
+    if not player then
+        print("[PropPossessionSystem] CLIENT: No local player to hide")
+        return
+    end
+    print("[PropPossessionSystem] CLIENT: Requesting hide avatar for " .. player.name)
+    -- FireServer automatically passes the calling player as first parameter to server
+    hideAvatarRequest:FireServer()
+end
+
+local function RequestRestoreAvatar()
+    local player = client.localPlayer
+    if not player then
+        print("[PropPossessionSystem] CLIENT: No local player to restore")
+        return
+    end
+    print("[PropPossessionSystem] CLIENT: Requesting restore avatar for " .. player.name)
+    -- FireServer automatically passes the calling player as first parameter to server
+    restoreAvatarRequest:FireServer()
+end
+
+--[[
     CLIENT - Tap Handler
 ]]
 function OnPropTapped(propName)
@@ -246,8 +283,8 @@ local function OnPossessionResult(playerId, propName, success, message)
         VFXManager.PlayerVanishVFX(playerPos, localPlayer.character)
         VFXManager.PropInfillVFX(propData.gameObject.transform.position, propData.gameObject)
 
-        -- Hide player avatar and disable movement (local player only)
-        HidePlayerAvatar()
+        -- Request server to hide player avatar (remote execution)
+        RequestHideAvatar()
 
         print("[PropPossessionSystem] ✓✓✓ POSSESSION COMPLETE: " .. propName .. " ✓✓✓")
     else
@@ -260,63 +297,137 @@ local function OnPossessionResult(playerId, propName, success, message)
 end
 
 --[[
-    CLIENT - Avatar Visibility Control
+    SERVER - Avatar Visibility Control (Authorization)
+    Server validates and broadcasts command to ALL clients
 ]]
-function HidePlayerAvatar()
-    local player = client.localPlayer
-    if not player or not player.character then return end
+local function HandleHideAvatarRequest(player)
+    print("[PropPossessionSystem] SERVER: Hide avatar request from " .. player.name)
+    
+    -- Validate player is a prop
+    local playerInfo = PlayerManager.GetPlayerInfo(player)
+    if not playerInfo or playerInfo.role.value ~= "prop" then
+        print("[PropPossessionSystem] SERVER: Denied - player is not a prop")
+        return
+    end
+    
+    -- Validate game state (2 = HIDING)
+    local gameState = GameManager.GetCurrentState()
+    if gameState ~= 2 then
+        print("[PropPossessionSystem] SERVER: Denied - not HIDING phase")
+        return
+    end
+    
+    -- Broadcast command to ALL clients so everyone hides this player's avatar
+    print("[PropPossessionSystem] SERVER: Authorized - broadcasting hide command for " .. player.name)
+    hideAvatarCommand:FireAllClients(player.user.id)
+end
+
+local function HandleRestoreAvatarRequest(player)
+    print("[PropPossessionSystem] SERVER: Restore avatar request from " .. player.name)
+    
+    -- Broadcast command to ALL clients so everyone restores this player's avatar
+    print("[PropPossessionSystem] SERVER: Broadcasting restore command for " .. player.name)
+    restoreAvatarCommand:FireAllClients(player.user.id)
+end
+
+--[[
+    CLIENT - Avatar Visibility Execution
+    Called by server command after authorization
+    Receives userId and hides that player's avatar on ALL clients
+]]
+local function HidePlayerAvatarExecute(userId)
+    print("[PropPossessionSystem] CLIENT: Received hide command for userId: " .. tostring(userId))
+    
+    -- Find the player with this userId
+    local targetPlayer = nil
+    for _, player in ipairs(scene.players) do
+        if player.user.id == userId then
+            targetPlayer = player
+            break
+        end
+    end
+    
+    if not targetPlayer then
+        print("[PropPossessionSystem] CLIENT: Player not found for userId: " .. tostring(userId))
+        return
+    end
+    
+    if not targetPlayer.character then
+        print("[PropPossessionSystem] CLIENT: No character to hide for " .. targetPlayer.name)
+        return
+    end
 
     local success, errorMsg = pcall(function()
-        local character = player.character
+        local character = targetPlayer.character
 
-        -- Find and disable NavMesh GameObject
-        if not navMeshGameObject then
-            navMeshGameObject = GameObject.Find("NavMesh")
+        -- Only disable NavMesh for local player (movement control)
+        if targetPlayer == client.localPlayer then
+            if not navMeshGameObject then
+                navMeshGameObject = GameObject.Find("NavMesh")
+            end
+
+            if navMeshGameObject then
+                navMeshGameObject:SetActive(false)
+                print("[PropPossessionSystem] CLIENT: ✓ Disabled NavMesh for local player")
+            end
         end
 
-        if navMeshGameObject then
-            navMeshGameObject:SetActive(false)
-            print("[PropPossessionSystem] ✓ Disabled NavMesh (movement disabled)")
-        else
-            print("[PropPossessionSystem] WARNING: NavMesh GameObject not found")
-        end
-
-        -- Disable character GameObject
+        -- Disable character GameObject (visible to all clients)
         local characterGameObject = character.gameObject
         if characterGameObject then
             characterGameObject:SetActive(false)
-            print("[PropPossessionSystem] ✓ Hidden player avatar")
+            print("[PropPossessionSystem] CLIENT: ✓ Hidden avatar for " .. targetPlayer.name)
         end
     end)
 
     if not success then
-        print("[PropPossessionSystem] ERROR hiding avatar: " .. tostring(errorMsg))
+        print("[PropPossessionSystem] CLIENT: ERROR hiding avatar: " .. tostring(errorMsg))
     end
 end
 
-function RestorePlayerAvatar()
-    local player = client.localPlayer
-    if not player or not player.character then return end
+local function RestorePlayerAvatarExecute(userId)
+    print("[PropPossessionSystem] CLIENT: Received restore command for userId: " .. tostring(userId))
+    
+    -- Find the player with this userId
+    local targetPlayer = nil
+    for _, player in ipairs(scene.players) do
+        if player.user.id == userId then
+            targetPlayer = player
+            break
+        end
+    end
+    
+    if not targetPlayer then
+        print("[PropPossessionSystem] CLIENT: Player not found for userId: " .. tostring(userId))
+        return
+    end
+    
+    if not targetPlayer.character then
+        print("[PropPossessionSystem] CLIENT: No character to restore for " .. targetPlayer.name)
+        return
+    end
 
     local success, errorMsg = pcall(function()
-        local character = player.character
+        local character = targetPlayer.character
 
-        -- Re-enable character GameObject
+        -- Re-enable character GameObject (visible to all clients)
         local characterGameObject = character.gameObject
         if characterGameObject and not characterGameObject.activeSelf then
             characterGameObject:SetActive(true)
-            print("[PropPossessionSystem] ✓ Restored player avatar")
+            print("[PropPossessionSystem] CLIENT: ✓ Restored avatar for " .. targetPlayer.name)
         end
 
-        -- Re-enable NavMesh GameObject
-        if navMeshGameObject then
-            navMeshGameObject:SetActive(true)
-            print("[PropPossessionSystem] ✓ Enabled NavMesh (movement restored)")
+        -- Only re-enable NavMesh for local player (movement control)
+        if targetPlayer == client.localPlayer then
+            if navMeshGameObject then
+                navMeshGameObject:SetActive(true)
+                print("[PropPossessionSystem] CLIENT: ✓ Enabled NavMesh for local player")
+            end
         end
     end)
 
     if not success then
-        print("[PropPossessionSystem] ERROR restoring avatar: " .. tostring(errorMsg))
+        print("[PropPossessionSystem] CLIENT: ERROR restoring avatar: " .. tostring(errorMsg))
     end
 end
 
@@ -507,6 +618,11 @@ function self:ClientStart()
     -- Listen for possession results
     possessionResultEvent:Connect(OnPossessionResult)
     print("[PropPossessionSystem] Client listening for possession results")
+    
+    -- Listen for avatar visibility commands from server
+    hideAvatarCommand:Connect(HidePlayerAvatarExecute)
+    restoreAvatarCommand:Connect(RestorePlayerAvatarExecute)
+    print("[PropPossessionSystem] Client listening for avatar visibility commands")
 end
 
 --[[
@@ -518,6 +634,11 @@ function self:ServerAwake()
     -- Handle possession requests from clients
     possessionRequestEvent:Connect(HandlePossessionRequest)
     print("[PropPossessionSystem] Server listening for possession requests")
+    
+    -- Handle avatar visibility requests from clients
+    hideAvatarRequest:Connect(HandleHideAvatarRequest)
+    restoreAvatarRequest:Connect(HandleRestoreAvatarRequest)
+    print("[PropPossessionSystem] Server listening for avatar visibility requests")
 
     -- Listen for state changes to reset prop tracking
     local stateChangedEvent = Event.new("PH_StateChanged")
@@ -529,3 +650,4 @@ function self:ServerAwake()
         end
     end)
 end
+
