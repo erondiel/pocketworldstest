@@ -12,10 +12,16 @@
     - Automatic player movement via TapHandler (moveTo = true)
     - Avatar hidden by disabling Rig GameObject (remote execution)
     - Player's character GameObject remains active for network sync
+    - NavMesh stays active so player can see other players
     - Prop emission turned off (blends in)
     - Prop outline disabled
     - One-Prop Rule: Can only possess once per round
     - Server tracks prop-to-player mapping
+
+    TODO: Movement prevention for possessed props
+    - NavMesh disable breaks visibility of other players
+    - CharacterController doesn't exist in Highrise SDK
+    - Need alternative approach (input blocking, position locking, etc.)
 
     HUNTING PHASE (Hunters):
     - Hunters tap on props to find possessed players
@@ -90,7 +96,6 @@ local currentStateValue = nil
 local currentState = "LOBBY"
 local localRole = "unknown"
 local hasPossessedThisRound = false
-local navMeshGameObject = nil
 local shouldBeVisible = true  -- Track if local player's avatar should be visible
 
 -- Client-side prop tracking (per-prop data)
@@ -374,18 +379,10 @@ local function HidePlayerAvatarExecute(userId)
         local character = targetPlayer.character
         local characterGameObject = character.gameObject
 
-        -- Only disable NavMesh for local player (movement control)
-        if targetPlayer == client.localPlayer then
-            if not navMeshGameObject then
-                navMeshGameObject = GameObject.Find("NavMesh")
-            end
-            if navMeshGameObject then
-                print("[PropPossessionSystem] Disabling NavMesh for local player")
-                navMeshGameObject:SetActive(false)
-            else
-                print("[PropPossessionSystem] ERROR: NavMesh GameObject not found")
-            end
-        end
+        -- TODO: Disable movement for possessed props
+        -- NavMesh cannot be disabled (breaks visibility of other players)
+        -- CharacterController doesn't exist in Highrise SDK
+        -- Need alternative approach for movement prevention
 
         -- Find and disable the Rig GameObject (keeps network sync but hides avatar)
         local rigTransform = characterGameObject.transform:Find("Rig")
@@ -471,15 +468,8 @@ local function RestorePlayerAvatarExecute(userId)
                 print("[PropPossessionSystem] ERROR: Could not find Rig child for " .. targetPlayer.name)
             end
 
-            -- Only re-enable NavMesh for local player (movement control)
-            if isLocalPlayer then
-                print("[PropPossessionSystem] Re-enabling NavMesh for local player")
-                if navMeshGameObject then
-                    navMeshGameObject:SetActive(true)
-                else
-                    print("[PropPossessionSystem] ERROR: NavMesh GameObject not found")
-                end
-            end
+            -- TODO: Re-enable movement (no CharacterController or NavMesh approach works)
+
         end)
 
         if not success then
