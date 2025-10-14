@@ -31,13 +31,19 @@
     lives in this single file to avoid module loading order issues.
 ]]
 
+print("[PropPossessionSystem] ===== MODULE LOADING =====")
+
 local VFXManager = require("PropHuntVFXManager")
 local PlayerManager = require("PropHuntPlayerManager")
 local GameManager = require("PropHuntGameManager")
 
+print("[PropPossessionSystem] Dependencies loaded successfully")
+
 -- Network Events (Module-scoped, accessible within this file only)
 local possessionRequestEvent = Event.new("PH_PossessionRequest")
 local possessionResultEvent = Event.new("PH_PossessionResult")
+
+print("[PropPossessionSystem] Events created successfully")
 
 -- Server-side prop tracking (One-Prop Rule)
 -- Maps propName -> playerId
@@ -123,35 +129,31 @@ end
 local function DiscoverAndSetupProps()
     print("[PropPossessionSystem] Discovering possessable props...")
 
-    -- Debug: Check what FindGameObjectsWithTag returns
     local possessableProps = GameObject.FindGameObjectsWithTag("Possessable")
-    print("[PropPossessionSystem] FindGameObjectsWithTag returned: " .. tostring(possessableProps))
 
     if possessableProps then
-        print("[PropPossessionSystem] possessableProps.Length = " .. tostring(possessableProps.Length))
-
-        -- Try different iteration approaches
-        local count = possessableProps.Length or 0
+        -- FindGameObjectsWithTag returns a Lua table, use # operator for length
+        local count = #possessableProps
+        print("[PropPossessionSystem] Found " .. count .. " possessable props")
 
         if count > 0 then
-            print("[PropPossessionSystem] Found " .. count .. " possessable props")
-
-            for i = 0, count - 1 do
+            -- Lua tables are 1-indexed
+            for i = 1, count do
                 local propObj = possessableProps[i]
                 if propObj then
-                    print("[PropPossessionSystem] Processing prop at index " .. i .. ": " .. propObj.name)
+                    print("[PropPossessionSystem] Processing prop " .. i .. "/" .. count .. ": " .. propObj.name)
                     SetupProp(propObj)
                 else
                     print("[PropPossessionSystem] WARNING: Prop at index " .. i .. " is nil")
                 end
             end
-            print("[PropPossessionSystem] Setup complete for " .. count .. " props")
+            print("[PropPossessionSystem] ✓ Setup complete for " .. count .. " props")
         else
-            print("[PropPossessionSystem] WARNING: Length is 0 or nil")
+            print("[PropPossessionSystem] WARNING: No props found with 'Possessable' tag!")
+            print("[PropPossessionSystem] Make sure props have the 'Possessable' tag in Unity")
         end
     else
-        print("[PropPossessionSystem] WARNING: FindGameObjectsWithTag returned nil!")
-        print("[PropPossessionSystem] This might be a timing issue or API difference")
+        print("[PropPossessionSystem] ERROR: FindGameObjectsWithTag returned nil!")
     end
 end
 
