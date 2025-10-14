@@ -136,7 +136,7 @@ local function OnTapToShoot(tap)
     -- V1 SPEC REQUIREMENT: Raycast from player body origin (NOT camera) toward tap world point
     -- Get the world position that the player tapped on screen
     local tapRay = cam:ScreenPointToRay(tap.position)
-    local tapHit : RaycastHit
+    local tapHit = RaycastHit.new()
     local tapDidHit = Physics.Raycast(tapRay, tapHit, 1000)
 
     if not tapDidHit then
@@ -151,7 +151,7 @@ local function OnTapToShoot(tap)
 
     -- Raycast from player body origin toward the tap point
     local ray = Ray.new(playerPos, direction)
-    local hit : RaycastHit
+    local hit = RaycastHit.new()
     local didHit = Physics.Raycast(ray, hit, Config.GetTagRange())
 
     if didHit then

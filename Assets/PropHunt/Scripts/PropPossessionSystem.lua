@@ -14,6 +14,7 @@
     - Prop outline disabled
     - One-Prop Rule: Can only possess once per round
     - Network validation via server
+    - Tagged prop revelation: restore avatar, convert to spectator
 
     SETUP:
     1. Attach this script to PropHuntModules GameObject (as Module)
@@ -53,6 +54,7 @@ local hideAvatarRequest = Event.new("PH_HideAvatarRequest")
 local restoreAvatarRequest = Event.new("PH_RestoreAvatarRequest")
 local hideAvatarCommand = Event.new("PH_HideAvatarCommand")
 local restoreAvatarCommand = Event.new("PH_RestoreAvatarCommand")
+local playerTaggedEvent = Event.new("PH_PlayerTagged")  -- Listen for tag events from GameManager
 
 print("[PropPossessionSystem] Events created successfully")
 
@@ -623,6 +625,21 @@ function self:ClientStart()
     hideAvatarCommand:Connect(HidePlayerAvatarExecute)
     restoreAvatarCommand:Connect(RestorePlayerAvatarExecute)
     print("[PropPossessionSystem] Client listening for avatar visibility commands")
+
+    -- Listen for player tagged events (to reveal tagged props)
+    playerTaggedEvent:Connect(function(hunterId, propId)
+        print("[PropPossessionSystem] CLIENT: Player tagged event - hunter: " .. tostring(hunterId) .. ", prop: " .. tostring(propId))
+
+        -- Check if the tagged player is the local player
+        local localPlayer = client.localPlayer
+        if localPlayer and localPlayer.id == propId then
+            print("[PropPossessionSystem] CLIENT: Local player was tagged! Restoring avatar...")
+            -- The server will send the restore command, so we don't need to request it
+            -- Just reset local state
+            hasPossessedThisRound = false
+        end
+    end)
+    print("[PropPossessionSystem] Client listening for player tagged events")
 end
 
 --[[
@@ -649,5 +666,33 @@ function self:ServerAwake()
             print("[PropPossessionSystem] SERVER: Reset possession tracking for new HIDING phase")
         end
     end)
+
+    -- Listen for player tagged events to restore tagged prop's avatar
+    playerTaggedEvent:Connect(function(hunterId, propId)
+        print("[PropPossessionSystem] SERVER: Player tagged - hunter: " .. tostring(hunterId) .. ", prop: " .. tostring(propId))
+
+        -- Find the prop player by ID
+        local propPlayer = nil
+        for _, player in ipairs(scene.players) do
+            if player.id == propId then
+                propPlayer = player
+                break
+            end
+        end
+
+        if propPlayer then
+            print("[PropPossessionSystem] SERVER: Restoring avatar for tagged prop: " .. propPlayer.name)
+
+            -- Broadcast restore avatar command to all clients
+            restoreAvatarCommand:FireAllClients(propPlayer.user.id)
+
+            -- Change role to spectator (using PlayerManager)
+            PlayerManager.SetPlayerRole(propPlayer, "spectator")
+            print("[PropPossessionSystem] SERVER: Changed " .. propPlayer.name .. " role to spectator")
+        else
+            print("[PropPossessionSystem] SERVER: ERROR - Could not find prop player with ID: " .. tostring(propId))
+        end
+    end)
+    print("[PropPossessionSystem] Server listening for player tagged events")
 end
 
