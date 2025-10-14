@@ -3,7 +3,7 @@ Shader "PropHunt/PropOutline"
     Properties
     {
         _OutlineColor ("Outline Color", Color) = (0, 1, 1, 1)
-        _OutlineWidth ("Outline Width", Range(0.0, 0.05)) = 0.003
+        _OutlineWidth ("Outline Width", Range(0.0, 10.0)) = 2.0
     }
 
     SubShader
@@ -55,16 +55,18 @@ Shader "PropHunt/PropOutline"
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_TRANSFER_INSTANCE_ID(input, output);
 
-                // Simple object-space extrusion along normals
-                // This stays consistent regardless of camera distance
-                float3 positionOS = input.positionOS.xyz;
-                float3 normalOS = normalize(input.normalOS);
+                // Transform to view space (camera space)
+                float3 positionVS = TransformWorldToView(TransformObjectToWorld(input.positionOS.xyz));
+                float3 normalVS = normalize(mul((float3x3)UNITY_MATRIX_IT_MV, input.normalOS));
 
-                // Expand in object space by fixed amount
-                positionOS += normalOS * _OutlineWidth;
+                // View-space extrusion (QuickOutline technique)
+                // Extrusion amount scales with distance (-positionVS.z)
+                // This makes outline appear consistent regardless of camera distance
+                // Division by 1000.0 converts width parameter to reasonable scale
+                positionVS += normalVS * (-positionVS.z) * _OutlineWidth / 1000.0;
 
-                // Transform to clip space
-                output.positionCS = TransformObjectToHClip(positionOS);
+                // Transform from view space to clip space
+                output.positionCS = TransformWViewToHClip(positionVS);
 
                 return output;
             }

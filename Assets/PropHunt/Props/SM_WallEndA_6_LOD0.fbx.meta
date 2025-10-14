@@ -3,11 +3,21 @@ guid: bad823367e2eda1478b15b984ebb4bf9
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_WA_Stone
+    second: {fileID: 2100000, guid: b2a7fb43f29a99a48b32ec3d6c7ec5d0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Wall_Brick
+    second: {fileID: 2100000, guid: e633e1b78f052a04face229b0ec39ec4, type: 2}
   materials:
-    materialImportMode: 2
-    materialName: 0
-    materialSearch: 1
+    materialImportMode: 1
+    materialName: 1
+    materialSearch: 2
     materialLocation: 1
   animations:
     legacyGenerateAnimations: 4

@@ -12,7 +12,9 @@ Material:
     type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _ALBEDO_TINT
+  - _USE_EMISSIVE
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -25,6 +27,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _AlbedoTex:
+        m_Texture: {fileID: 2800000, guid: 1a1a6917b313a1c4a8e6bd5a2b7daced, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BaseMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -81,6 +87,14 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _NormalTex:
+        m_Texture: {fileID: 2800000, guid: 642be934a8356dc4480636b7a2c6cf3f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ORMTex:
+        m_Texture: {fileID: 2800000, guid: 9952f184dfe61bd4d8b8173772c5bb70, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -98,6 +112,14 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Texture2DAsset_032e00e9676b44a1915ab7fcb9ae31ff_Out_0_Texture2D:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Texture2DAsset_0934a686eae645aca7984bb518fbf628_Out_0_Texture2D:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -149,7 +171,9 @@ Material:
     - Vector1_e19bf69058e74e1f9a57f2f04a3a4fc6: 0.1
     - Vector1_e81e93dccf984c4ea733b396432756dd: 1
     - Vector1_fa9c479eb4544cceae07165a8a72b81b: 0.3
+    - _ALBEDO_TINT: 1
     - _AddPrecomputedVelocity: 0
+    - _Albedo_Tint: 1
     - _AlphaClip: 0
     - _AlphaToMask: 0
     - _BUILTIN_QueueControl: -1
@@ -169,18 +193,22 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
+    - _EmissionStrength: 0.252
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _Metallic: 0
+    - _MetallicStrength: 1
+    - _NormalStrength: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.005
-    - _QueueControl: -1
+    - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _ReflectionMaskWithRim: 0
     - _Rim_Intensity: 1
+    - _RoughnessStrength: 1
     - _Saturation: 1
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
@@ -188,7 +216,12 @@ Material:
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
+    - _Triplanar_Blend: 0.5
+    - _USE_EMISSIVE: 1
+    - _UV_Scale: 1
+    - _WORLD_ALLIGN: 0
     - _WorkflowMode: 1
+    - _World_Tile: 1
     - _ZWrite: 1
     m_Colors:
     - Color_609458B3: {r: 1, g: 1, b: 1, a: 1}
@@ -198,12 +231,15 @@ Material:
     - Color_C62668C6: {r: 0, g: 0, b: 0, a: 1}
     - Color_D6CD8104: {r: 1, g: 1, b: 1, a: 1}
     - Color_D9A456B0: {r: 1, g: 1, b: 1, a: 0}
+    - _AlbedoTint: {r: 0.1792453, g: 0.1792453, b: 0.1792453, a: 1}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BumpMap2_ST: {r: 1, g: 1, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _EmissionColor: {r: 1, g: 0, b: 0, a: 1}
     - _EmissionColor2: {r: 0, g: 0, b: 0, a: 0}
     - _RimDirection: {r: 0, g: 0, b: 0, a: 0}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+    - _UV_Offset: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &459538465562483614

@@ -15,7 +15,7 @@ ModelImporter:
       name: M_Wall_Brick
     second: {fileID: 2100000, guid: e633e1b78f052a04face229b0ec39ec4, type: 2}
   materials:
-    materialImportMode: 2
+    materialImportMode: 1
     materialName: 1
     materialSearch: 2
     materialLocation: 1

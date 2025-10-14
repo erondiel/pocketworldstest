@@ -20,8 +20,8 @@ MonoBehaviour:
     type: 3}
   _localizationDatabase: {fileID: 0}
   _scenes:
-  - Name: CFXRF Demo
-    Scene: {fileID: 102900000, guid: 04a677eab942f3842bc623749775964d, type: 3}
+  - Name: prophunt
+    Scene: {fileID: 102900000, guid: af4f47daee188124aade274287952662, type: 3}
     LoadingImage: {fileID: 0}
   _minVolumeDistance: 10
   _maxVolumeDistance: 7

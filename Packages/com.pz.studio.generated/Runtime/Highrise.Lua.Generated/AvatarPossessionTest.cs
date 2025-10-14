@@ -19,11 +19,11 @@ using UnityEditor;
 
 namespace Highrise.Lua.Generated
 {
-    [AddComponentMenu("Lua/PropDisguiseSystem")]
-    [LuaRegisterType(0x4f0e32156879478a, typeof(LuaBehaviour))]
-    public class PropDisguiseSystem : LuaBehaviourThunk
+    [AddComponentMenu("Lua/AvatarPossessionTest")]
+    [LuaRegisterType(0xbfaf035d2cc65822, typeof(LuaBehaviour))]
+    public class AvatarPossessionTest : LuaBehaviourThunk
     {
-        private const string s_scriptGUID = "b1c0b7f427d103c48a13740013b3f233";
+        private const string s_scriptGUID = "70d0daa3cf9f2af4399b50ebafdf11a7";
         public override string ScriptGUID => s_scriptGUID;
 
 
@@ -34,11 +34,13 @@ namespace Highrise.Lua.Generated
 
             return new SerializedPropertyValue[]
             {
+                CreateSerializedProperty(_script.GetPropertyAt(0), null),
+                CreateSerializedProperty(_script.GetPropertyAt(1), null),
             };
         }
         
 #if HR_STUDIO
-        [MenuItem("CONTEXT/PropDisguiseSystem/Edit Script")]
+        [MenuItem("CONTEXT/AvatarPossessionTest/Edit Script")]
         private static void EditScript()
         {
             VisualStudioCodeOpener.OpenPath(AssetDatabase.GUIDToAssetPath(s_scriptGUID));

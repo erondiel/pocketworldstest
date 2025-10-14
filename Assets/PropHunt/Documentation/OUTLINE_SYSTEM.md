@@ -13,13 +13,16 @@ Creates child GameObject `PropName_Outline` with outline mesh (disabled by defau
 
 ## How It Works
 
-**Inverted Hull Technique:**
+**Inverted Hull Technique (Enhanced with View-Space Extrusion):**
 - Duplicate mesh rendered with backface culling (Cull Front)
-- Vertices expanded slightly along normals in object-space
+- Vertices expanded along normals in **view-space** (camera space)
+- Extrusion scales with camera distance for consistent outline thickness
 - Renders behind original mesh creating outline effect
 - Simple, lightweight, mobile-friendly
 
-**Limitation:** Outline may be partially hidden when object is very close to walls (backfaces occluded). Use small width (0.002-0.005) to minimize this.
+**Technique based on QuickOutline by Chris Nolet, adapted for URP/Highrise Studio.**
+
+**Limitation:** Outline may be partially hidden when object is very close to walls (backfaces occluded). Use moderate width (1.5-3.0) to minimize this.
 
 ## Control from Lua
 
@@ -54,16 +57,20 @@ propScript:HideOutline()
 
 Edit `PropOutline.mat`:
 - **Outline Color:** Cyan (default)
-- **Outline Width:** 0.003 (range: 0.001-0.01)
-  - Smaller = tighter outline, less occlusion issues
-  - Larger = more visible but may clip through nearby objects
+- **Outline Width:** 2.0 (range: 0.0-10.0)
+  - Recommended: 1.5-3.0 for balanced visibility
+  - Smaller (0.5-1.5) = subtle outline
+  - Larger (3.0-5.0) = bold outline, may look thicker on distant objects
+
+**Note:** Width now uses view-space scaling, so values are larger than the old object-space version. The outline thickness remains consistent as you move closer/farther from objects.
 
 ## Troubleshooting
 
 **Outline not visible:** Check MeshRenderer.enabled = true on child
-**Outline disappears near walls:** Use smaller width (0.002-0.004)
-**Outline too thin:** Increase width in material
-**Outline clips through objects:** Decrease width
+**Outline disappears near walls:** Use smaller width (1.0-2.0)
+**Outline too thin:** Increase width in material (try 2.5-4.0)
+**Outline too thick:** Decrease width (try 1.0-1.5)
+**Outline inconsistent at different distances:** This should now be fixed with view-space extrusion!
 
 ## Files
 
