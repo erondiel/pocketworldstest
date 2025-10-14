@@ -10,6 +10,7 @@ type PlayerInfo = {
     isReady: BoolValue,
     isSpectator: BoolValue,
     role: StringValue,
+    gameState: NumberValue,
 }
 
 local players : { [Player]: PlayerInfo } = {}
@@ -72,6 +73,7 @@ local function TrackPlayersClient()
             isReady = BoolValue.new("IsReady" .. player.user.id, false, player),
             isSpectator = BoolValue.new("IsSpectator" .. player.user.id, false, player),
             role = StringValue.new("Role" .. player.user.id, "spectator", player),
+            gameState = NumberValue.new("GameState" .. player.user.id, 1, player),
         }
     end)
 
@@ -96,6 +98,7 @@ local function TrackPlayersServer()
             isReady = BoolValue.new("IsReady" .. player.user.id, false, player),
             isSpectator = BoolValue.new("IsSpectator" .. player.user.id, false, player),
             role = StringValue.new("Role" .. player.user.id, "spectator", player),
+            gameState = NumberValue.new("GameState" .. player.user.id, 1, player),
         }
     end)
 
@@ -139,6 +142,18 @@ function SetPlayerRole(player : Player, role : string)
     players[player].role.value = role
     print(string.format("[PlayerManager] %s role set to: %s", player.name, role))
     return true
+end
+
+-- Server-side function to broadcast game state to all players
+function BroadcastGameState(newState : number)
+    local count = 0
+    for player, playerInfo in pairs(players) do
+        if playerInfo.gameState then
+            playerInfo.gameState.value = newState
+            count = count + 1
+        end
+    end
+    print(string.format("[PlayerManager] Broadcast state %d to %d players", newState, count))
 end
 
 function ReadyUpPlayerRequest(player : Player)
@@ -288,6 +303,7 @@ return {
     RegisterSpectatorToggleCallback = RegisterSpectatorToggleCallback,
     ForceSpectatorMode = ForceSpectatorMode,
     SetPlayerRole = SetPlayerRole,
+    BroadcastGameState = BroadcastGameState,
 
     -- Network events (for client-side usage)
     ReadyUpRequest = ReadyUpRequest,

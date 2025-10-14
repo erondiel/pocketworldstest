@@ -180,30 +180,33 @@ function self:ClientStart()
         print("[HunterTagSystem] Player tagged -> hunter:", tostring(hunterId), "prop:", tostring(propId))
     end)
 
-    -- Setup NetworkValue tracking for game state
-    currentStateValue = NumberValue.new("PH_CurrentState", 1)
-    if currentStateValue then
-        currentState = NormalizeState(currentStateValue.value)
-        print("[HunterTagSystem] Initial state from NetworkValue: " .. currentState)
-
-        currentStateValue.Changed:Connect(function(newState, oldState)
-            currentState = NormalizeState(newState)
-            print("[HunterTagSystem] State changed via NetworkValue: " .. currentState)
-        end)
-    end
-
-    -- Setup role tracking via PlayerManager
+    -- Setup NetworkValue tracking via PlayerManager
     local localPlayer = client.localPlayer
     if localPlayer then
         local playerInfo = PlayerManager.GetPlayerInfo(localPlayer)
-        if playerInfo and playerInfo.role then
-            localRole = playerInfo.role.value
-            print("[HunterTagSystem] Initial role from NetworkValue: " .. localRole)
+        if playerInfo then
+            -- Track game state via per-player NetworkValue
+            if playerInfo.gameState then
+                currentStateValue = playerInfo.gameState
+                currentState = NormalizeState(currentStateValue.value)
+                print("[HunterTagSystem] Initial state from NetworkValue: " .. currentState)
 
-            playerInfo.role.Changed:Connect(function(newRole, oldRole)
-                localRole = newRole
-                print("[HunterTagSystem] Role changed via NetworkValue: " .. localRole)
-            end)
+                currentStateValue.Changed:Connect(function(newState, oldState)
+                    currentState = NormalizeState(newState)
+                    print("[HunterTagSystem] State changed via NetworkValue: " .. currentState)
+                end)
+            end
+
+            -- Track player role
+            if playerInfo.role then
+                localRole = playerInfo.role.value
+                print("[HunterTagSystem] Initial role from NetworkValue: " .. localRole)
+
+                playerInfo.role.Changed:Connect(function(newRole, oldRole)
+                    localRole = newRole
+                    print("[HunterTagSystem] Role changed via NetworkValue: " .. localRole)
+                end)
+            end
         end
     end
 

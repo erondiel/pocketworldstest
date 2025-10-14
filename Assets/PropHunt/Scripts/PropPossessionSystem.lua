@@ -100,56 +100,54 @@ function self:Awake()
         print("[PropPossessionSystem] WARNING: No TapHandler component found!")
     end
 
-    -- Setup NetworkValue tracking for game state
+    -- Setup NetworkValue tracking via PlayerManager
     Timer.After(0.5, function()
         print("[PropPossessionSystem] Setting up NetworkValue tracking for: " .. propGameObject.name)
 
-        -- Track game state via NetworkValue
-        currentStateValue = NumberValue.new("PH_CurrentState", 1)
-        if currentStateValue then
-            -- Read initial state
-            currentState = NormalizeState(currentStateValue.value)
-            print("[PropPossessionSystem] Initial state from NetworkValue: " .. currentState)
-
-            -- Listen for state changes
-            currentStateValue.Changed:Connect(function(newStateNum, oldStateNum)
-                local oldState = currentState
-                currentState = NormalizeState(newStateNum)
-                print("[PropPossessionSystem] State changed via NetworkValue: " .. oldState .. " -> " .. currentState)
-
-                -- Reset possession tracking when entering HIDING phase
-                if currentState == "HIDING" and oldState ~= "HIDING" then
-                    hasPossessedThisRound = false
-                    isPossessed = false
-                    RestorePropVisuals()
-                    print("[PropPossessionSystem] Reset for new HIDING phase")
-                end
-
-                -- Show prop visuals during HIDING phase
-                if currentState == "HIDING" then
-                    RestorePropVisuals()
-                end
-            end)
-        else
-            print("[PropPossessionSystem] ERROR: Could not create state NetworkValue")
-        end
-
-        -- Track player role via PlayerManager
         local localPlayer = client.localPlayer
         if localPlayer then
             local playerInfo = PlayerManager.GetPlayerInfo(localPlayer)
-            if playerInfo and playerInfo.role then
-                -- Read initial role
-                localRole = playerInfo.role.value
-                print("[PropPossessionSystem] Initial role from NetworkValue: " .. localRole)
+            if playerInfo then
+                -- Track game state via per-player NetworkValue
+                if playerInfo.gameState then
+                    currentStateValue = playerInfo.gameState
+                    currentState = NormalizeState(currentStateValue.value)
+                    print("[PropPossessionSystem] Initial state from NetworkValue: " .. currentState)
 
-                -- Listen for role changes
-                playerInfo.role.Changed:Connect(function(newRole, oldRole)
-                    localRole = newRole
-                    print("[PropPossessionSystem] Role changed via NetworkValue: " .. oldRole .. " -> " .. localRole)
-                end)
+                    -- Listen for state changes (this WILL work now!)
+                    currentStateValue.Changed:Connect(function(newStateNum, oldStateNum)
+                        local oldState = currentState
+                        currentState = NormalizeState(newStateNum)
+                        print("[PropPossessionSystem] State changed via NetworkValue: " .. oldState .. " -> " .. currentState)
+
+                        -- Reset possession tracking when entering HIDING phase
+                        if currentState == "HIDING" and oldState ~= "HIDING" then
+                            hasPossessedThisRound = false
+                            isPossessed = false
+                            RestorePropVisuals()
+                            print("[PropPossessionSystem] Reset for new HIDING phase")
+                        end
+
+                        -- Show prop visuals during HIDING phase
+                        if currentState == "HIDING" then
+                            RestorePropVisuals()
+                        end
+                    end)
+                end
+
+                -- Track player role
+                if playerInfo.role then
+                    localRole = playerInfo.role.value
+                    print("[PropPossessionSystem] Initial role from NetworkValue: " .. localRole)
+
+                    -- Listen for role changes
+                    playerInfo.role.Changed:Connect(function(newRole, oldRole)
+                        localRole = newRole
+                        print("[PropPossessionSystem] Role changed via NetworkValue: " .. oldRole .. " -> " .. localRole)
+                    end)
+                end
             else
-                print("[PropPossessionSystem] WARNING: Could not get player info for role tracking")
+                print("[PropPossessionSystem] WARNING: Could not get player info")
             end
         end
     end)
@@ -195,6 +193,15 @@ function NormalizeState(value)
 end
 
 function OnPropTapped()
+    -- Lazy read: Check current state value right when tapped (most up-to-date)
+    if currentStateValue then
+        local liveState = NormalizeState(currentStateValue.value)
+        if liveState ~= currentState then
+            print("[PropPossessionSystem] State updated on tap: " .. currentState .. " -> " .. liveState)
+            currentState = liveState
+        end
+    end
+
     print("[PropPossessionSystem] Prop tapped! currentState=" .. currentState .. ", localRole=" .. localRole)
 
     -- Only allow possession during HIDING phase

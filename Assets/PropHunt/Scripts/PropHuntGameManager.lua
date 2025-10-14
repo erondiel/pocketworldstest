@@ -405,7 +405,8 @@ function TransitionToState(newState)
         ZoneManager.ClearAllPlayerZones()
     end
 
-    -- Notify all clients of state change
+    -- Notify all clients of state change (both methods for compatibility)
+    PlayerManager.BroadcastGameState(newState)
     BroadcastStateChange(newState, stateTimer)
     debugEvent:FireAllClients("STATE", newName, stateTimer, roundNumber)
 end
