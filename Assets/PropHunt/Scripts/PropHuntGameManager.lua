@@ -50,14 +50,29 @@ local huntersWins = 0
 local propScoringTimer = nil
 local lastTickTime = 0
 
--- Network Events (must be at module scope)
-local stateChangedEvent = Event.new("PH_StateChanged")
-local roleAssignedEvent = Event.new("PH_RoleAssigned")
-local playerTaggedEvent = Event.new("PH_PlayerTagged")
-local debugEvent = Event.new("PH_Debug")
-local recapScreenEvent = Event.new("PH_RecapScreen")
-local possessionRequestEvent = Event.new("PH_PossessionRequest")
-local possessionResultEvent = Event.new("PH_PossessionResult")
+-- Network Events - Created as GLOBALS so other modules can access them
+-- NOTE: These must be created in GameManager (first to load) so they exist
+-- when other modules like PropPossessionClient try to access them
+PH_stateChangedEvent = Event.new("PH_StateChanged")
+PH_roleAssignedEvent = Event.new("PH_RoleAssigned")
+PH_playerTaggedEvent = Event.new("PH_PlayerTagged")
+PH_debugEvent = Event.new("PH_Debug")
+PH_recapScreenEvent = Event.new("PH_RecapScreen")
+PH_possessionRequestEvent = Event.new("PH_PossessionRequest")
+PH_possessionResultEvent = Event.new("PH_PossessionResult")
+
+-- Local references for use within this module
+local stateChangedEvent = PH_stateChangedEvent
+local roleAssignedEvent = PH_roleAssignedEvent
+local playerTaggedEvent = PH_playerTaggedEvent
+local debugEvent = PH_debugEvent
+local recapScreenEvent = PH_recapScreenEvent
+local possessionRequestEvent = PH_possessionRequestEvent
+local possessionResultEvent = PH_possessionResultEvent
+
+print("[GM MODULE] ===== GLOBAL EVENTS CREATED =====")
+print("[GM MODULE] PH_possessionRequestEvent: " .. tostring(PH_possessionRequestEvent))
+print("[GM MODULE] PH_possessionResultEvent: " .. tostring(PH_possessionResultEvent))
 
 -- Remote Functions
 local tagRequest = RemoteFunction.new("PH_TagRequest")
@@ -73,6 +88,31 @@ local function GetPlayerById(id)
         end
     end
     return nil
+end
+
+--[[
+    CLIENT - Prop Possession Functions
+    These are called by PropPossessionSystem.lua attached to each prop GameObject
+]]
+
+-- Client function to request possession of a prop
+function RequestPossession(propIdentifier)
+    print("[GM Client] >>> RequestPossession called with: " .. propIdentifier)
+    print("[GM Client] >>> Event object: " .. tostring(possessionRequestEvent))
+    print("[GM Client] >>> Calling FireServer...")
+
+    -- Fire event to server
+    possessionRequestEvent:FireServer(propIdentifier)
+
+    print("[GM Client] >>> FireServer completed successfully")
+end
+
+-- Client function to listen for possession results
+function OnPossessionResult(callback)
+    print("[GM Client] Registering result callback")
+    print("[GM Client] possessionResultEvent object: " .. tostring(possessionResultEvent))
+    possessionResultEvent:Connect(callback)
+    print("[GM Client] Result callback registered")
 end
 
 --[[
@@ -134,10 +174,12 @@ function self:ServerAwake()
         end
 
         -- Broadcast result to all clients
+        Log("[GM] About to broadcast result to all clients...")
         possessionResultEvent:FireAllClients(player.id, propInstanceID, success, message)
         Log(string.format("[GM] Broadcasted possession result: success=%s, message=%s", tostring(success), message))
     end)
 
+    Log("[GM] :Connect handler registered successfully")
     Log("[GM] ServerAwake complete - event listeners registered")
 end
 
@@ -849,6 +891,10 @@ return {
     GetHuntersTeam = function() return huntersTeam end,
 
     -- Game state
-    GameState = GameState
+    GameState = GameState,
+
+    -- Export possession events for PropPossessionClient to use
+    possessionRequestEvent = possessionRequestEvent,
+    possessionResultEvent = possessionResultEvent
 }
 

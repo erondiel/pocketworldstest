@@ -39,7 +39,7 @@
 
 local VFXManager = require("PropHuntVFXManager")
 local PlayerManager = require("PropHuntPlayerManager")
-local PossessionClient = require("PropPossessionClient")
+local GameManager = require("PropHuntGameManager")
 
 -- Network events (kept for backward compatibility)
 local stateChangedEvent = Event.new("PH_StateChanged")
@@ -100,8 +100,9 @@ function self:Awake()
         print("[PropPossessionSystem] WARNING: No TapHandler component found!")
     end
 
-    -- Listen for possession results
-    PossessionClient.OnPossessionResult(OnPossessionResult)
+    -- Listen for possession results (now using GameManager global function)
+    -- Pass our local callback to the global OnPossessionResult function
+    _G.OnPossessionResult(OnPossessionResult)
     print("[PropPossessionSystem] Possession result listener registered")
 
     -- Setup NetworkValue tracking via PlayerManager
@@ -238,15 +239,12 @@ function OnPropTapped()
 
     -- TapHandler has already moved player to prop (if moveTo = true)
     -- Player is now at the prop, request possession immediately
-    RequestPossession()
-end
 
-function RequestPossession()
     -- Use GameObject name as unique identifier (scene prop names should be unique)
     local propIdentifier = propGameObject.name
 
-    -- Send request to server (fire-and-forget)
-    PossessionClient.RequestPossession(propIdentifier)
+    -- Call the GLOBAL RequestPossession function from GameManager
+    _G.RequestPossession(propIdentifier)
 end
 
 -- Listen for possession results (called for ALL possession attempts, check if it's ours)
