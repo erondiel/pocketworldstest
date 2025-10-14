@@ -39,11 +39,11 @@
 
 local VFXManager = require("PropHuntVFXManager")
 local PlayerManager = require("PropHuntPlayerManager")
+local PossessionClient = require("PropPossessionClient")
 
 -- Network events (kept for backward compatibility)
 local stateChangedEvent = Event.new("PH_StateChanged")
 local roleAssignedEvent = Event.new("PH_RoleAssigned")
-local possessionRequest = RemoteFunction.new("PH_PossessionRequest")
 
 -- Network values for persistent state
 local currentStateValue = nil
@@ -99,6 +99,10 @@ function self:Awake()
     else
         print("[PropPossessionSystem] WARNING: No TapHandler component found!")
     end
+
+    -- Listen for possession results
+    PossessionClient.OnPossessionResult(OnPossessionResult)
+    print("[PropPossessionSystem] Possession result listener registered")
 
     -- Setup NetworkValue tracking via PlayerManager
     Timer.After(0.5, function()
@@ -241,33 +245,54 @@ function RequestPossession()
     -- Use GameObject name as unique identifier (scene prop names should be unique)
     local propIdentifier = propGameObject.name
 
-    possessionRequest:InvokeServer(propIdentifier, function(ok, msg)
-        print("[PropPossessionSystem] Possession response: " .. tostring(ok) .. ", " .. tostring(msg))
+    -- Send request to server (fire-and-forget)
+    PossessionClient.RequestPossession(propIdentifier)
+end
 
-        if ok then
-            -- Success! Possess the prop
-            hasPossessedThisRound = true
+-- Listen for possession results (called for ALL possession attempts, check if it's ours)
+function OnPossessionResult(playerId, propId, success, message)
+    -- Check if this result is for our prop
+    if propId ~= propGameObject.name then
+        return  -- Not for this prop
+    end
+
+    -- Check if this is our player's request
+    local localPlayer = client.localPlayer
+    if not localPlayer or playerId ~= localPlayer.id then
+        -- Another player possessed this prop
+        if success then
             isPossessed = true
-
-            -- Visual effects
-            local player = client.localPlayer
-            local playerPos = player.character.transform.position
-            VFXManager.PlayerVanishVFX(playerPos, player.character)
-            VFXManager.PropInfillVFX(propGameObject.transform.position, propGameObject)
-
-            -- Hide player avatar and disable movement
-            HidePlayerAvatar()
-
-            -- Hide prop visuals (blend in)
-            HidePropVisuals()
-
-            print("[PropPossessionSystem] ✓✓✓ POSSESSION COMPLETE ✓✓✓")
-        else
-            -- Server rejected
-            print("[PropPossessionSystem] Possession rejected: " .. tostring(msg))
-            VFXManager.RejectionVFX(propGameObject.transform.position, propGameObject)
+            print("[PropPossessionSystem] Prop possessed by another player: " .. tostring(playerId))
         end
-    end)
+        return
+    end
+
+    -- This is our player's result
+    print("[PropPossessionSystem] Possession response: " .. tostring(success) .. ", " .. tostring(message))
+
+    if success then
+        -- Success! Possess the prop
+        hasPossessedThisRound = true
+        isPossessed = true
+
+        -- Visual effects
+        local player = client.localPlayer
+        local playerPos = player.character.transform.position
+        VFXManager.PlayerVanishVFX(playerPos, player.character)
+        VFXManager.PropInfillVFX(propGameObject.transform.position, propGameObject)
+
+        -- Hide player avatar and disable movement
+        HidePlayerAvatar()
+
+        -- Hide prop visuals (blend in)
+        HidePropVisuals()
+
+        print("[PropPossessionSystem] ✓✓✓ POSSESSION COMPLETE ✓✓✓")
+    else
+        -- Server rejected
+        print("[PropPossessionSystem] Possession rejected: " .. tostring(message))
+        VFXManager.RejectionVFX(propGameObject.transform.position, propGameObject)
+    end
 end
 
 function HidePlayerAvatar()

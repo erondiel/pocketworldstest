@@ -56,11 +56,12 @@ local roleAssignedEvent = Event.new("PH_RoleAssigned")
 local playerTaggedEvent = Event.new("PH_PlayerTagged")
 local debugEvent = Event.new("PH_Debug")
 local recapScreenEvent = Event.new("PH_RecapScreen")
+local possessionRequestEvent = Event.new("PH_PossessionRequest")
+local possessionResultEvent = Event.new("PH_PossessionResult")
 
 -- Remote Functions
 local tagRequest = RemoteFunction.new("PH_TagRequest")
 local disguiseRequest = RemoteFunction.new("PH_DisguiseRequest")
-local possessionRequest = RemoteFunction.new("PH_PossessionRequest")
 local forceStateRequest = RemoteFunction.new("PH_ForceState")
 local tagMissedRequest = RemoteFunction.new("PH_TagMissed")
 
@@ -72,6 +73,72 @@ local function GetPlayerById(id)
         end
     end
     return nil
+end
+
+--[[
+    Server Initialization - Awake (called before ServerStart)
+    Register event listeners here (matching PlayerManager pattern)
+]]
+function self:ServerAwake()
+    Log("[GM] ===== ServerAwake CALLED =====")
+    Log("[GM] possessionRequestEvent: " .. tostring(possessionRequestEvent))
+    Log("[GM] About to register :Connect handler...")
+
+    -- Handle possession requests (Event-based for better local testing reliability)
+    possessionRequestEvent:Connect(function(player, propInstanceID)
+        Log("[GM] ===== EVENT HANDLER FIRED =====")
+        Log(string.format("[GM] Possession request: %s -> %s", player.name, tostring(propInstanceID)))
+
+        local success = false
+        local message = ""
+
+        -- Validate game phase
+        if currentState.value ~= GameState.HIDING then
+            Log(string.format("POSSESSION DENIED: %s tried to possess outside HIDING phase", player.name))
+            success = false
+            message = "Not hiding phase"
+        -- Validate player role
+        elseif not IsPlayerInTeam(player, propsTeam) then
+            Log(string.format("POSSESSION DENIED: %s is not a prop", player.name))
+            success = false
+            message = "Not a prop"
+        -- One-Prop Rule: Check if this prop is already possessed by another player
+        elseif possessedProps[propInstanceID] and possessedProps[propInstanceID] ~= player.id then
+            local ownerPlayerId = possessedProps[propInstanceID]
+            Log(string.format("POSSESSION CONFLICT: %s tried to possess prop %s (owned by player %s)",
+                player.name, tostring(propInstanceID), tostring(ownerPlayerId)))
+            success = false
+            message = "Prop already possessed"
+        else
+            -- Check if player has already possessed a different prop (One-Prop Rule per player)
+            local hasOtherProp = false
+            for propID, playerID in pairs(possessedProps) do
+                if playerID == player.id and propID ~= propInstanceID then
+                    Log(string.format("POSSESSION DENIED: %s already possessed prop %s (One-Prop Rule)",
+                        player.name, tostring(propID)))
+                    hasOtherProp = true
+                    break
+                end
+            end
+
+            if hasOtherProp then
+                success = false
+                message = "Already possessed another prop"
+            else
+                -- All validations passed - mark prop as possessed
+                possessedProps[propInstanceID] = player.id
+                Log(string.format("✓ POSSESSION SUCCESS: %s -> prop %s", player.name, tostring(propInstanceID)))
+                success = true
+                message = "Possessed successfully"
+            end
+        end
+
+        -- Broadcast result to all clients
+        possessionResultEvent:FireAllClients(player.id, propInstanceID, success, message)
+        Log(string.format("[GM] Broadcasted possession result: success=%s, message=%s", tostring(success), message))
+    end)
+
+    Log("[GM] ServerAwake complete - event listeners registered")
 end
 
 --[[
@@ -151,55 +218,6 @@ function self:ServerStart()
         return true, "Disguised"
     end
 
-    -- Handle possession requests (new TapHandler-based system)
-    possessionRequest.OnInvokeServer = function(player, propInstanceID)
-        -- Validate game phase
-        if currentState.value ~= GameState.HIDING then
-            Log(string.format("POSSESSION DENIED: %s tried to possess outside HIDING phase", player.name))
-            return false, "Not hiding phase"
-        end
-
-        -- Validate player role
-        if not IsPlayerInTeam(player, propsTeam) then
-            Log(string.format("POSSESSION DENIED: %s is not a prop", player.name))
-            return false, "Not a prop"
-        end
-
-        -- One-Prop Rule: Check if this prop is already possessed by another player
-        if possessedProps[propInstanceID] then
-            local ownerPlayerId = possessedProps[propInstanceID]
-            if ownerPlayerId ~= player.id then
-                Log(string.format("POSSESSION CONFLICT: %s tried to possess prop %s (owned by player %s)",
-                    player.name, tostring(propInstanceID), tostring(ownerPlayerId)))
-                return false, "Prop already possessed"
-            else
-                -- Same player trying to re-select the same prop (no-op, already theirs)
-                Log(string.format("POSSESSION RESELECT: %s re-selected their prop %s", player.name, tostring(propInstanceID)))
-                return true, "Already possessed"
-            end
-        end
-
-        -- Check if player has already possessed a different prop (One-Prop Rule per player)
-        for propID, playerID in pairs(possessedProps) do
-            if playerID == player.id and propID ~= propInstanceID then
-                Log(string.format("POSSESSION DENIED: %s already possessed prop %s (One-Prop Rule)",
-                    player.name, tostring(propID)))
-                return false, "Already possessed another prop"
-            end
-        end
-
-        -- All validations passed - mark prop as possessed
-        possessedProps[propInstanceID] = player.id
-        Log(string.format("✓ POSSESSION SUCCESS: %s -> prop %s", player.name, tostring(propInstanceID)))
-
-        -- TODO Future enhancements:
-        -- - Broadcast possession to other clients (hide avatar for everyone)
-        -- - Track prop position for scoring zone weight
-        -- - Handle player disconnect (free the prop)
-
-        return true, "Possessed successfully"
-    end
-    
     -- Listen for scene player events (Module type uses scene, not server)
     scene.PlayerJoined:Connect(OnPlayerJoinedScene)
     scene.PlayerLeft:Connect(OnPlayerLeftScene)

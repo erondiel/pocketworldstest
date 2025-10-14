@@ -131,6 +131,7 @@ GameObject:
   m_Component:
   - component: {fileID: 202181605}
   - component: {fileID: 202181607}
+  - component: {fileID: 202181608}
   - component: {fileID: 202181604}
   - component: {fileID: 202181615}
   - component: {fileID: 202181614}
@@ -138,8 +139,8 @@ GameObject:
   - component: {fileID: 202181613}
   - component: {fileID: 202181612}
   - component: {fileID: 202181606}
-  - component: {fileID: 202181608}
   - component: {fileID: 202181611}
+  - component: {fileID: 202181616}
   m_Layer: 0
   m_Name: PropHuntModules
   m_TagString: Untagged
@@ -252,10 +253,10 @@ MonoBehaviour:
   _uiOutputSettings:
     rid: -2
   _minPlayersToStart: 2
-  _lobbyCountdown: 10
-  _hidePhaseTime: 300
+  _lobbyCountdown: 5
+  _hidePhaseTime: 20
   _huntPhaseTime: 20
-  _roundEndTime: 20
+  _roundEndTime: 10
   _tagRange: 4
   _tagCooldown: 0.5
   _propTickSeconds: 5
@@ -416,6 +417,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _networkId: 0
   _script: {fileID: -974389366465450183, guid: 7615f730b86a6ab4abd91daebcfa9244, type: 3}
+  _properties: []
+  _uiOutput: 0
+  _uiOutputSettings:
+    rid: -2
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+--- !u!114 &202181616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 202181598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d4457d25baa7df1310fd9f72eee976e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _networkId: 0
+  _script: {fileID: -974389366465450183, guid: f79b5707e1757d248bd0d922943197bb, type: 3}
   _properties: []
   _uiOutput: 0
   _uiOutputSettings:
@@ -2507,7 +2531,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1997275196
 Transform:
   m_ObjectHideFlags: 0
