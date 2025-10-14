@@ -1,10 +1,10 @@
---!Type(Client)
+--!Type(Module)
 
 --[[
     PropPossessionSystem.lua
 
     Handles prop possession mechanics for PropHunt.
-    Attached to each possessable prop GameObject.
+    Now a Module type with both client and server logic.
 
     FEATURES:
     - Click-to-possess interaction using TapHandler
@@ -16,177 +16,48 @@
     - Network validation via server
 
     SETUP:
-    1. Add TapHandler component to prop GameObject
+    1. Attach this script to PropHuntModules GameObject (as Module)
+    2. For each possessable prop:
+       - Add TapHandler component
        - Enable "Move To" checkbox
-       - Set "Move Target" to prop position (or leave default)
        - Set "Distance" to interaction range (e.g., 3.0)
-    2. Attach this script to the prop GameObject
-    3. Ensure prop has:
        - Tag: "Possessable"
        - Material with _EmissionStrength property
        - Optional: Outline child GameObject (PropName_Outline)
 
-    TAPHANDLER CONFIGURATION:
-    The TapHandler component automatically handles player movement:
-    - moveTo = true: Player walks to prop before Tapped event fires
-    - moveTarget: Position to move to (defaults to GameObject position)
-    - distance: Required distance to trigger (recommend 2-3 meters)
-
-    INTEGRATION:
-    Works with PropHuntGameManager state system.
-    Only active during HIDING phase for players with "prop" role.
+    ARCHITECTURE:
+    This Module dynamically finds all props with "Possessable" tag and
+    sets up tap handlers for them. All Event code (client + server)
+    lives in this single file to avoid module loading order issues.
 ]]
 
 local VFXManager = require("PropHuntVFXManager")
 local PlayerManager = require("PropHuntPlayerManager")
 local GameManager = require("PropHuntGameManager")
 
--- Network events (kept for backward compatibility)
-local stateChangedEvent = Event.new("PH_StateChanged")
-local roleAssignedEvent = Event.new("PH_RoleAssigned")
+-- Network Events (Module-scoped, accessible within this file only)
+local possessionRequestEvent = Event.new("PH_PossessionRequest")
+local possessionResultEvent = Event.new("PH_PossessionResult")
 
--- Network values for persistent state
+-- Server-side prop tracking (One-Prop Rule)
+-- Maps propName -> playerId
+local possessedProps = {}
+
+-- Client-side state tracking (per-player)
 local currentStateValue = nil
-local playerRoleValue = nil
-
--- Local state
 local currentState = "LOBBY"
 local localRole = "unknown"
 local hasPossessedThisRound = false
-local isPossessed = false
-local savedEmissionStrength = 2.0
 local navMeshGameObject = nil
 
--- Prop references
-local propGameObject = nil
-local propRenderer = nil
-local outlineRenderer = nil
+-- Client-side prop tracking (per-prop data)
+-- Maps propName -> { gameObject, renderer, outlineRenderer, savedEmission, isPossessed }
+local propsData = {}
 
-function self:Awake()
-    propGameObject = self.gameObject
-
-    print("[PropPossessionSystem] ===== AWAKE CALLED ===== Prop: " .. propGameObject.name)
-
-    -- Get renderer for emission control
-    propRenderer = propGameObject:GetComponent(MeshRenderer)
-    if propRenderer then
-        -- Read initial emission strength
-        local success = pcall(function()
-            local material = propRenderer.sharedMaterial
-            if material then
-                savedEmissionStrength = material:GetFloat("_EmissionStrength")
-                print("[PropPossessionSystem] Saved emission strength: " .. savedEmissionStrength)
-            end
-        end)
-    end
-
-    -- Find outline renderer
-    local outlineChild = propGameObject.transform:Find(propGameObject.name .. "_Outline")
-    if outlineChild then
-        outlineRenderer = outlineChild:GetComponent(MeshRenderer)
-        if outlineRenderer then
-            print("[PropPossessionSystem] Found outline renderer")
-        end
-    end
-
-    -- Setup tap handler
-    local tapHandler = propGameObject:GetComponent(TapHandler)
-    if tapHandler then
-        tapHandler.Tapped:Connect(function()
-            OnPropTapped()
-        end)
-        print("[PropPossessionSystem] TapHandler connected")
-    else
-        print("[PropPossessionSystem] WARNING: No TapHandler component found!")
-    end
-
-    -- Listen for possession results (now using GameManager global function)
-    -- Pass our local callback to the global OnPossessionResult function
-    _G.OnPossessionResult(OnPossessionResult)
-    print("[PropPossessionSystem] Possession result listener registered")
-
-    -- Setup NetworkValue tracking via PlayerManager
-    Timer.After(0.5, function()
-        print("[PropPossessionSystem] Setting up NetworkValue tracking for: " .. propGameObject.name)
-
-        local localPlayer = client.localPlayer
-        if localPlayer then
-            local playerInfo = PlayerManager.GetPlayerInfo(localPlayer)
-            if playerInfo then
-                -- Track game state via per-player NetworkValue
-                if playerInfo.gameState then
-                    currentStateValue = playerInfo.gameState
-                    currentState = NormalizeState(currentStateValue.value)
-                    print("[PropPossessionSystem] Initial state from NetworkValue: " .. currentState)
-
-                    -- Listen for state changes (this WILL work now!)
-                    currentStateValue.Changed:Connect(function(newStateNum, oldStateNum)
-                        local oldState = currentState
-                        currentState = NormalizeState(newStateNum)
-                        print("[PropPossessionSystem] State changed via NetworkValue: " .. oldState .. " -> " .. currentState)
-
-                        -- Reset possession tracking when entering HIDING phase
-                        if currentState == "HIDING" and oldState ~= "HIDING" then
-                            hasPossessedThisRound = false
-                            isPossessed = false
-                            RestorePropVisuals()
-                            print("[PropPossessionSystem] Reset for new HIDING phase")
-                        end
-
-                        -- Show prop visuals during HIDING phase
-                        if currentState == "HIDING" then
-                            RestorePropVisuals()
-                        end
-                    end)
-                end
-
-                -- Track player role
-                if playerInfo.role then
-                    localRole = playerInfo.role.value
-                    print("[PropPossessionSystem] Initial role from NetworkValue: " .. localRole)
-
-                    -- Listen for role changes
-                    playerInfo.role.Changed:Connect(function(newRole, oldRole)
-                        localRole = newRole
-                        print("[PropPossessionSystem] Role changed via NetworkValue: " .. oldRole .. " -> " .. localRole)
-                    end)
-                end
-            else
-                print("[PropPossessionSystem] WARNING: Could not get player info")
-            end
-        end
-    end)
-
-    -- Listen for state changes (backup event system)
-    stateChangedEvent:Connect(function(newState, timer)
-        print("[PropPossessionSystem] STATE EVENT RECEIVED: " .. tostring(newState) .. " (timer: " .. tostring(timer) .. ")")
-        local oldState = currentState
-        currentState = NormalizeState(newState)
-        print("[PropPossessionSystem] State updated via event: " .. oldState .. " -> " .. currentState)
-
-        -- Reset possession tracking when entering HIDING phase
-        if currentState == "HIDING" and oldState ~= "HIDING" then
-            hasPossessedThisRound = false
-            isPossessed = false
-            RestorePropVisuals()
-            print("[PropPossessionSystem] Reset for new HIDING phase")
-        end
-
-        -- Show prop visuals during HIDING phase
-        if currentState == "HIDING" then
-            RestorePropVisuals()
-        end
-    end)
-
-    -- Listen for role assignment (backup event system)
-    roleAssignedEvent:Connect(function(role)
-        print("[PropPossessionSystem] ROLE EVENT RECEIVED: " .. tostring(role))
-        localRole = tostring(role)
-        print("[PropPossessionSystem] Local role updated via event: " .. localRole)
-    end)
-end
-
-function NormalizeState(value)
+--[[
+    STATE NORMALIZATION
+]]
+local function NormalizeState(value)
     if type(value) == "number" then
         if value == 1 then return "LOBBY"
         elseif value == 2 then return "HIDING"
@@ -197,7 +68,78 @@ function NormalizeState(value)
     return tostring(value)
 end
 
-function OnPropTapped()
+--[[
+    CLIENT - Prop Discovery and TapHandler Setup
+]]
+local function SetupProp(propGameObject)
+    local propName = propGameObject.name
+    print("[PropPossessionSystem] Setting up prop: " .. propName)
+
+    -- Initialize prop data
+    local propData = {
+        gameObject = propGameObject,
+        renderer = nil,
+        outlineRenderer = nil,
+        savedEmission = 2.0,
+        isPossessed = false
+    }
+
+    -- Get renderer for emission control
+    propData.renderer = propGameObject:GetComponent(MeshRenderer)
+    if propData.renderer then
+        local success = pcall(function()
+            local material = propData.renderer.sharedMaterial
+            if material then
+                propData.savedEmission = material:GetFloat("_EmissionStrength")
+                print("[PropPossessionSystem] " .. propName .. " saved emission: " .. propData.savedEmission)
+            end
+        end)
+    end
+
+    -- Find outline renderer
+    local outlineChild = propGameObject.transform:Find(propName .. "_Outline")
+    if outlineChild then
+        propData.outlineRenderer = outlineChild:GetComponent(MeshRenderer)
+        if propData.outlineRenderer then
+            print("[PropPossessionSystem] " .. propName .. " found outline renderer")
+        end
+    end
+
+    -- Setup tap handler
+    local tapHandler = propGameObject:GetComponent(TapHandler)
+    if tapHandler then
+        tapHandler.Tapped:Connect(function()
+            OnPropTapped(propName)
+        end)
+        print("[PropPossessionSystem] " .. propName .. " TapHandler connected")
+    else
+        print("[PropPossessionSystem] WARNING: " .. propName .. " has no TapHandler component!")
+    end
+
+    -- Store prop data
+    propsData[propName] = propData
+end
+
+local function DiscoverAndSetupProps()
+    print("[PropPossessionSystem] Discovering possessable props...")
+
+    local possessableProps = GameObject.FindGameObjectsWithTag("Possessable")
+
+    if possessableProps then
+        for i = 0, possessableProps.Length - 1 do
+            local propObj = possessableProps[i]
+            SetupProp(propObj)
+        end
+        print("[PropPossessionSystem] Setup complete for " .. possessableProps.Length .. " props")
+    else
+        print("[PropPossessionSystem] WARNING: No props found with 'Possessable' tag!")
+    end
+end
+
+--[[
+    CLIENT - Tap Handler
+]]
+function OnPropTapped(propName)
     -- Lazy read: Check current state value right when tapped (most up-to-date)
     if currentStateValue then
         local liveState = NormalizeState(currentStateValue.value)
@@ -207,7 +149,7 @@ function OnPropTapped()
         end
     end
 
-    print("[PropPossessionSystem] Prop tapped! currentState=" .. currentState .. ", localRole=" .. localRole)
+    print("[PropPossessionSystem] Prop tapped: " .. propName .. " (state=" .. currentState .. ", role=" .. localRole .. ")")
 
     -- Only allow possession during HIDING phase
     if currentState ~= "HIDING" then
@@ -224,34 +166,35 @@ function OnPropTapped()
     -- One-Prop Rule: Can only possess once per round
     if hasPossessedThisRound then
         print("[PropPossessionSystem] Already possessed a prop this round!")
-        VFXManager.RejectionVFX(propGameObject.transform.position, propGameObject)
+        local propData = propsData[propName]
+        if propData then
+            VFXManager.RejectionVFX(propData.gameObject.transform.position, propData.gameObject)
+        end
         return
     end
 
-    -- Check if already possessed by someone
-    if isPossessed then
+    -- Check if already possessed by someone (client-side check)
+    local propData = propsData[propName]
+    if propData and propData.isPossessed then
         print("[PropPossessionSystem] This prop is already possessed!")
-        VFXManager.RejectionVFX(propGameObject.transform.position, propGameObject)
+        VFXManager.RejectionVFX(propData.gameObject.transform.position, propData.gameObject)
         return
     end
 
-    print("[PropPossessionSystem] Attempting to possess: " .. propGameObject.name)
+    print("[PropPossessionSystem] Attempting to possess: " .. propName)
 
-    -- TapHandler has already moved player to prop (if moveTo = true)
-    -- Player is now at the prop, request possession immediately
-
-    -- Use GameObject name as unique identifier (scene prop names should be unique)
-    local propIdentifier = propGameObject.name
-
-    -- Call the GLOBAL RequestPossession function from GameManager
-    _G.RequestPossession(propIdentifier)
+    -- Fire possession request to server
+    possessionRequestEvent:FireServer(propName)
+    print("[PropPossessionSystem] Sent possession request to server")
 end
 
--- Listen for possession results (called for ALL possession attempts, check if it's ours)
-function OnPossessionResult(playerId, propId, success, message)
-    -- Check if this result is for our prop
-    if propId ~= propGameObject.name then
-        return  -- Not for this prop
+--[[
+    CLIENT - Possession Result Handler
+]]
+local function OnPossessionResult(playerId, propName, success, message)
+    local propData = propsData[propName]
+    if not propData then
+        return  -- Prop not tracked on this client
     end
 
     -- Check if this is our player's request
@@ -259,40 +202,43 @@ function OnPossessionResult(playerId, propId, success, message)
     if not localPlayer or playerId ~= localPlayer.id then
         -- Another player possessed this prop
         if success then
-            isPossessed = true
-            print("[PropPossessionSystem] Prop possessed by another player: " .. tostring(playerId))
+            propData.isPossessed = true
+            print("[PropPossessionSystem] Prop " .. propName .. " possessed by another player: " .. tostring(playerId))
         end
         return
     end
 
     -- This is our player's result
-    print("[PropPossessionSystem] Possession response: " .. tostring(success) .. ", " .. tostring(message))
+    print("[PropPossessionSystem] Possession response for " .. propName .. ": " .. tostring(success) .. ", " .. tostring(message))
 
     if success then
         -- Success! Possess the prop
         hasPossessedThisRound = true
-        isPossessed = true
+        propData.isPossessed = true
 
         -- Visual effects
         local player = client.localPlayer
         local playerPos = player.character.transform.position
         VFXManager.PlayerVanishVFX(playerPos, player.character)
-        VFXManager.PropInfillVFX(propGameObject.transform.position, propGameObject)
+        VFXManager.PropInfillVFX(propData.gameObject.transform.position, propData.gameObject)
 
         -- Hide player avatar and disable movement
         HidePlayerAvatar()
 
         -- Hide prop visuals (blend in)
-        HidePropVisuals()
+        HidePropVisuals(propName)
 
-        print("[PropPossessionSystem] ✓✓✓ POSSESSION COMPLETE ✓✓✓")
+        print("[PropPossessionSystem] ✓✓✓ POSSESSION COMPLETE: " .. propName .. " ✓✓✓")
     else
         -- Server rejected
         print("[PropPossessionSystem] Possession rejected: " .. tostring(message))
-        VFXManager.RejectionVFX(propGameObject.transform.position, propGameObject)
+        VFXManager.RejectionVFX(propData.gameObject.transform.position, propData.gameObject)
     end
 end
 
+--[[
+    CLIENT - Avatar Visibility Control
+]]
 function HidePlayerAvatar()
     local player = client.localPlayer
     if not player or not player.character then return end
@@ -351,75 +297,212 @@ function RestorePlayerAvatar()
     end
 end
 
-function HidePropVisuals()
+--[[
+    CLIENT - Prop Visuals Control
+]]
+function HidePropVisuals(propName)
+    local propData = propsData[propName]
+    if not propData then return end
+
     -- Turn off emission (blend in with environment)
-    if propRenderer then
+    if propData.renderer then
         local success = pcall(function()
-            local material = propRenderer.material
+            local material = propData.renderer.material
             material:SetFloat("_EmissionStrength", 0.0)
-            print("[PropPossessionSystem] ✓ Disabled prop emission")
+            print("[PropPossessionSystem] ✓ Disabled emission on " .. propName)
         end)
 
         if not success then
-            print("[PropPossessionSystem] WARNING: Could not disable emission")
+            print("[PropPossessionSystem] WARNING: Could not disable emission on " .. propName)
         end
     end
 
     -- Hide outline
-    if outlineRenderer then
-        outlineRenderer.enabled = false
-        print("[PropPossessionSystem] ✓ Disabled prop outline")
+    if propData.outlineRenderer then
+        propData.outlineRenderer.enabled = false
+        print("[PropPossessionSystem] ✓ Disabled outline on " .. propName)
     end
 end
 
-function RestorePropVisuals()
+function RestorePropVisuals(propName)
+    local propData = propsData[propName]
+    if not propData then return end
+
     -- Restore emission
-    if propRenderer then
+    if propData.renderer then
         local success = pcall(function()
-            local material = propRenderer.material
-            material:SetFloat("_EmissionStrength", savedEmissionStrength)
-            print("[PropPossessionSystem] ✓ Restored prop emission")
+            local material = propData.renderer.material
+            material:SetFloat("_EmissionStrength", propData.savedEmission)
+            print("[PropPossessionSystem] ✓ Restored emission on " .. propName)
         end)
     end
 
     -- Show outline
-    if outlineRenderer then
-        outlineRenderer.enabled = true
-        print("[PropPossessionSystem] ✓ Enabled prop outline")
+    if propData.outlineRenderer then
+        propData.outlineRenderer.enabled = true
+        print("[PropPossessionSystem] ✓ Enabled outline on " .. propName)
+    end
+end
+
+function RestoreAllPropVisuals()
+    for propName, propData in pairs(propsData) do
+        RestorePropVisuals(propName)
     end
 end
 
 --[[
-    INTEGRATION NOTES:
-
-    Server-side requirements (PropHuntGameManager or separate module):
-    1. RemoteFunction "PH_PossessionRequest" handler
-    2. Validate prop is available (not already possessed)
-    3. Validate player is prop role and in HIDING phase
-    4. Track which props are possessed
-    5. Return (true, "Success") or (false, "Reason")
-
-    Example server handler:
-
-    local possessionRequest = RemoteFunction.new("PH_PossessionRequest")
-    possessionRequest.OnInvokeServer = function(player, propInstanceID)
-        -- Validate player role and phase
-        if currentPhase ~= HIDING then
-            return false, "Not in hiding phase"
-        end
-
-        if playerRole[player] ~= "prop" then
-            return false, "Only props can possess"
-        end
-
-        -- Check if prop already possessed
-        if possessedProps[propInstanceID] then
-            return false, "Prop already taken"
-        end
-
-        -- Mark as possessed
-        possessedProps[propInstanceID] = player
-
-        return true, "Possessed successfully"
-    end
+    CLIENT - State Tracking
 ]]
+local function SetupStateTracking()
+    print("[PropPossessionSystem] Setting up state tracking...")
+
+    local localPlayer = client.localPlayer
+    if localPlayer then
+        local playerInfo = PlayerManager.GetPlayerInfo(localPlayer)
+        if playerInfo then
+            -- Track game state via per-player NetworkValue
+            if playerInfo.gameState then
+                currentStateValue = playerInfo.gameState
+                currentState = NormalizeState(currentStateValue.value)
+                print("[PropPossessionSystem] Initial state: " .. currentState)
+
+                currentStateValue.Changed:Connect(function(newStateNum, oldStateNum)
+                    local oldState = currentState
+                    currentState = NormalizeState(newStateNum)
+                    print("[PropPossessionSystem] State changed: " .. oldState .. " -> " .. currentState)
+
+                    -- Reset possession tracking when entering HIDING phase
+                    if currentState == "HIDING" and oldState ~= "HIDING" then
+                        hasPossessedThisRound = false
+
+                        -- Reset all props' isPossessed flags
+                        for propName, propData in pairs(propsData) do
+                            propData.isPossessed = false
+                        end
+
+                        RestoreAllPropVisuals()
+                        print("[PropPossessionSystem] Reset for new HIDING phase")
+                    end
+
+                    -- Show prop visuals during HIDING phase
+                    if currentState == "HIDING" then
+                        RestoreAllPropVisuals()
+                    end
+                end)
+            end
+
+            -- Track player role
+            if playerInfo.role then
+                localRole = playerInfo.role.value
+                print("[PropPossessionSystem] Initial role: " .. localRole)
+
+                playerInfo.role.Changed:Connect(function(newRole, oldRole)
+                    localRole = newRole
+                    print("[PropPossessionSystem] Role changed: " .. oldRole .. " -> " .. localRole)
+                end)
+            end
+        else
+            print("[PropPossessionSystem] WARNING: Could not get player info")
+        end
+    end
+end
+
+--[[
+    SERVER - Possession Request Handler
+]]
+local function HandlePossessionRequest(player, propName)
+    print(string.format("[PropPossessionSystem] SERVER: Possession request from %s for prop %s", player.name, tostring(propName)))
+
+    local success = false
+    local message = ""
+
+    -- Get current game state
+    local gameState = GameManager.GetCurrentState()
+
+    -- Validate game phase (2 = HIDING)
+    if gameState ~= 2 then
+        print(string.format("[PropPossessionSystem] SERVER: Denied - not HIDING phase (current: %d)", gameState))
+        success = false
+        message = "Not hiding phase"
+    else
+        -- Get player info to check role
+        local playerInfo = PlayerManager.GetPlayerInfo(player)
+        if not playerInfo or playerInfo.role.value ~= "prop" then
+            print(string.format("[PropPossessionSystem] SERVER: Denied - %s is not a prop", player.name))
+            success = false
+            message = "Not a prop"
+        -- Check if prop already possessed by another player
+        elseif possessedProps[propName] and possessedProps[propName] ~= player.id then
+            local ownerPlayerId = possessedProps[propName]
+            print(string.format("[PropPossessionSystem] SERVER: Denied - prop %s owned by player %s", propName, tostring(ownerPlayerId)))
+            success = false
+            message = "Prop already possessed"
+        else
+            -- Check if player has already possessed a different prop (One-Prop Rule)
+            local hasOtherProp = false
+            for propID, playerID in pairs(possessedProps) do
+                if playerID == player.id and propID ~= propName then
+                    print(string.format("[PropPossessionSystem] SERVER: Denied - %s already possessed prop %s (One-Prop Rule)", player.name, tostring(propID)))
+                    hasOtherProp = true
+                    break
+                end
+            end
+
+            if hasOtherProp then
+                success = false
+                message = "Already possessed another prop"
+            else
+                -- All validations passed - mark prop as possessed
+                possessedProps[propName] = player.id
+                print(string.format("[PropPossessionSystem] SERVER: ✓ SUCCESS - %s -> prop %s", player.name, propName))
+                success = true
+                message = "Possessed successfully"
+            end
+        end
+    end
+
+    -- Broadcast result to all clients
+    possessionResultEvent:FireAllClients(player.id, propName, success, message)
+end
+
+--[[
+    CLIENT LIFECYCLE
+]]
+function self:ClientAwake()
+    print("[PropPossessionSystem] ClientAwake - Initializing client-side system")
+
+    -- Discover and setup all possessable props
+    Timer.After(0.5, function()
+        DiscoverAndSetupProps()
+    end)
+
+    -- Setup state tracking
+    Timer.After(0.7, function()
+        SetupStateTracking()
+    end)
+
+    -- Listen for possession results
+    possessionResultEvent:Connect(OnPossessionResult)
+    print("[PropPossessionSystem] Client listening for possession results")
+end
+
+--[[
+    SERVER LIFECYCLE
+]]
+function self:ServerAwake()
+    print("[PropPossessionSystem] ServerAwake - Initializing server-side system")
+
+    -- Handle possession requests from clients
+    possessionRequestEvent:Connect(HandlePossessionRequest)
+    print("[PropPossessionSystem] Server listening for possession requests")
+
+    -- Listen for state changes to reset prop tracking
+    local stateChangedEvent = Event.new("PH_StateChanged")
+    stateChangedEvent:Connect(function(newState, timer)
+        -- Reset prop possession tracking when entering HIDING phase (2 = HIDING)
+        if newState == 2 then
+            possessedProps = {}
+            print("[PropPossessionSystem] SERVER: Reset possession tracking for new HIDING phase")
+        end
+    end)
+end
