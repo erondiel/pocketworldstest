@@ -7,14 +7,23 @@
     Now a Module type with both client and server logic.
 
     FEATURES:
+    HIDING PHASE (Props):
     - Click-to-possess interaction using TapHandler
     - Automatic player movement via TapHandler (moveTo = true)
-    - Avatar hidden and movement disabled (remote execution)
+    - Avatar hidden by disabling Rig GameObject (remote execution)
+    - Player's character GameObject remains active for network sync
     - Prop emission turned off (blends in)
     - Prop outline disabled
     - One-Prop Rule: Can only possess once per round
-    - Network validation via server
+    - Server tracks prop-to-player mapping
+
+    HUNTING PHASE (Hunters):
+    - Hunters tap on props to find possessed players
+    - Server validates and finds which player possessed the prop
+    - Calls GameManager.OnPlayerTagged for scoring
     - Tagged prop revelation: restore avatar, convert to spectator
+
+    All validations via server for cheat prevention
 
     SETUP:
     1. Attach this script to PropHuntModules GameObject (as Module)
@@ -37,15 +46,29 @@
     2. Server validates (role, game state)
     3. Server executes on target client via Event:Connect()
     This prevents unauthorized GameObject manipulation.
-]]
 
-print("[PropPossessionSystem] ===== MODULE LOADING =====")
+    GAME FLOW:
+    HIDING PHASE:
+    1. Prop player taps prop → OnPropTapped(propName)
+    2. Client sends possessionRequestEvent:FireServer(propName)
+    3. Server validates and stores possessedProps[propName] = playerId
+    4. Server broadcasts possessionResultEvent:FireAllClients()
+    5. All clients hide prop visuals
+    6. Possessed player's avatar hidden via hideAvatarCommand
+
+    HUNTING PHASE:
+    1. Hunter taps prop → OnPropTapped(propName)
+    2. Client sends tagPropRequest:FireServer(propName)
+    3. Server finds playerId from possessedProps[propName]
+    4. Server calls GameManager.OnPlayerTagged(hunter, propPlayer)
+    5. GameManager fires PH_PlayerTagged event
+    6. PropPossessionSystem restores avatar via restoreAvatarCommand
+    7. PropPossessionSystem sets role to spectator
+]]
 
 local VFXManager = require("PropHuntVFXManager")
 local PlayerManager = require("PropHuntPlayerManager")
 local GameManager = require("PropHuntGameManager")
-
-print("[PropPossessionSystem] Dependencies loaded successfully")
 
 -- Network Events (Module-scoped, accessible within this file only)
 local possessionRequestEvent = Event.new("PH_PossessionRequest")
@@ -55,8 +78,8 @@ local restoreAvatarRequest = Event.new("PH_RestoreAvatarRequest")
 local hideAvatarCommand = Event.new("PH_HideAvatarCommand")
 local restoreAvatarCommand = Event.new("PH_RestoreAvatarCommand")
 local playerTaggedEvent = Event.new("PH_PlayerTagged")  -- Listen for tag events from GameManager
-
-print("[PropPossessionSystem] Events created successfully")
+local tagPropRequest = Event.new("PH_TagPropRequest")  -- Hunter taps prop during HUNTING
+local postTeleportEvent = Event.new("PH_PostTeleport")  -- Listen for teleport completion
 
 -- Server-side prop tracking (One-Prop Rule)
 -- Maps propName -> playerId
@@ -68,6 +91,7 @@ local currentState = "LOBBY"
 local localRole = "unknown"
 local hasPossessedThisRound = false
 local navMeshGameObject = nil
+local shouldBeVisible = true  -- Track if local player's avatar should be visible
 
 -- Client-side prop tracking (per-prop data)
 -- Maps propName -> { gameObject, renderer, outlineRenderer, savedEmission, isPossessed }
@@ -92,7 +116,6 @@ end
 ]]
 local function SetupProp(propGameObject)
     local propName = propGameObject.name
-    print("[PropPossessionSystem] Setting up prop: " .. propName)
 
     -- Initialize prop data
     local propData = {
@@ -106,22 +129,21 @@ local function SetupProp(propGameObject)
     -- Get renderer for emission control
     propData.renderer = propGameObject:GetComponent(MeshRenderer)
     if propData.renderer then
-        local success = pcall(function()
-            local material = propData.renderer.sharedMaterial
-            if material then
-                propData.savedEmission = material:GetFloat("_EmissionStrength")
-                print("[PropPossessionSystem] " .. propName .. " saved emission: " .. propData.savedEmission)
+        local material = propData.renderer.sharedMaterial
+        if material and material:HasProperty("_EmissionStrength") then
+            local success, emissionValue = pcall(function()
+                return material:GetFloat("_EmissionStrength")
+            end)
+            if success then
+                propData.savedEmission = emissionValue
             end
-        end)
+        end
     end
 
     -- Find outline renderer
     local outlineChild = propGameObject.transform:Find(propName .. "_Outline")
     if outlineChild then
         propData.outlineRenderer = outlineChild:GetComponent(MeshRenderer)
-        if propData.outlineRenderer then
-            print("[PropPossessionSystem] " .. propName .. " found outline renderer")
-        end
     end
 
     -- Setup tap handler
@@ -130,9 +152,6 @@ local function SetupProp(propGameObject)
         tapHandler.Tapped:Connect(function()
             OnPropTapped(propName)
         end)
-        print("[PropPossessionSystem] " .. propName .. " TapHandler connected")
-    else
-        print("[PropPossessionSystem] WARNING: " .. propName .. " has no TapHandler component!")
     end
 
     -- Store prop data
@@ -140,33 +159,13 @@ local function SetupProp(propGameObject)
 end
 
 local function DiscoverAndSetupProps()
-    print("[PropPossessionSystem] Discovering possessable props...")
-
     local possessableProps = GameObject.FindGameObjectsWithTag("Possessable")
-
-    if possessableProps then
-        -- FindGameObjectsWithTag returns a Lua table, use # operator for length
-        local count = #possessableProps
-        print("[PropPossessionSystem] Found " .. count .. " possessable props")
-
-        if count > 0 then
-            -- Lua tables are 1-indexed
-            for i = 1, count do
-                local propObj = possessableProps[i]
-                if propObj then
-                    print("[PropPossessionSystem] Processing prop " .. i .. "/" .. count .. ": " .. propObj.name)
-                    SetupProp(propObj)
-                else
-                    print("[PropPossessionSystem] WARNING: Prop at index " .. i .. " is nil")
-                end
+    if possessableProps and #possessableProps > 0 then
+        for i = 1, #possessableProps do
+            if possessableProps[i] then
+                SetupProp(possessableProps[i])
             end
-            print("[PropPossessionSystem] ✓ Setup complete for " .. count .. " props")
-        else
-            print("[PropPossessionSystem] WARNING: No props found with 'Possessable' tag!")
-            print("[PropPossessionSystem] Make sure props have the 'Possessable' tag in Unity")
         end
-    else
-        print("[PropPossessionSystem] ERROR: FindGameObjectsWithTag returned nil!")
     end
 end
 
@@ -198,6 +197,7 @@ end
 
 --[[
     CLIENT - Tap Handler
+    Handles both HIDING phase (possession) and HUNTING phase (tagging)
 ]]
 function OnPropTapped(propName)
     -- Lazy read: Check current state value right when tapped (most up-to-date)
@@ -211,7 +211,20 @@ function OnPropTapped(propName)
 
     print("[PropPossessionSystem] Prop tapped: " .. propName .. " (state=" .. currentState .. ", role=" .. localRole .. ")")
 
-    -- Only allow possession during HIDING phase
+    -- HUNTING PHASE: Hunter tapping on prop to tag the possessed player
+    if currentState == "HUNTING" then
+        if localRole == "hunter" then
+            print("[PropPossessionSystem] Hunter tapped prop during HUNTING - requesting tag")
+            -- Send tag request to server with prop name
+            tagPropRequest:FireServer(propName)
+            print("[PropPossessionSystem] Sent tag prop request to server: " .. propName)
+        else
+            print("[PropPossessionSystem] Only hunters can tag props during HUNTING phase")
+        end
+        return
+    end
+
+    -- HIDING PHASE: Prop player possessing a prop
     if currentState ~= "HIDING" then
         print("[PropPossessionSystem] Cannot possess outside HIDING phase (current: " .. currentState .. ")")
         return
@@ -285,8 +298,7 @@ local function OnPossessionResult(playerId, propName, success, message)
         VFXManager.PlayerVanishVFX(playerPos, localPlayer.character)
         VFXManager.PropInfillVFX(propData.gameObject.transform.position, propData.gameObject)
 
-        -- Request server to hide player avatar (remote execution)
-        RequestHideAvatar()
+        -- Server will broadcast hide command directly - no need to request
 
         print("[PropPossessionSystem] ✓✓✓ POSSESSION COMPLETE: " .. propName .. " ✓✓✓")
     else
@@ -303,32 +315,24 @@ end
     Server validates and broadcasts command to ALL clients
 ]]
 local function HandleHideAvatarRequest(player)
-    print("[PropPossessionSystem] SERVER: Hide avatar request from " .. player.name)
-    
     -- Validate player is a prop
     local playerInfo = PlayerManager.GetPlayerInfo(player)
     if not playerInfo or playerInfo.role.value ~= "prop" then
-        print("[PropPossessionSystem] SERVER: Denied - player is not a prop")
         return
     end
-    
+
     -- Validate game state (2 = HIDING)
     local gameState = GameManager.GetCurrentState()
     if gameState ~= 2 then
-        print("[PropPossessionSystem] SERVER: Denied - not HIDING phase")
         return
     end
-    
-    -- Broadcast command to ALL clients so everyone hides this player's avatar
-    print("[PropPossessionSystem] SERVER: Authorized - broadcasting hide command for " .. player.name)
+
+    -- Broadcast command to ALL clients
     hideAvatarCommand:FireAllClients(player.user.id)
 end
 
 local function HandleRestoreAvatarRequest(player)
-    print("[PropPossessionSystem] SERVER: Restore avatar request from " .. player.name)
-    
-    -- Broadcast command to ALL clients so everyone restores this player's avatar
-    print("[PropPossessionSystem] SERVER: Broadcasting restore command for " .. player.name)
+    -- Broadcast command to ALL clients
     restoreAvatarCommand:FireAllClients(player.user.id)
 end
 
@@ -338,8 +342,8 @@ end
     Receives userId and hides that player's avatar on ALL clients
 ]]
 local function HidePlayerAvatarExecute(userId)
-    print("[PropPossessionSystem] CLIENT: Received hide command for userId: " .. tostring(userId))
-    
+    print("[PropPossessionSystem] HidePlayerAvatarExecute called for userId: " .. tostring(userId))
+
     -- Find the player with this userId
     local targetPlayer = nil
     for _, player in ipairs(scene.players) do
@@ -348,48 +352,61 @@ local function HidePlayerAvatarExecute(userId)
             break
         end
     end
-    
+
     if not targetPlayer then
-        print("[PropPossessionSystem] CLIENT: Player not found for userId: " .. tostring(userId))
+        print("[PropPossessionSystem] ERROR: Could not find player with userId: " .. tostring(userId))
         return
     end
-    
+
     if not targetPlayer.character then
-        print("[PropPossessionSystem] CLIENT: No character to hide for " .. targetPlayer.name)
+        print("[PropPossessionSystem] ERROR: Player has no character: " .. targetPlayer.name)
         return
+    end
+
+    print("[PropPossessionSystem] Hiding avatar for player: " .. targetPlayer.name)
+
+    -- Track visibility state for local player
+    if targetPlayer == client.localPlayer then
+        shouldBeVisible = false
     end
 
     local success, errorMsg = pcall(function()
         local character = targetPlayer.character
+        local characterGameObject = character.gameObject
 
         -- Only disable NavMesh for local player (movement control)
         if targetPlayer == client.localPlayer then
             if not navMeshGameObject then
                 navMeshGameObject = GameObject.Find("NavMesh")
             end
-
             if navMeshGameObject then
+                print("[PropPossessionSystem] Disabling NavMesh for local player")
                 navMeshGameObject:SetActive(false)
-                print("[PropPossessionSystem] CLIENT: ✓ Disabled NavMesh for local player")
+            else
+                print("[PropPossessionSystem] ERROR: NavMesh GameObject not found")
             end
         end
 
-        -- Disable character GameObject (visible to all clients)
-        local characterGameObject = character.gameObject
-        if characterGameObject then
-            characterGameObject:SetActive(false)
-            print("[PropPossessionSystem] CLIENT: ✓ Hidden avatar for " .. targetPlayer.name)
+        -- Find and disable the Rig GameObject (keeps network sync but hides avatar)
+        local rigTransform = characterGameObject.transform:Find("Rig")
+        if rigTransform then
+            print("[PropPossessionSystem] Disabling Rig GameObject for " .. targetPlayer.name)
+            rigTransform.gameObject:SetActive(false)
+        else
+            print("[PropPossessionSystem] ERROR: Could not find Rig child for " .. targetPlayer.name)
         end
     end)
 
     if not success then
-        print("[PropPossessionSystem] CLIENT: ERROR hiding avatar: " .. tostring(errorMsg))
+        print("[PropPossessionSystem] ERROR hiding avatar: " .. tostring(errorMsg))
+    else
+        print("[PropPossessionSystem] Successfully hid avatar for " .. targetPlayer.name)
     end
 end
 
 local function RestorePlayerAvatarExecute(userId)
-    print("[PropPossessionSystem] CLIENT: Received restore command for userId: " .. tostring(userId))
-    
+    print("[PropPossessionSystem] RestorePlayerAvatarExecute called for userId: " .. tostring(userId))
+
     -- Find the player with this userId
     local targetPlayer = nil
     for _, player in ipairs(scene.players) do
@@ -398,38 +415,96 @@ local function RestorePlayerAvatarExecute(userId)
             break
         end
     end
-    
+
     if not targetPlayer then
-        print("[PropPossessionSystem] CLIENT: Player not found for userId: " .. tostring(userId))
+        print("[PropPossessionSystem] ERROR: Could not find player with userId: " .. tostring(userId))
         return
     end
-    
+
     if not targetPlayer.character then
-        print("[PropPossessionSystem] CLIENT: No character to restore for " .. targetPlayer.name)
+        print("[PropPossessionSystem] ERROR: Player has no character: " .. targetPlayer.name)
         return
     end
 
-    local success, errorMsg = pcall(function()
-        local character = targetPlayer.character
+    local isLocalPlayer = targetPlayer == client.localPlayer
+    print("[PropPossessionSystem] Restoring avatar for player: " .. targetPlayer.name .. " (isLocal: " .. tostring(isLocalPlayer) .. ")")
 
-        -- Re-enable character GameObject (visible to all clients)
-        local characterGameObject = character.gameObject
-        if characterGameObject and not characterGameObject.activeSelf then
-            characterGameObject:SetActive(true)
-            print("[PropPossessionSystem] CLIENT: ✓ Restored avatar for " .. targetPlayer.name)
-        end
+    -- Track visibility state for local player
+    if isLocalPlayer then
+        shouldBeVisible = true
+    end
 
-        -- Only re-enable NavMesh for local player (movement control)
-        if targetPlayer == client.localPlayer then
-            if navMeshGameObject then
-                navMeshGameObject:SetActive(true)
-                print("[PropPossessionSystem] CLIENT: ✓ Enabled NavMesh for local player")
+    local function AttemptRestore()
+        local success, errorMsg = pcall(function()
+            local character = targetPlayer.character
+            local characterGameObject = character.gameObject
+
+            -- CRITICAL FIX: Reset character scale (VFX scaled it to 0)
+            local currentScale = characterGameObject.transform.localScale
+            print("[PropPossessionSystem] Current character scale: " .. tostring(currentScale.x) .. ", " .. tostring(currentScale.y) .. ", " .. tostring(currentScale.z))
+
+            if currentScale.x < 0.1 or currentScale.y < 0.1 or currentScale.z < 0.1 then
+                print("[PropPossessionSystem] Character was scaled to ~0 by VFX - resetting to (1,1,1)")
+                characterGameObject.transform.localScale = Vector3.new(1, 1, 1)
             end
-        end
-    end)
 
-    if not success then
-        print("[PropPossessionSystem] CLIENT: ERROR restoring avatar: " .. tostring(errorMsg))
+            -- Find and re-enable the Rig GameObject
+            local rigTransform = characterGameObject.transform:Find("Rig")
+            if rigTransform then
+                local wasActive = rigTransform.gameObject.activeSelf
+                print("[PropPossessionSystem] Re-enabling Rig GameObject for " .. targetPlayer.name .. " (was active: " .. tostring(wasActive) .. ")")
+                rigTransform.gameObject:SetActive(true)
+
+                -- Verify it's actually active now
+                Timer.After(0.1, function()
+                    if rigTransform and rigTransform.gameObject then
+                        local nowActive = rigTransform.gameObject.activeSelf
+                        print("[PropPossessionSystem] Rig active state after 0.1s: " .. tostring(nowActive) .. " for " .. targetPlayer.name)
+
+                        if not nowActive then
+                            print("[PropPossessionSystem] WARNING: Rig still inactive, retrying...")
+                            rigTransform.gameObject:SetActive(true)
+                        end
+                    end
+                end)
+            else
+                print("[PropPossessionSystem] ERROR: Could not find Rig child for " .. targetPlayer.name)
+            end
+
+            -- Only re-enable NavMesh for local player (movement control)
+            if isLocalPlayer then
+                print("[PropPossessionSystem] Re-enabling NavMesh for local player")
+                if navMeshGameObject then
+                    navMeshGameObject:SetActive(true)
+                else
+                    print("[PropPossessionSystem] ERROR: NavMesh GameObject not found")
+                end
+            end
+        end)
+
+        if not success then
+            print("[PropPossessionSystem] ERROR restoring avatar: " .. tostring(errorMsg))
+        else
+            print("[PropPossessionSystem] Successfully restored avatar for " .. targetPlayer.name)
+        end
+    end
+
+    -- Try immediately
+    AttemptRestore()
+
+    -- For local player, add a delayed retry to handle race conditions with teleportation
+    if isLocalPlayer then
+        Timer.After(0.5, function()
+            print("[PropPossessionSystem] Delayed restore check for local player")
+            if targetPlayer and targetPlayer.character then
+                local characterGameObject = targetPlayer.character.gameObject
+                local rigTransform = characterGameObject.transform:Find("Rig")
+                if rigTransform and not rigTransform.gameObject.activeSelf then
+                    print("[PropPossessionSystem] Local player Rig still inactive after 0.5s - forcing re-enable")
+                    rigTransform.gameObject:SetActive(true)
+                end
+            end
+        end)
     end
 end
 
@@ -441,15 +516,18 @@ function HidePropVisuals(propName)
     if not propData then return end
 
     -- Turn off emission (blend in with environment)
-    if propData.renderer then
-        local success = pcall(function()
-            local material = propData.renderer.material
-            material:SetFloat("_EmissionStrength", 0.0)
-            print("[PropPossessionSystem] ✓ Disabled emission on " .. propName)
-        end)
+    if propData.renderer and propData.savedEmission then
+        local material = propData.renderer.material
+        if material and material:HasProperty("_EmissionStrength") then
+            local success, errorMsg = pcall(function()
+                material:SetFloat("_EmissionStrength", 0.0)
+            end)
 
-        if not success then
-            print("[PropPossessionSystem] WARNING: Could not disable emission on " .. propName)
+            if success then
+                print("[PropPossessionSystem] ✓ Disabled emission on " .. propName)
+            else
+                print("[PropPossessionSystem] WARNING: Could not disable emission on " .. propName .. " - " .. tostring(errorMsg))
+            end
         end
     end
 
@@ -464,13 +542,20 @@ function RestorePropVisuals(propName)
     local propData = propsData[propName]
     if not propData then return end
 
-    -- Restore emission
-    if propData.renderer then
-        local success = pcall(function()
-            local material = propData.renderer.material
-            material:SetFloat("_EmissionStrength", propData.savedEmission)
-            print("[PropPossessionSystem] ✓ Restored emission on " .. propName)
-        end)
+    -- Restore emission (only if we saved one)
+    if propData.renderer and propData.savedEmission then
+        local material = propData.renderer.material
+        if material and material:HasProperty("_EmissionStrength") then
+            local success, errorMsg = pcall(function()
+                material:SetFloat("_EmissionStrength", propData.savedEmission)
+            end)
+            
+            if success then
+                print("[PropPossessionSystem] ✓ Restored emission on " .. propName)
+            else
+                print("[PropPossessionSystem] WARNING: Could not restore emission on " .. propName .. " - " .. tostring(errorMsg))
+            end
+        end
     end
 
     -- Show outline
@@ -490,8 +575,6 @@ end
     CLIENT - State Tracking
 ]]
 local function SetupStateTracking()
-    print("[PropPossessionSystem] Setting up state tracking...")
-
     local localPlayer = client.localPlayer
     if localPlayer then
         local playerInfo = PlayerManager.GetPlayerInfo(localPlayer)
@@ -500,12 +583,10 @@ local function SetupStateTracking()
             if playerInfo.gameState then
                 currentStateValue = playerInfo.gameState
                 currentState = NormalizeState(currentStateValue.value)
-                print("[PropPossessionSystem] Initial state: " .. currentState)
 
                 currentStateValue.Changed:Connect(function(newStateNum, oldStateNum)
                     local oldState = currentState
                     currentState = NormalizeState(newStateNum)
-                    print("[PropPossessionSystem] State changed: " .. oldState .. " -> " .. currentState)
 
                     -- Reset possession tracking when entering HIDING phase
                     if currentState == "HIDING" and oldState ~= "HIDING" then
@@ -517,7 +598,6 @@ local function SetupStateTracking()
                         end
 
                         RestoreAllPropVisuals()
-                        print("[PropPossessionSystem] Reset for new HIDING phase")
                     end
 
                     -- Show prop visuals during HIDING phase
@@ -530,15 +610,11 @@ local function SetupStateTracking()
             -- Track player role
             if playerInfo.role then
                 localRole = playerInfo.role.value
-                print("[PropPossessionSystem] Initial role: " .. localRole)
 
                 playerInfo.role.Changed:Connect(function(newRole, oldRole)
                     localRole = newRole
-                    print("[PropPossessionSystem] Role changed: " .. oldRole .. " -> " .. localRole)
                 end)
             end
-        else
-            print("[PropPossessionSystem] WARNING: Could not get player info")
         end
     end
 end
@@ -547,8 +623,6 @@ end
     SERVER - Possession Request Handler
 ]]
 local function HandlePossessionRequest(player, propName)
-    print(string.format("[PropPossessionSystem] SERVER: Possession request from %s for prop %s", player.name, tostring(propName)))
-
     local success = false
     local message = ""
 
@@ -557,20 +631,16 @@ local function HandlePossessionRequest(player, propName)
 
     -- Validate game phase (2 = HIDING)
     if gameState ~= 2 then
-        print(string.format("[PropPossessionSystem] SERVER: Denied - not HIDING phase (current: %d)", gameState))
         success = false
         message = "Not hiding phase"
     else
         -- Get player info to check role
         local playerInfo = PlayerManager.GetPlayerInfo(player)
         if not playerInfo or playerInfo.role.value ~= "prop" then
-            print(string.format("[PropPossessionSystem] SERVER: Denied - %s is not a prop", player.name))
             success = false
             message = "Not a prop"
         -- Check if prop already possessed by another player
         elseif possessedProps[propName] and possessedProps[propName] ~= player.id then
-            local ownerPlayerId = possessedProps[propName]
-            print(string.format("[PropPossessionSystem] SERVER: Denied - prop %s owned by player %s", propName, tostring(ownerPlayerId)))
             success = false
             message = "Prop already possessed"
         else
@@ -578,7 +648,6 @@ local function HandlePossessionRequest(player, propName)
             local hasOtherProp = false
             for propID, playerID in pairs(possessedProps) do
                 if playerID == player.id and propID ~= propName then
-                    print(string.format("[PropPossessionSystem] SERVER: Denied - %s already possessed prop %s (One-Prop Rule)", player.name, tostring(propID)))
                     hasOtherProp = true
                     break
                 end
@@ -590,9 +659,14 @@ local function HandlePossessionRequest(player, propName)
             else
                 -- All validations passed - mark prop as possessed
                 possessedProps[propName] = player.id
-                print(string.format("[PropPossessionSystem] SERVER: ✓ SUCCESS - %s -> prop %s", player.name, propName))
                 success = true
                 message = "Possessed successfully"
+
+                -- Notify GameManager that a prop has hidden (for auto-transition check)
+                GameManager.OnPropHidden()
+
+                -- SERVER: Directly broadcast hide command to ALL clients
+                hideAvatarCommand:FireAllClients(player.user.id)
             end
         end
     end
@@ -605,8 +679,6 @@ end
     CLIENT LIFECYCLE
 ]]
 function self:ClientStart()
-    print("[PropPossessionSystem] ClientStart - Initializing client-side system")
-
     -- Discover and setup all possessable props (increased delay to ensure scene is loaded)
     Timer.After(1.0, function()
         DiscoverAndSetupProps()
@@ -619,80 +691,139 @@ function self:ClientStart()
 
     -- Listen for possession results
     possessionResultEvent:Connect(OnPossessionResult)
-    print("[PropPossessionSystem] Client listening for possession results")
-    
+
     -- Listen for avatar visibility commands from server
     hideAvatarCommand:Connect(HidePlayerAvatarExecute)
     restoreAvatarCommand:Connect(RestorePlayerAvatarExecute)
-    print("[PropPossessionSystem] Client listening for avatar visibility commands")
 
     -- Listen for player tagged events (to reveal tagged props)
     playerTaggedEvent:Connect(function(hunterId, propId)
-        print("[PropPossessionSystem] CLIENT: Player tagged event - hunter: " .. tostring(hunterId) .. ", prop: " .. tostring(propId))
-
         -- Check if the tagged player is the local player
         local localPlayer = client.localPlayer
         if localPlayer and localPlayer.id == propId then
-            print("[PropPossessionSystem] CLIENT: Local player was tagged! Restoring avatar...")
-            -- The server will send the restore command, so we don't need to request it
-            -- Just reset local state
+            -- Just reset local state (server sends restore command)
             hasPossessedThisRound = false
         end
     end)
-    print("[PropPossessionSystem] Client listening for player tagged events")
+
+    -- Listen for post-teleport event to fix Rig visibility issues
+    postTeleportEvent:Connect(function()
+        print("[PropPossessionSystem] Post-teleport check triggered")
+
+        -- If we should be visible, double-check that the Rig is actually enabled
+        if shouldBeVisible then
+            local localPlayer = client.localPlayer
+            if localPlayer and localPlayer.character then
+                local characterGameObject = localPlayer.character.gameObject
+                local rigTransform = characterGameObject.transform:Find("Rig")
+
+                if rigTransform then
+                    local isActive = rigTransform.gameObject.activeSelf
+                    print("[PropPossessionSystem] Post-teleport: Rig is " .. (isActive and "ACTIVE" or "INACTIVE") .. " (should be ACTIVE)")
+
+                    if not isActive then
+                        print("[PropPossessionSystem] Post-teleport: FORCING Rig to active")
+                        rigTransform.gameObject:SetActive(true)
+
+                        -- Verify again after a moment
+                        Timer.After(0.1, function()
+                            if rigTransform and rigTransform.gameObject then
+                                local nowActive = rigTransform.gameObject.activeSelf
+                                print("[PropPossessionSystem] Post-teleport verification: Rig is now " .. (nowActive and "ACTIVE" or "INACTIVE"))
+                            end
+                        end)
+                    end
+                end
+            end
+        end
+    end)
+end
+
+--[[
+    SERVER - Public API for GameManager
+]]
+
+-- Called by GameManager when transitioning to LOBBY or ROUND_END to restore all possessed props
+function RestoreAllPossessedPlayers()
+    print("[PropPossessionSystem] SERVER: RestoreAllPossessedPlayers called")
+    local count = 0
+
+    for propName, playerId in pairs(possessedProps) do
+        print("[PropPossessionSystem] SERVER: Restoring player with ID: " .. tostring(playerId) .. " (prop: " .. tostring(propName) .. ")")
+
+        -- Find the player
+        for _, player in ipairs(scene.players) do
+            if player.id == playerId then
+                print("[PropPossessionSystem] SERVER: Found player " .. player.name .. " - firing restore command")
+                restoreAvatarCommand:FireAllClients(player.user.id)
+                count = count + 1
+                break
+            end
+        end
+    end
+
+    print("[PropPossessionSystem] SERVER: Restored " .. count .. " possessed players")
+end
+
+-- Called by GameManager when entering HIDING phase to reset possession tracking
+function ResetPossessions()
+    print("[PropPossessionSystem] SERVER: ResetPossessions called - clearing possessedProps table")
+    possessedProps = {}
 end
 
 --[[
     SERVER LIFECYCLE
 ]]
 function self:ServerAwake()
-    print("[PropPossessionSystem] ServerAwake - Initializing server-side system")
-
     -- Handle possession requests from clients
     possessionRequestEvent:Connect(HandlePossessionRequest)
-    print("[PropPossessionSystem] Server listening for possession requests")
-    
+
     -- Handle avatar visibility requests from clients
     hideAvatarRequest:Connect(HandleHideAvatarRequest)
     restoreAvatarRequest:Connect(HandleRestoreAvatarRequest)
-    print("[PropPossessionSystem] Server listening for avatar visibility requests")
 
-    -- Listen for state changes to reset prop tracking
-    local stateChangedEvent = Event.new("PH_StateChanged")
-    stateChangedEvent:Connect(function(newState, timer)
-        -- Reset prop possession tracking when entering HIDING phase (2 = HIDING)
-        if newState == 2 then
-            possessedProps = {}
-            print("[PropPossessionSystem] SERVER: Reset possession tracking for new HIDING phase")
+    -- Handle tag prop requests (hunter tapping prop during HUNTING phase)
+    tagPropRequest:Connect(function(hunter, propName)
+        -- Validate game state (3 = HUNTING)
+        local gameState = GameManager.GetCurrentState()
+        if gameState ~= 3 then
+            return
         end
-    end)
 
-    -- Listen for player tagged events to restore tagged prop's avatar
-    playerTaggedEvent:Connect(function(hunterId, propId)
-        print("[PropPossessionSystem] SERVER: Player tagged - hunter: " .. tostring(hunterId) .. ", prop: " .. tostring(propId))
+        -- Validate hunter role
+        local hunterInfo = PlayerManager.GetPlayerInfo(hunter)
+        if not hunterInfo or hunterInfo.role.value ~= "hunter" then
+            return
+        end
 
-        -- Find the prop player by ID
+        -- Find which player possessed this prop
+        local possessingPlayerId = possessedProps[propName]
+        if not possessingPlayerId then
+            return
+        end
+
+        -- Find the prop player
         local propPlayer = nil
         for _, player in ipairs(scene.players) do
-            if player.id == propId then
+            if player.id == possessingPlayerId then
                 propPlayer = player
                 break
             end
         end
 
-        if propPlayer then
-            print("[PropPossessionSystem] SERVER: Restoring avatar for tagged prop: " .. propPlayer.name)
-
-            -- Broadcast restore avatar command to all clients
-            restoreAvatarCommand:FireAllClients(propPlayer.user.id)
-
-            -- Change role to spectator (using PlayerManager)
-            PlayerManager.SetPlayerRole(propPlayer, "spectator")
-            print("[PropPossessionSystem] SERVER: Changed " .. propPlayer.name .. " role to spectator")
-        else
-            print("[PropPossessionSystem] SERVER: ERROR - Could not find prop player with ID: " .. tostring(propId))
+        if not propPlayer then
+            return
         end
+
+        -- Call GameManager's tag handler to process the tag (scoring, etc.)
+        GameManager.OnPlayerTagged(hunter, propPlayer)
+
+        -- IMMEDIATELY restore the tagged player's avatar
+        print("[PropPossessionSystem] SERVER: Restoring avatar for tagged player: " .. propPlayer.name)
+        restoreAvatarCommand:FireAllClients(propPlayer.user.id)
+
+        -- Change role to spectator
+        PlayerManager.SetPlayerRole(propPlayer, "spectator")
     end)
-    print("[PropPossessionSystem] Server listening for player tagged events")
 end
 
