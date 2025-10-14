@@ -123,22 +123,35 @@ end
 local function DiscoverAndSetupProps()
     print("[PropPossessionSystem] Discovering possessable props...")
 
+    -- Debug: Check what FindGameObjectsWithTag returns
     local possessableProps = GameObject.FindGameObjectsWithTag("Possessable")
+    print("[PropPossessionSystem] FindGameObjectsWithTag returned: " .. tostring(possessableProps))
 
-    if possessableProps and possessableProps.Length and possessableProps.Length > 0 then
-        local count = possessableProps.Length
-        print("[PropPossessionSystem] Found " .. count .. " possessable props")
+    if possessableProps then
+        print("[PropPossessionSystem] possessableProps.Length = " .. tostring(possessableProps.Length))
 
-        for i = 0, count - 1 do
-            local propObj = possessableProps[i]
-            if propObj then
-                SetupProp(propObj)
+        -- Try different iteration approaches
+        local count = possessableProps.Length or 0
+
+        if count > 0 then
+            print("[PropPossessionSystem] Found " .. count .. " possessable props")
+
+            for i = 0, count - 1 do
+                local propObj = possessableProps[i]
+                if propObj then
+                    print("[PropPossessionSystem] Processing prop at index " .. i .. ": " .. propObj.name)
+                    SetupProp(propObj)
+                else
+                    print("[PropPossessionSystem] WARNING: Prop at index " .. i .. " is nil")
+                end
             end
+            print("[PropPossessionSystem] Setup complete for " .. count .. " props")
+        else
+            print("[PropPossessionSystem] WARNING: Length is 0 or nil")
         end
-        print("[PropPossessionSystem] Setup complete for " .. count .. " props")
     else
-        print("[PropPossessionSystem] WARNING: No props found with 'Possessable' tag!")
-        print("[PropPossessionSystem] Make sure props have the 'Possessable' tag in Unity")
+        print("[PropPossessionSystem] WARNING: FindGameObjectsWithTag returned nil!")
+        print("[PropPossessionSystem] This might be a timing issue or API difference")
     end
 end
 
@@ -474,16 +487,16 @@ end
 --[[
     CLIENT LIFECYCLE
 ]]
-function self:ClientAwake()
-    print("[PropPossessionSystem] ClientAwake - Initializing client-side system")
+function self:ClientStart()
+    print("[PropPossessionSystem] ClientStart - Initializing client-side system")
 
-    -- Discover and setup all possessable props
-    Timer.After(0.5, function()
+    -- Discover and setup all possessable props (increased delay to ensure scene is loaded)
+    Timer.After(1.0, function()
         DiscoverAndSetupProps()
     end)
 
     -- Setup state tracking
-    Timer.After(0.7, function()
+    Timer.After(1.2, function()
         SetupStateTracking()
     end)
 
