@@ -121,6 +121,16 @@ function self:Awake()
     end)
 end
 
+function self:Start()
+    -- Query current state from NetworkValue on startup
+    -- This handles the case where the script loads after state changes
+    local stateNumberValue = NumberValue.new("PH_CurrentState", 1)
+    if stateNumberValue then
+        currentState = NormalizeState(stateNumberValue.value)
+        print("[PropPossessionSystem] Initial state on Start: " .. currentState)
+    end
+end
+
 function NormalizeState(value)
     if type(value) == "number" then
         if value == 1 then return "LOBBY"

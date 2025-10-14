@@ -140,7 +140,6 @@ GameObject:
   - component: {fileID: 202181606}
   - component: {fileID: 202181608}
   - component: {fileID: 202181611}
-  - component: {fileID: 202181616}
   m_Layer: 0
   m_Name: PropHuntModules
   m_TagString: Untagged
@@ -417,29 +416,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _networkId: 0
   _script: {fileID: -974389366465450183, guid: 7615f730b86a6ab4abd91daebcfa9244, type: 3}
-  _properties: []
-  _uiOutput: 0
-  _uiOutputSettings:
-    rid: -2
-  references:
-    version: 2
-    RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
---- !u!114 &202181616
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 202181598}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e3fa6e310343f8161d87ad91cab9a75, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _networkId: 0
-  _script: {fileID: -974389366465450183, guid: 34e0a636aaeb3f54db077a0ca6749aa0, type: 3}
   _properties: []
   _uiOutput: 0
   _uiOutputSettings:
@@ -1756,7 +1732,7 @@ GameObject:
   - component: {fileID: 1433104324}
   - component: {fileID: 1433104323}
   m_Layer: 0
-  m_Name: Cube (5)
+  m_Name: Cube (4)_Outline
   m_TagString: Possessable
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2268,6 +2244,7 @@ GameObject:
   - component: {fileID: 1879973399}
   - component: {fileID: 1879973398}
   - component: {fileID: 1879973401}
+  - component: {fileID: 1879973402}
   m_Layer: 0
   m_Name: Cube (4)
   m_TagString: Possessable
@@ -2381,6 +2358,29 @@ MonoBehaviour:
   _distance: 1
   _moveTo: 1
   _moveTarget: {fileID: 0}
+--- !u!114 &1879973402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1879973396}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e3fa6e310343f8161d87ad91cab9a75, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _networkId: 0
+  _script: {fileID: -974389366465450183, guid: 34e0a636aaeb3f54db077a0ca6749aa0, type: 3}
+  _properties: []
+  _uiOutput: 0
+  _uiOutputSettings:
+    rid: -2
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
 --- !u!1 &1922044618
 GameObject:
   m_ObjectHideFlags: 0
