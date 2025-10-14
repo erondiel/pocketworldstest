@@ -8,6 +8,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/PropHunt/Scenes/prophunt.unity
     guid: af4f47daee188124aade274287952662
+  - enabled: 1
+    path: Assets/ObstacleCourse/Scenes/Room.unity
+    guid: 21f874a58eda9ec48b7372fff91e6ee2
+  - enabled: 1
+    path: Assets/CafeSimulator/Template/Scenes/Room.unity
+    guid: df477c4e0a1d2b949bb8834609e5ceaf
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: acc93e53752e4d44f8e0661f13e776a8,
       type: 2}

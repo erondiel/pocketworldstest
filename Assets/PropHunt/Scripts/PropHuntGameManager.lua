@@ -70,9 +70,7 @@ local recapScreenEvent = PH_recapScreenEvent
 local possessionRequestEvent = PH_possessionRequestEvent
 local possessionResultEvent = PH_possessionResultEvent
 
-print("[GM MODULE] ===== GLOBAL EVENTS CREATED =====")
-print("[GM MODULE] PH_possessionRequestEvent: " .. tostring(PH_possessionRequestEvent))
-print("[GM MODULE] PH_possessionResultEvent: " .. tostring(PH_possessionResultEvent))
+-- Events created successfully
 
 -- Remote Functions
 local tagRequest = RemoteFunction.new("PH_TagRequest")
@@ -97,22 +95,12 @@ end
 
 -- Client function to request possession of a prop
 function RequestPossession(propIdentifier)
-    print("[GM Client] >>> RequestPossession called with: " .. propIdentifier)
-    print("[GM Client] >>> Event object: " .. tostring(possessionRequestEvent))
-    print("[GM Client] >>> Calling FireServer...")
-
-    -- Fire event to server
     possessionRequestEvent:FireServer(propIdentifier)
-
-    print("[GM Client] >>> FireServer completed successfully")
 end
 
 -- Client function to listen for possession results
 function OnPossessionResult(callback)
-    print("[GM Client] Registering result callback")
-    print("[GM Client] possessionResultEvent object: " .. tostring(possessionResultEvent))
     possessionResultEvent:Connect(callback)
-    print("[GM Client] Result callback registered")
 end
 
 --[[
@@ -120,14 +108,9 @@ end
     Register event listeners here (matching PlayerManager pattern)
 ]]
 function self:ServerAwake()
-    Log("[GM] ===== ServerAwake CALLED =====")
-    Log("[GM] possessionRequestEvent: " .. tostring(possessionRequestEvent))
-    Log("[GM] About to register :Connect handler...")
-
     -- Handle possession requests (Event-based for better local testing reliability)
     possessionRequestEvent:Connect(function(player, propInstanceID)
-        Log("[GM] ===== EVENT HANDLER FIRED =====")
-        Log(string.format("[GM] Possession request: %s -> %s", player.name, tostring(propInstanceID)))
+        Log(string.format("POSSESSION REQUEST: %s -> %s", player.name, tostring(propInstanceID)))
 
         local success = false
         local message = ""
@@ -174,13 +157,8 @@ function self:ServerAwake()
         end
 
         -- Broadcast result to all clients
-        Log("[GM] About to broadcast result to all clients...")
         possessionResultEvent:FireAllClients(player.id, propInstanceID, success, message)
-        Log(string.format("[GM] Broadcasted possession result: success=%s, message=%s", tostring(success), message))
     end)
-
-    Log("[GM] :Connect handler registered successfully")
-    Log("[GM] ServerAwake complete - event listeners registered")
 end
 
 --[[

@@ -154,17 +154,37 @@ All tunable parameters are in `PropHuntConfig.lua` with Unity Inspector Serializ
 4. Set zoneWeight (1.5, 1.0, or 0.6)
 5. Position in Arena area (not Lobby)
 
-### Network Events Pattern
-```lua
--- Server (Module):
-local myEvent = Event.new("MyEvent")
-myEvent:FireAllClients(arg1, arg2)
+### Network Events Pattern (Highrise SDK)
 
--- Client (Module):
-local myEvent = Event.new("MyEvent")
-myEvent:Connect(function(arg1, arg2)
-    -- Handle event
-end)
+**IMPORTANT**: All Event-related code (creation, client functions, server handlers) should live in a **single module** to avoid module loading order issues. This matches the Highrise SDK pattern seen in working examples like CafeSimulator OrderManager.
+
+```lua
+--!Type(Module)
+
+-- Create Event objects as GLOBALS (no 'local') for cross-module access
+PH_MyEvent = Event.new("PH_MyEvent")
+
+-- Local reference for use within this module
+local myEvent = PH_MyEvent
+
+-- Client function (callable by other scripts via global)
+function HandleMyEvent(arg1, arg2)
+    myEvent:FireServer(arg1, arg2)
+end
+
+-- Server handler
+function self:ServerAwake()
+    myEvent:Connect(function(player, arg1, arg2)
+        -- Validate and process
+        myEvent:FireAllClients(arg1, arg2)
+    end)
+end
+```
+
+**Other scripts access via globals**:
+```lua
+-- PropPossessionSystem.lua (client script on GameObject)
+_G.HandleMyEvent(value1, value2)  -- Call global function
 ```
 
 ### Remote Function Pattern
@@ -189,7 +209,9 @@ Recent commits follow pattern:
 - `fix(Component): description` for bug fixes
 - `feat(Component): description` for new features
 
-**IMPORTANT:** Do NOT create git commits automatically. Only commit when explicitly requested by the user.
+**IMPORTANT:**
+- Do NOT create git commits automatically. Only commit when explicitly requested by the user.
+- Do NOT write or update documentation automatically. Only update documentation when explicitly requested by the user.
 
 Modified files tracked in git status show extensive work-in-progress on:
 - Cinematic Suite integration

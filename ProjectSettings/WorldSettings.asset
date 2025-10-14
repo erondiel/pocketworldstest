@@ -23,6 +23,12 @@ MonoBehaviour:
   - Name: prophunt
     Scene: {fileID: 102900000, guid: af4f47daee188124aade274287952662, type: 3}
     LoadingImage: {fileID: 0}
+  - Name: Room
+    Scene: {fileID: 102900000, guid: 21f874a58eda9ec48b7372fff91e6ee2, type: 3}
+    LoadingImage: {fileID: 0}
+  - Name: Room
+    Scene: {fileID: 102900000, guid: df477c4e0a1d2b949bb8834609e5ceaf, type: 3}
+    LoadingImage: {fileID: 0}
   _minVolumeDistance: 10
   _maxVolumeDistance: 7
   _highQualityAvatars: 0
