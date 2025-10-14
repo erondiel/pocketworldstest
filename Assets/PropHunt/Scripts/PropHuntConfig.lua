@@ -50,6 +50,9 @@ local _hunterMissPenalty : number = -8
 local _hunterAccuracyBonusMax : number = 50
 
 -- ========== ZONE WEIGHTS ==========
+--!Tooltip("Enable zone-based scoring multipliers (disable if zones block prop interaction)")
+--!SerializeField
+local _zonesEnabled : boolean = false
 --!Tooltip("Zone weight for Near Spawn areas")
 --!SerializeField
 local _zoneWeightNearSpawn : number = 1.5
@@ -148,6 +151,10 @@ function GetHunterAccuracyBonusMax() : number
 end
 
 -- ========== GETTERS: ZONES ==========
+function AreZonesEnabled() : boolean
+    return _zonesEnabled
+end
+
 function GetZoneWeightNearSpawn() : number
     return _zoneWeightNearSpawn
 end
@@ -228,6 +235,7 @@ return {
     GetHunterAccuracyBonusMax = GetHunterAccuracyBonusMax,
 
     -- Zone weights
+    AreZonesEnabled = AreZonesEnabled,
     GetZoneWeightNearSpawn = GetZoneWeightNearSpawn,
     GetZoneWeightMid = GetZoneWeightMid,
     GetZoneWeightFar = GetZoneWeightFar,

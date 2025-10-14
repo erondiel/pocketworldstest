@@ -19,6 +19,7 @@
 --!Type(Server)
 
 local ZoneManager = require("ZoneManager")
+local Config = require("PropHuntConfig")
 
 --!Tooltip("Score multiplier for this zone (e.g., 1.5, 1.0, 0.6)")
 --!SerializeField
@@ -120,6 +121,13 @@ end
 
 -- Lifecycle
 function self:ServerAwake()
+    -- Check if zones are enabled in config
+    if not Config.AreZonesEnabled() then
+        print("[ZoneVolume] Zones disabled in config - disabling GameObject: " .. self.gameObject.name)
+        self.gameObject:SetActive(false)
+        return
+    end
+
     if zoneWeight <= 0 then
         print("[ZoneVolume] WARNING: zoneWeight must be positive, got: " .. tostring(zoneWeight))
         zoneWeight = 1.0
