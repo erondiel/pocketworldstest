@@ -125,14 +125,20 @@ local function DiscoverAndSetupProps()
 
     local possessableProps = GameObject.FindGameObjectsWithTag("Possessable")
 
-    if possessableProps then
-        for i = 0, possessableProps.Length - 1 do
+    if possessableProps and possessableProps.Length and possessableProps.Length > 0 then
+        local count = possessableProps.Length
+        print("[PropPossessionSystem] Found " .. count .. " possessable props")
+
+        for i = 0, count - 1 do
             local propObj = possessableProps[i]
-            SetupProp(propObj)
+            if propObj then
+                SetupProp(propObj)
+            end
         end
-        print("[PropPossessionSystem] Setup complete for " .. possessableProps.Length .. " props")
+        print("[PropPossessionSystem] Setup complete for " .. count .. " props")
     else
         print("[PropPossessionSystem] WARNING: No props found with 'Possessable' tag!")
+        print("[PropPossessionSystem] Make sure props have the 'Possessable' tag in Unity")
     end
 end
 
