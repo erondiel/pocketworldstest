@@ -7,7 +7,7 @@
        - LobbySpawn (position where lobby is, e.g. 0,0,0)
        - ArenaSpawn (position where arena is, e.g. 100,0,0)
     2. Attach this script to PropHuntModules GameObject
-    3. In Inspector, drag spawn points to the fields
+    3. System automatically finds spawn points by name at runtime
 
     local Teleporter = require("PropHuntTeleporter")
     Teleporter.TeleportToArena(player)
@@ -16,23 +16,47 @@
 
 --!Type(Module)
 
--- ========== SERIALIZE FIELDS: SPAWN POINTS ==========
---!Tooltip("Lobby spawn position - drag LobbySpawn GameObject here")
---!SerializeField
-local _lobbySpawnPosition : GameObject = nil
-
---!Tooltip("Arena spawn position - drag ArenaSpawn GameObject here")
---!SerializeField
-local _arenaSpawnPosition : GameObject = nil
-
 -- ========== NETWORK EVENTS ==========
 local teleportEvent = Event.new("PH_TeleportPlayer")
+
+-- ========== CACHED SPAWN REFERENCES ==========
+local lobbySpawn = nil
+local arenaSpawn = nil
 
 --[[
     Debug logging
 ]]
 local function Log(msg)
     print("[PropHunt Teleporter] " .. tostring(msg))
+end
+
+--[[
+    Find and cache spawn points
+]]
+local function GetLobbySpawn()
+    if not lobbySpawn then
+        local lobbyGO = GameObject.Find("LobbySpawn")
+        if lobbyGO then
+            lobbySpawn = lobbyGO.transform
+            Log("Found LobbySpawn GameObject")
+        else
+            Log("ERROR: LobbySpawn GameObject not found in scene!")
+        end
+    end
+    return lobbySpawn
+end
+
+local function GetArenaSpawn()
+    if not arenaSpawn then
+        local arenaGO = GameObject.Find("ArenaSpawn")
+        if arenaGO then
+            arenaSpawn = arenaGO.transform
+            Log("Found ArenaSpawn GameObject")
+        else
+            Log("ERROR: ArenaSpawn GameObject not found in scene!")
+        end
+    end
+    return arenaSpawn
 end
 
 --[[
@@ -75,26 +99,14 @@ function TeleportToArena(player)
         return false
     end
 
-    -- Get arena spawn from SerializeField
-    local arenaSpawn = nil
-    if _arenaSpawnPosition ~= nil then
-        arenaSpawn = _arenaSpawnPosition.transform
-    else
-        -- Fallback: Try to find by name if SerializeField is not configured
-        Log("WARNING: Arena spawn not configured, attempting GameObject.Find(\"ArenaSpawn\")...")
-        local arenaGO = GameObject.Find("ArenaSpawn")
-        if arenaGO ~= nil then
-            arenaSpawn = arenaGO.transform
-            Log("Found ArenaSpawn via GameObject.Find")
-        else
-            Log("ERROR: Arena spawn position not configured and GameObject.Find(\"ArenaSpawn\") failed!")
-            Log("SOLUTION: In Unity, select PropHuntModules → PropHuntTeleporter component → Drag 'ArenaSpawn' GameObject to Arena Spawn Position field")
-            return false
-        end
+    local spawn = GetArenaSpawn()
+    if not spawn then
+        Log("ERROR: Arena spawn not found - make sure 'ArenaSpawn' GameObject exists in scene")
+        return false
     end
 
     Log(string.format("Teleporting %s to Arena", player.name))
-    return TeleportPlayerToPosition(player, arenaSpawn)
+    return TeleportPlayerToPosition(player, spawn)
 end
 
 -- Teleport a single player to the Lobby
@@ -104,26 +116,14 @@ function TeleportToLobby(player)
         return false
     end
 
-    -- Get lobby spawn from SerializeField
-    local lobbySpawn = nil
-    if _lobbySpawnPosition ~= nil then
-        lobbySpawn = _lobbySpawnPosition.transform
-    else
-        -- Fallback: Try to find by name if SerializeField is not configured
-        Log("WARNING: Lobby spawn not configured, attempting GameObject.Find(\"LobbySpawn\")...")
-        local lobbyGO = GameObject.Find("LobbySpawn")
-        if lobbyGO ~= nil then
-            lobbySpawn = lobbyGO.transform
-            Log("Found LobbySpawn via GameObject.Find")
-        else
-            Log("ERROR: Lobby spawn position not configured and GameObject.Find(\"LobbySpawn\") failed!")
-            Log("SOLUTION: In Unity, select PropHuntModules → PropHuntTeleporter component → Drag 'LobbySpawn' GameObject to Lobby Spawn Position field")
-            return false
-        end
+    local spawn = GetLobbySpawn()
+    if not spawn then
+        Log("ERROR: Lobby spawn not found - make sure 'LobbySpawn' GameObject exists in scene")
+        return false
     end
 
     Log(string.format("Teleporting %s to Lobby", player.name))
-    return TeleportPlayerToPosition(player, lobbySpawn)
+    return TeleportPlayerToPosition(player, spawn)
 end
 
 -- Teleport multiple players to the Arena
