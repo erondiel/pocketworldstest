@@ -494,6 +494,7 @@ function AssignRoles()
     for _, player in ipairs(players) do
         if PlayerManager.IsPlayerSpectator(player) then
             table.insert(spectators, player)
+            PlayerManager.SetPlayerRole(player, "spectator")
             NotifyPlayerRole(player, "spectator")
             Log(string.format("SPECTATOR: %s", player.name))
         else
@@ -533,11 +534,13 @@ function AssignRoles()
     for i, player in ipairs(playingPlayers) do
         if i <= huntersCount then
             table.insert(huntersTeam, player)
+            PlayerManager.SetPlayerRole(player, "hunter")
             NotifyPlayerRole(player, "hunter")
             Log(string.format("HUNTER: %s", player.name))
             debugEvent:FireAllClients("ROLE", player.id, "hunter")
         else
             table.insert(propsTeam, player)
+            PlayerManager.SetPlayerRole(player, "prop")
             NotifyPlayerRole(player, "prop")
             Log(string.format("PROP: %s", player.name))
             debugEvent:FireAllClients("ROLE", player.id, "prop")

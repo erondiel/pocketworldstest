@@ -9,6 +9,7 @@ type PlayerInfo = {
     player: Player,
     isReady: BoolValue,
     isSpectator: BoolValue,
+    role: StringValue,
 }
 
 local players : { [Player]: PlayerInfo } = {}
@@ -70,6 +71,7 @@ local function TrackPlayersClient()
             player = player,
             isReady = BoolValue.new("IsReady" .. player.user.id, false, player),
             isSpectator = BoolValue.new("IsSpectator" .. player.user.id, false, player),
+            role = StringValue.new("Role" .. player.user.id, "spectator", player),
         }
     end)
 
@@ -93,6 +95,7 @@ local function TrackPlayersServer()
             player = player,
             isReady = BoolValue.new("IsReady" .. player.user.id, false, player),
             isSpectator = BoolValue.new("IsSpectator" .. player.user.id, false, player),
+            role = StringValue.new("Role" .. player.user.id, "spectator", player),
         }
     end)
 
@@ -118,10 +121,24 @@ function ResetAllPlayers()
         if playerInfo.isReady.value then
             playerInfo.isReady.value = false
         end
+        -- Reset role to spectator when returning to lobby
+        playerInfo.role.value = "spectator"
     end
-    
+
     readyPlayers.value = {}
     print("[PlayerManager] All players reset to not ready")
+end
+
+-- Server-side function to set player role
+function SetPlayerRole(player : Player, role : string)
+    if not players[player] then
+        print("[PlayerManager] Cannot set role - player not tracked: " .. player.name)
+        return false
+    end
+
+    players[player].role.value = role
+    print(string.format("[PlayerManager] %s role set to: %s", player.name, role))
+    return true
 end
 
 function ReadyUpPlayerRequest(player : Player)
@@ -270,6 +287,7 @@ return {
     ResetAllPlayers = ResetAllPlayers,
     RegisterSpectatorToggleCallback = RegisterSpectatorToggleCallback,
     ForceSpectatorMode = ForceSpectatorMode,
+    SetPlayerRole = SetPlayerRole,
 
     -- Network events (for client-side usage)
     ReadyUpRequest = ReadyUpRequest,
