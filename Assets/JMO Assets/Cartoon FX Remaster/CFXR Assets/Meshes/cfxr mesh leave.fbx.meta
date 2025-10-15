@@ -28,7 +28,12 @@ ModelImporter:
   - first:
       43: 4300000
     second: cfxr mesh leave
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: No Name
+    second: {fileID: 2100000, guid: bde70a1a54ec5e94685ddbb27b0337c5, type: 2}
   materials:
     materialImportMode: 1
     materialName: 1
