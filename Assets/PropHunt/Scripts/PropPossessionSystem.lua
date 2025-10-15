@@ -588,11 +588,27 @@ local function SetupStateTracking()
                         end
 
                         RestoreAllPropVisuals()
+                        print("[PropPossessionSystem] Entering HIDING phase - all prop visuals restored")
                     end
 
                     -- Show prop visuals during HIDING phase
                     if currentState == "HIDING" then
                         RestoreAllPropVisuals()
+                        print("[PropPossessionSystem] HIDING phase - prop visuals visible")
+                    end
+
+                    -- Hide ALL prop visuals during HUNTING phase (so hunters can't tell which are possessed)
+                    if currentState == "HUNTING" then
+                        for propName, propData in pairs(propsData) do
+                            HidePropVisuals(propName)
+                        end
+                        print("[PropPossessionSystem] Entering HUNTING phase - all prop visuals hidden")
+                    end
+
+                    -- Restore prop visuals when returning to LOBBY
+                    if currentState == "LOBBY" and oldState ~= "LOBBY" then
+                        RestoreAllPropVisuals()
+                        print("[PropPossessionSystem] Returning to LOBBY - all prop visuals restored")
                     end
                 end)
             end
