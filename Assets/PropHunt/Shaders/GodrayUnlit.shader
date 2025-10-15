@@ -10,6 +10,9 @@ Shader "PropHunt/GodrayUnlit"
         _BeamSpacing("Beam Spacing", Range(0,0.5)) = 0.1
         _LengthFade("Length Fade", Range(0,4)) = 1.5
         _TipFade("Tip Fade", Range(0,2)) = 0.5
+        _BaseFade("Base Fade", Range(0,2)) = 0.5
+        _UOffset("U Offset", Range(-1,1)) = 0
+        _VOffset("V Offset", Range(-1,1)) = 0
     }
     SubShader
     {
@@ -45,6 +48,9 @@ Shader "PropHunt/GodrayUnlit"
             float _BeamSpacing;
             float _LengthFade;
             float _TipFade;
+            float _BaseFade;
+            float _UOffset;
+            float _VOffset;
 
             struct Attributes
             {
@@ -109,14 +115,16 @@ Shader "PropHunt/GodrayUnlit"
                 // y=0 at bottom, y=1 at top of plane (beam tip)
                 float startFade = saturate(y * lengthFade);
                 float tip = saturate(1.0f - (1.0f - y) * tipFade);
-                return startFade * tip;
+                // Opposite-side fade (towards the tip end)
+                float baseEdge = saturate(1.0f - y * _BaseFade);
+                return startFade * tip * baseEdge;
             }
 
             float4 frag(Varyings input) : SV_Target
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
-                float2 uv = input.uv;
+                float2 uv = input.uv + float2(_UOffset, _VOffset);
 
                 // Beam masks: width across X, length along Y
                 float widthMask = WidthMask(uv.x, _BeamWidth, _BeamCount, _BeamSpacing, _Softness);
