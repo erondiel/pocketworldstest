@@ -2,11 +2,22 @@
 
 -- ========== IMPORTS ==========
 local PropHuntConfig = require("PropHuntConfig")
+local PlayerManager = require("PropHuntPlayerManager")
 
 -- ========== PLAYER SCORE DATA STRUCTURE ==========
 -- Stores score data for each player
 local playerScores = {} -- [playerId] = { score, hits, misses, ticks, lastScoreTime }
-local scoreValues = {}  -- [playerId] = NumberValue (for network sync)
+-- Note: Score NetworkValues are managed by PlayerManager (playerInfo.score)
+
+-- ========== HELPER FUNCTIONS ==========
+
+--- Sync score to NetworkValue
+local function SyncScoreToNetwork(player, score)
+    local playerInfo = PlayerManager.GetPlayerInfo(player)
+    if playerInfo and playerInfo.score then
+        playerInfo.score.value = score
+    end
+end
 
 -- ========== INITIALIZATION ==========
 
@@ -14,7 +25,6 @@ local scoreValues = {}  -- [playerId] = NumberValue (for network sync)
 --- @param players table Array of Player objects
 function InitializeScores(players)
     playerScores = {}
-    scoreValues = {}
 
     for i = 1, #players do
         local player = players[i]
@@ -29,9 +39,11 @@ function InitializeScores(players)
             lastScoreTime = Time.time
         }
 
-        -- Create NumberValue for network synchronization
-        local scoreValue = NumberValue.new("PH_Score_" .. playerId, 0)
-        scoreValues[playerId] = scoreValue
+        -- Reset PlayerManager's score NetworkValue to 0
+        local playerInfo = PlayerManager.GetPlayerInfo(player)
+        if playerInfo and playerInfo.score then
+            playerInfo.score.value = 0
+        end
     end
 
     PropHuntConfig.DebugLog("ScoringSystem: Initialized scores for " .. #players .. " players")
@@ -39,14 +51,19 @@ end
 
 --- Reset all scores (called when returning to lobby)
 function ResetAllScores()
-    for playerId, scoreValue in pairs(scoreValues) do
-        scoreValue.value = 0
-        if playerScores[playerId] then
-            playerScores[playerId].score = 0
-            playerScores[playerId].hits = 0
-            playerScores[playerId].misses = 0
-            playerScores[playerId].ticks = 0
-            playerScores[playerId].lastScoreTime = Time.time
+    for playerId, scoreData in pairs(playerScores) do
+        scoreData.score = 0
+        scoreData.hits = 0
+        scoreData.misses = 0
+        scoreData.ticks = 0
+        scoreData.lastScoreTime = Time.time
+    end
+
+    -- Reset all player score NetworkValues to 0
+    for _, player in ipairs(scene.players) do
+        local playerInfo = PlayerManager.GetPlayerInfo(player)
+        if playerInfo and playerInfo.score then
+            playerInfo.score.value = 0
         end
     end
 
@@ -76,9 +93,7 @@ function AwardPropTickScore(player, zoneWeight)
     scoreData.lastScoreTime = Time.time
 
     -- Sync to network
-    if scoreValues[playerId] then
-        scoreValues[playerId].value = scoreData.score
-    end
+    SyncScoreToNetwork(player, scoreData.score)
 
     PropHuntConfig.DebugLog(string.format(
         "ScoringSystem: Prop %s tick +%d (zone %.1fx) | Total: %d",
@@ -104,9 +119,7 @@ function AwardPropSurvivalBonus(player)
     scoreData.lastScoreTime = Time.time
 
     -- Sync to network
-    if scoreValues[playerId] then
-        scoreValues[playerId].value = scoreData.score
-    end
+    SyncScoreToNetwork(player, scoreData.score)
 
     PropHuntConfig.DebugLog(string.format(
         "ScoringSystem: Prop %s survival bonus +%d | Total: %d",
@@ -136,9 +149,7 @@ function AwardHunterTagScore(player, zoneWeight)
     scoreData.lastScoreTime = Time.time
 
     -- Sync to network
-    if scoreValues[playerId] then
-        scoreValues[playerId].value = scoreData.score
-    end
+    SyncScoreToNetwork(player, scoreData.score)
 
     PropHuntConfig.DebugLog(string.format(
         "ScoringSystem: Hunter %s tag +%d (zone %.1fx) | Total: %d",
@@ -164,9 +175,7 @@ function ApplyHunterMissPenalty(player)
     scoreData.lastScoreTime = Time.time
 
     -- Sync to network
-    if scoreValues[playerId] then
-        scoreValues[playerId].value = scoreData.score
-    end
+    SyncScoreToNetwork(player, scoreData.score)
 
     PropHuntConfig.DebugLog(string.format(
         "ScoringSystem: Hunter %s miss penalty %d | Total: %d",
@@ -244,9 +253,7 @@ function AwardHunterAccuracyBonus(player)
     scoreData.lastScoreTime = Time.time
 
     -- Sync to network
-    if scoreValues[playerId] then
-        scoreValues[playerId].value = scoreData.score
-    end
+    SyncScoreToNetwork(player, scoreData.score)
 
     PropHuntConfig.DebugLog(string.format(
         "ScoringSystem: Hunter %s accuracy bonus +%d (%.1f%% = %d/%d) | Total: %d",
@@ -275,9 +282,7 @@ function AwardTeamBonuses(winningTeam, hunters, props, eliminatedProps)
                 scoreData.score = scoreData.score + bonus
                 scoreData.lastScoreTime = Time.time
 
-                if scoreValues[playerId] then
-                    scoreValues[playerId].value = scoreData.score
-                end
+                SyncScoreToNetwork(hunter, scoreData.score)
 
                 PropHuntConfig.DebugLog(string.format(
                     "ScoringSystem: Hunter %s team win bonus +%d | Total: %d",
@@ -324,9 +329,7 @@ function AwardTeamBonuses(winningTeam, hunters, props, eliminatedProps)
                 scoreData.score = scoreData.score + bonus
                 scoreData.lastScoreTime = Time.time
 
-                if scoreValues[playerId] then
-                    scoreValues[playerId].value = scoreData.score
-                end
+                SyncScoreToNetwork(prop, scoreData.score)
 
                 PropHuntConfig.DebugLog(string.format(
                     "ScoringSystem: Prop %s team win bonus (%s) +%d | Total: %d",
@@ -442,9 +445,7 @@ function CleanupPlayer(player)
         playerScores[playerId] = nil
     end
 
-    if scoreValues[playerId] then
-        scoreValues[playerId] = nil
-    end
+    -- Note: Score NetworkValue cleanup is handled by PlayerManager
 
     PropHuntConfig.DebugLog("ScoringSystem: Cleaned up player " .. playerId)
 end
@@ -473,9 +474,7 @@ function AwardTeamBonus(player, bonusType)
     scoreData.score = scoreData.score + bonus
     scoreData.lastScoreTime = Time.time
 
-    if scoreValues[playerId] then
-        scoreValues[playerId].value = scoreData.score
-    end
+    SyncScoreToNetwork(player, scoreData.score)
 
     PropHuntConfig.DebugLog(string.format(
         "ScoringSystem: Player %s team bonus (%s) +%d | Total: %d",

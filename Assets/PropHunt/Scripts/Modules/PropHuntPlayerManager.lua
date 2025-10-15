@@ -11,6 +11,7 @@ type PlayerInfo = {
     isSpectator: BoolValue,
     role: StringValue,
     gameState: NumberValue,
+    score: NumberValue,
 }
 
 local players : { [Player]: PlayerInfo } = {}
@@ -74,6 +75,7 @@ local function TrackPlayersClient()
             isSpectator = BoolValue.new("IsSpectator" .. player.user.id, false, player),
             role = StringValue.new("Role" .. player.user.id, "spectator", player),
             gameState = NumberValue.new("GameState" .. player.user.id, 1, player),
+            score = NumberValue.new("PH_Score_" .. player.user.id, 0, player),
         }
     end)
 
@@ -99,6 +101,7 @@ local function TrackPlayersServer()
             isSpectator = BoolValue.new("IsSpectator" .. player.user.id, false, player),
             role = StringValue.new("Role" .. player.user.id, "spectator", player),
             gameState = NumberValue.new("GameState" .. player.user.id, 1, player),
+            score = NumberValue.new("PH_Score_" .. player.user.id, 0, player),
         }
     end)
 

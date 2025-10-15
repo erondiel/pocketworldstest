@@ -76,26 +76,8 @@ local function StopHUDTimer()
     end
 end
 
-local _localPlayerScoreValue = nil  -- Cache the score NetworkValue
-
 local function StartHUDTimer()
     StopHUDTimer()
-
-    -- Try to get local player's score NetworkValue
-    local localPlayer = client.localPlayer
-    if localPlayer and not _localPlayerScoreValue then
-        local playerId = localPlayer.user.id
-        local scoreName = "PH_Score_" .. tostring(playerId)
-
-        -- Try to find the NetworkValue (it's created by ScoringSystem during InitializeScores)
-        -- Note: NetworkValue.Find might not exist, so we'll access it via the global scope
-        pcall(function()
-            _localPlayerScoreValue = NumberValue.Find(scoreName)
-            if _localPlayerScoreValue then
-                print("[PropHuntUIManager] Found score NetworkValue: " .. scoreName)
-            end
-        end)
-    end
 
     _hudUpdateTimer = Timer.Every(1, function()
         local gameState = GameManager.GetCurrentState()
@@ -118,9 +100,13 @@ local function StartHUDTimer()
 
         -- Get player's score (can be negative for hunters who missed)
         local scoreText = "Score: 0"
-        if _localPlayerScoreValue then
-            local score = _localPlayerScoreValue.value
-            scoreText = "Score: " .. tostring(math.floor(score))
+        local localPlayer = client.localPlayer
+        if localPlayer then
+            local playerInfo = PlayerManager.GetPlayerInfo(localPlayer)
+            if playerInfo and playerInfo.score then
+                local score = playerInfo.score.value
+                scoreText = "Score: " .. tostring(math.floor(score))
+            end
         end
 
         if _HudScript then

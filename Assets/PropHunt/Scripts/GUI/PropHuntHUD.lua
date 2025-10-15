@@ -6,8 +6,6 @@ local _stateLabel : Label = nil
 local _timerLabel : Label = nil
 --!Bind
 local _playersLabel : Label = nil
---!Bind
-local _scoreLabel : Label = nil
 
 local PlayerManager = require("PropHuntPlayerManager")
 
@@ -34,16 +32,18 @@ end
 function UpdateHud(stateText, timerText, playersText, scoreText)
   if _stateLabel then
     -- Format: "LOBBY | Spectator" or "HUNTING | Hunter"
-    _stateLabel.text = stateText .. " | " .. currentRole
+    -- Include score in state label if provided
+    if scoreText then
+      _stateLabel.text = stateText .. " | " .. currentRole .. " | " .. scoreText
+    else
+      _stateLabel.text = stateText .. " | " .. currentRole
+    end
   end
   if _timerLabel then
     _timerLabel.text = timerText
   end
   if _playersLabel then
     _playersLabel.text = playersText
-  end
-  if _scoreLabel and scoreText then
-    _scoreLabel.text = scoreText
   end
 end
 
