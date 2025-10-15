@@ -575,6 +575,150 @@ function TriggerHuntPhaseStart()
     -- 5. Play hunt horn sound effect
 end
 
+-- ========== SCREEN FADE TRANSITIONS ==========
+-- Full-screen fade effects for camera transitions during teleportation
+
+-- Reference to fade overlay element (set by client)
+local fadeOverlayElement = nil
+
+--[[
+  InitializeFadeOverlay: Sets up the fade overlay element
+  Must be called from client with the fade overlay UI element
+  @param element: VisualElement - The fade overlay from PropHuntHUD
+]]
+function InitializeFadeOverlay(element)
+    fadeOverlayElement = element
+    if fadeOverlayElement then
+        -- Ensure it starts invisible
+        fadeOverlayElement.style.opacity = 0
+        fadeOverlayElement.style.display = "none"
+        DebugVFX("Fade overlay initialized")
+    end
+end
+
+--[[
+  ScreenFadeTransition: Fades to black, executes action, then fades back
+  Perfect for hiding camera movement during teleportation
+
+  @param fadeOutDuration: number - Duration of fade to black (default: 0.3s)
+  @param waitDuration: number - How long to stay black (default: 0.1s)
+  @param fadeInDuration: number - Duration of fade from black (default: 0.3s)
+  @param onFadedOut: function (optional) - Callback when fully black (do teleport here)
+  @param onComplete: function (optional) - Callback when transition complete
+
+  Usage:
+    VFXManager.ScreenFadeTransition(0.3, 0.1, 0.3, function()
+        -- Camera teleports here (during black screen)
+        player.character.transform.position = targetPosition
+    end, function()
+        print("Fade transition complete!")
+    end)
+]]
+function ScreenFadeTransition(fadeOutDuration, waitDuration, fadeInDuration, onFadedOut, onComplete)
+    if not fadeOverlayElement then
+        DebugVFX("ERROR: Fade overlay not initialized! Call InitializeFadeOverlay first")
+        if onFadedOut then onFadedOut() end
+        if onComplete then onComplete() end
+        return
+    end
+
+    fadeOutDuration = fadeOutDuration or 0.3
+    waitDuration = waitDuration or 0.1
+    fadeInDuration = fadeInDuration or 0.3
+
+    DebugVFX(string.format("ScreenFadeTransition: out=%.2fs, wait=%.2fs, in=%.2fs",
+        fadeOutDuration, waitDuration, fadeInDuration))
+
+    -- Show overlay
+    fadeOverlayElement.style.display = "flex"
+
+    -- Create sequence: fade out → wait → fade in
+    local sequence = TweenSequence:new()
+
+    -- 1. Fade to black (opacity 0 → 1)
+    local fadeOut = Tween:new(0, 1, fadeOutDuration, false, false, Easing.easeInQuad, function(value, t)
+        fadeOverlayElement.style.opacity = value
+    end, function()
+        -- Fully black - execute teleport action
+        if onFadedOut then
+            onFadedOut()
+        end
+    end)
+
+    -- 2. Wait timer (stay black)
+    local waitTween = Tween:new(0, 1, waitDuration, false, false, Easing.linear, function(value, t)
+        -- Do nothing, just wait
+    end, nil)
+
+    -- 3. Fade from black (opacity 1 → 0)
+    local fadeIn = Tween:new(1, 0, fadeInDuration, false, false, Easing.easeOutQuad, function(value, t)
+        fadeOverlayElement.style.opacity = value
+    end, function()
+        -- Fade complete - hide overlay
+        fadeOverlayElement.style.display = "none"
+        DebugVFX("ScreenFadeTransition complete")
+        if onComplete then
+            onComplete()
+        end
+    end)
+
+    -- Add to sequence
+    sequence:add(fadeOut)
+    sequence:add(waitTween)
+    sequence:add(fadeIn)
+    sequence:start()
+
+    return sequence
+end
+
+--[[
+  QuickFadeToBlack: Immediately fade to black
+  @param duration: number (optional) - Fade duration (default: 0.3s)
+  @param onComplete: function (optional) - Callback when fade complete
+]]
+function QuickFadeToBlack(duration, onComplete)
+    if not fadeOverlayElement then
+        DebugVFX("ERROR: Fade overlay not initialized!")
+        if onComplete then onComplete() end
+        return
+    end
+
+    duration = duration or 0.3
+    fadeOverlayElement.style.display = "flex"
+
+    local tween = Tween:new(0, 1, duration, false, false, Easing.easeInQuad, function(value, t)
+        fadeOverlayElement.style.opacity = value
+    end, onComplete)
+
+    tween:start()
+    return tween
+end
+
+--[[
+  QuickFadeFromBlack: Immediately fade from black to clear
+  @param duration: number (optional) - Fade duration (default: 0.3s)
+  @param onComplete: function (optional) - Callback when fade complete
+]]
+function QuickFadeFromBlack(duration, onComplete)
+    if not fadeOverlayElement then
+        DebugVFX("ERROR: Fade overlay not initialized!")
+        if onComplete then onComplete() end
+        return
+    end
+
+    duration = duration or 0.3
+
+    local tween = Tween:new(1, 0, duration, false, false, Easing.easeOutQuad, function(value, t)
+        fadeOverlayElement.style.opacity = value
+    end, function()
+        fadeOverlayElement.style.display = "none"
+        if onComplete then onComplete() end
+    end)
+
+    tween:start()
+    return tween
+end
+
 -- ========== ADVANCED ANIMATION HELPERS ==========
 
 --[[
@@ -649,6 +793,12 @@ return {
     ScalePulse = ScalePulse,
     SlideIn = SlideIn,
     PositionTween = PositionTween,
+
+    -- Screen Fade Transitions
+    InitializeFadeOverlay = InitializeFadeOverlay,
+    ScreenFadeTransition = ScreenFadeTransition,
+    QuickFadeToBlack = QuickFadeToBlack,
+    QuickFadeFromBlack = QuickFadeFromBlack,
 
     -- Game VFX Placeholders
     PlayerVanishVFX = PlayerVanishVFX,

@@ -103,6 +103,10 @@ local shouldBeVisible = true  -- Track if local player's avatar should be visibl
 -- Maps propName -> { gameObject, renderer, outlineRenderer, savedEmission, isPossessed }
 local propsData = {}
 
+-- Client-side pulse tween tracking (per-prop)
+-- Maps propName -> tween object
+local propPulseTweens = {}
+
 --[[
     STATE NORMALIZATION
 ]]
@@ -500,24 +504,115 @@ local function RestorePlayerAvatarExecute(userId)
 end
 
 --[[
+    CLIENT - Emissive Pulse Control
+]]
+--[[
+    StartPropPulse: Creates pulsing emissive effect during hiding phase
+    @param propName: string - Name of the prop to pulse
+
+    Creates a ping-pong tween that pulses emission from current strength down to 10%.
+    Automatically loops until stopped (when prop is possessed).
+]]
+function StartPropPulse(propName)
+    local propData = propsData[propName]
+    if not propData or not propData.renderer then return end
+
+    local material = propData.renderer.material
+    if not material or not material:HasProperty("_EmissionStrength") then return end
+
+    -- Stop any existing pulse for this prop
+    if propPulseTweens[propName] then
+        propPulseTweens[propName]:stop()
+        propPulseTweens[propName] = nil
+    end
+
+    local savedStrength = propData.savedEmission  -- Original value (e.g., 2.0)
+    local minStrength = savedStrength * 0.1       -- 10% of original (e.g., 0.2)
+
+    -- Import tween classes
+    local TweenModule = require("devx_tweens")
+    local Tween = TweenModule.Tween
+    local Easing = TweenModule.Easing
+
+    -- Create ping-pong pulsing tween (full -> 10% -> full -> ...)
+    local pulseTween = Tween:new(
+        savedStrength,  -- Start at full strength
+        minStrength,    -- Pulse down to 10%
+        1.5,            -- Duration: 1.5 seconds per half-cycle
+        true,           -- loop = true (infinite)
+        true,           -- pingPong = true (reverses direction each cycle)
+        Easing.easeInOutQuad,  -- Smooth ease in/out
+        function(value, t)
+            -- Update material emission strength each frame
+            material:SetFloat("_EmissionStrength", value)
+        end,
+        nil  -- No onComplete callback (loops forever)
+    )
+
+    pulseTween:start()
+    propPulseTweens[propName] = pulseTween
+
+    print("[PropPossessionSystem] Started emissive pulse for " .. propName .. " (" .. savedStrength .. " -> " .. minStrength .. ")")
+end
+
+--[[
+    StopPropPulse: Stops pulsing animation for a prop
+    @param propName: string - Name of the prop
+]]
+function StopPropPulse(propName)
+    if propPulseTweens[propName] then
+        propPulseTweens[propName]:stop()
+        propPulseTweens[propName] = nil
+        print("[PropPossessionSystem] Stopped emissive pulse for " .. propName)
+    end
+end
+
+--[[
     CLIENT - Prop Visuals Control
 ]]
 function HidePropVisuals(propName)
     local propData = propsData[propName]
     if not propData then return end
 
-    -- Turn off emission (blend in with environment)
+    -- Stop any active pulse tween
+    StopPropPulse(propName)
+
+    -- Turn off emission with LERP transition (smooth fade out)
     if propData.renderer and propData.savedEmission then
         local material = propData.renderer.material
         if material and material:HasProperty("_EmissionStrength") then
             local success, errorMsg = pcall(function()
-                material:SetFloat("_EmissionStrength", 0.0)
+                -- Get current emission value (might be mid-pulse)
+                local currentEmission = material:GetFloat("_EmissionStrength")
+
+                -- Import tween classes
+                local TweenModule = require("devx_tweens")
+                local Tween = TweenModule.Tween
+                local Easing = TweenModule.Easing
+
+                -- Lerp from current emission to 0 over 0.3 seconds
+                local fadeOutTween = Tween:new(
+                    currentEmission,  -- Start from wherever pulse left off
+                    0.0,              -- Fade to 0
+                    0.3,              -- Duration: 0.3 seconds
+                    false,            -- loop = false
+                    false,            -- pingPong = false
+                    Easing.easeOutQuad,  -- Smooth deceleration
+                    function(value, t)
+                        material:SetFloat("_EmissionStrength", value)
+                    end,
+                    function()
+                        print("[PropPossessionSystem] ✓ Emission fade-out complete on " .. propName)
+                    end
+                )
+
+                fadeOutTween:start()
             end)
 
             if success then
-                print("[PropPossessionSystem] ✓ Disabled emission on " .. propName)
+                print("[PropPossessionSystem] ✓ Started emission fade-out on " .. propName)
             else
-                print("[PropPossessionSystem] WARNING: Could not disable emission on " .. propName .. " - " .. tostring(errorMsg))
+                print("[PropPossessionSystem] WARNING: Could not fade emission on " .. propName .. " - " .. tostring(errorMsg))
             end
         end
     end
@@ -589,27 +684,46 @@ local function SetupStateTracking()
                         end
 
                         RestoreAllPropVisuals()
-                        print("[PropPossessionSystem] Entering HIDING phase - all prop visuals restored")
+
+                        -- Start pulsing effect on all props
+                        for propName, propData in pairs(propsData) do
+                            StartPropPulse(propName)
+                        end
+
+                        print("[PropPossessionSystem] Entering HIDING phase - all prop visuals restored and pulsing started")
                     end
 
                     -- Show prop visuals during HIDING phase
                     if currentState == "HIDING" then
                         RestoreAllPropVisuals()
-                        print("[PropPossessionSystem] HIDING phase - prop visuals visible")
+
+                        -- Start pulsing effect on all props (if not already pulsing)
+                        for propName, propData in pairs(propsData) do
+                            if not propPulseTweens[propName] then
+                                StartPropPulse(propName)
+                            end
+                        end
+
+                        print("[PropPossessionSystem] HIDING phase - prop visuals visible and pulsing")
                     end
 
                     -- Hide ALL prop visuals during HUNTING phase (so hunters can't tell which are possessed)
                     if currentState == "HUNTING" then
                         for propName, propData in pairs(propsData) do
-                            HidePropVisuals(propName)
+                            HidePropVisuals(propName)  -- This already calls StopPropPulse internally
                         end
-                        print("[PropPossessionSystem] Entering HUNTING phase - all prop visuals hidden")
+                        print("[PropPossessionSystem] Entering HUNTING phase - all prop visuals hidden and pulses stopped")
                     end
 
                     -- Restore prop visuals when returning to LOBBY
                     if currentState == "LOBBY" and oldState ~= "LOBBY" then
+                        -- Stop all pulses when returning to lobby
+                        for propName, propData in pairs(propsData) do
+                            StopPropPulse(propName)
+                        end
+
                         RestoreAllPropVisuals()
-                        print("[PropPossessionSystem] Returning to LOBBY - all prop visuals restored")
+                        print("[PropPossessionSystem] Returning to LOBBY - all prop visuals restored and pulses stopped")
                     end
                 end)
             end

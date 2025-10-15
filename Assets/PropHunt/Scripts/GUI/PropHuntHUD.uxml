@@ -13,6 +13,9 @@
       <Label class="sub-header-label" text="Time: 0s" name="_timerLabel"/>
       <Label class="sub-header-label" text="Players: 0/0" name="_playersLabel"/>
     </VisualElement>
+
+    <!-- Full-Screen Fade Overlay for Camera Transitions -->
+    <VisualElement class="fade-overlay" name="_fadeOverlay" picking-mode="Ignore" />
   </hr:UILuaView>
 
 </UXML>

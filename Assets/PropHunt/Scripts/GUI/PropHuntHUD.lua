@@ -6,8 +6,11 @@ local _stateLabel : Label = nil
 local _timerLabel : Label = nil
 --!Bind
 local _playersLabel : Label = nil
+--!Bind
+local _fadeOverlay : VisualElement = nil
 
 local PlayerManager = require("PropHuntPlayerManager")
+local VFXManager = require("PropHuntVFXManager")
 
 -- Current player role (default to Spectator in LOBBY)
 local currentRole = "Spectator"
@@ -49,6 +52,14 @@ end
 
 function self:Start()
   print("[PropHuntHUD] Started.")
+
+  -- Initialize fade overlay for screen transitions
+  if _fadeOverlay then
+    VFXManager.InitializeFadeOverlay(_fadeOverlay)
+    print("[PropHuntHUD] Fade overlay initialized")
+  else
+    print("[PropHuntHUD] WARNING: Fade overlay element not found!")
+  end
 
   -- Initial text (LOBBY with Spectator role)
   currentRole = "Spectator"

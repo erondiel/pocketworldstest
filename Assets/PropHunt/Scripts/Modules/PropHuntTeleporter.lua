@@ -16,8 +16,11 @@
 
 --!Type(Module)
 
+local VFXManager = require("PropHuntVFXManager")
+
 -- ========== NETWORK EVENTS ==========
 local teleportEvent = Event.new("PH_TeleportPlayer")
+local postTeleportEvent = Event.new("PH_PostTeleport")  -- Fired after teleport complete
 
 -- ========== CACHED SPAWN REFERENCES ==========
 local lobbySpawn = nil
@@ -205,21 +208,44 @@ end
     Client-Side Teleport Handler
     Listens for server teleport events and executes client-side Teleport() call
     Receives player object and position, so all clients see the movement
+
+    FADE TRANSITION:
+    - Fade to black (0.3s)
+    - Teleport during black screen
+    - Fade from black (0.3s)
+    - Total duration: ~0.7s
 ]]
 function self:ClientStart()
     teleportEvent:Connect(function(player, position)
-        -- Execute client-side teleport for the specified player
-        if player and player.character then
-            player.character:Teleport(position)
+        -- Only apply fade transition for local player
+        if player == client.localPlayer then
+            Log(string.format("Local player teleporting to (%.1f, %.1f, %.1f) with fade", position.x, position.y, position.z))
 
-            -- If this is the local player, also recenter the camera
-            if player == client.localPlayer then
-                Log(string.format("Client teleported to (%.1f, %.1f, %.1f)", position.x, position.y, position.z))
+            -- Use ScreenFadeTransition to hide camera movement
+            VFXManager.ScreenFadeTransition(
+                0.3,  -- Fade out duration
+                0.1,  -- Wait duration (stay black)
+                0.3,  -- Fade in duration
+                function()
+                    -- Execute teleport during black screen
+                    if player and player.character then
+                        player.character:Teleport(position)
 
-                -- Trigger camera reset to snap to new position
-                -- The client.Reset event tells the RTS camera to recenter on the player
-                client.Reset:Fire()
-                Log("Camera reset triggered")
+                        -- Trigger camera reset to snap to new position
+                        client.Reset:Fire()
+                        Log("Camera reset triggered during fade")
+                    end
+                end,
+                function()
+                    -- Fade complete - fire post-teleport event
+                    postTeleportEvent:FireClient()
+                    Log("Fade transition complete")
+                end
+            )
+        else
+            -- Other players teleport without fade (we just see them move)
+            if player and player.character then
+                player.character:Teleport(position)
             end
         end
     end)
