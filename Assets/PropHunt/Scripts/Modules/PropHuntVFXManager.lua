@@ -45,9 +45,9 @@ local _slideInDuration : number = 0.35
 --!SerializeField
 local _defaultEasing : string = "easeOutQuad"
 
--- VFX Timings (per Game Design Document)
-local VFX_PLAYER_VANISH_DURATION = 0.4  -- Vertical slice dissolve
-local VFX_PROP_INFILL_DURATION = 0.5    -- Radial mask inwards
+-- VFX Timings (per Game Design Document - adjusted for visibility)
+local VFX_PLAYER_VANISH_DURATION = 1.0  -- Player scale down when possessing (increased for visibility)
+local VFX_PROP_INFILL_DURATION = 1.2    -- Prop scale up when possessed (increased for visibility)
 local VFX_REJECTION_DURATION = 0.2      -- Brief red flash
 local VFX_TAG_HIT_DURATION = 0.25       -- Compressed ring shock
 local VFX_TAG_MISS_DURATION = 0.15      -- Dust poof

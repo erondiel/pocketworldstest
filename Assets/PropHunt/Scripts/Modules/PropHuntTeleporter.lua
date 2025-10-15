@@ -221,6 +221,9 @@ function self:ClientStart()
         if player == client.localPlayer then
             Log(string.format("Local player teleporting to (%.1f, %.1f, %.1f) with fade", position.x, position.y, position.z))
 
+            -- Cache values before async callback (player reference may become nil)
+            local targetPos = position
+
             -- Use ScreenFadeTransition to hide camera movement
             VFXManager.ScreenFadeTransition(
                 0.3,  -- Fade out duration
@@ -228,17 +231,20 @@ function self:ClientStart()
                 0.3,  -- Fade in duration
                 function()
                     -- Execute teleport during black screen
-                    if player and player.character then
-                        player.character:Teleport(position)
+                    -- Use client.localPlayer directly (safe from nil)
+                    local localPlayer = client.localPlayer
+                    if localPlayer and localPlayer.character then
+                        localPlayer.character:Teleport(targetPos)
 
                         -- Trigger camera reset to snap to new position
                         client.Reset:Fire()
                         Log("Camera reset triggered during fade")
+                    else
+                        Log("WARNING: Local player or character nil during fade callback")
                     end
                 end,
                 function()
-                    -- Fade complete - fire post-teleport event
-                    postTeleportEvent:FireClient()
+                    -- Fade complete
                     Log("Fade transition complete")
                 end
             )
