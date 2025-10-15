@@ -6,7 +6,7 @@ local PlayerManager = require("PropHuntPlayerManager")
 
 -- ========== PLAYER SCORE DATA STRUCTURE ==========
 -- Stores score data for each player
-local playerScores = {} -- [playerId] = { score, hits, misses, ticks, lastScoreTime }
+local playerScores = {} -- [playerId] = { score, hits, misses, ticks, consecutiveMisses, lastScoreTime }
 -- Note: Score NetworkValues are managed by PlayerManager (playerInfo.score)
 
 -- ========== HELPER FUNCTIONS ==========
@@ -36,6 +36,7 @@ function InitializeScores(players)
             hits = 0,
             misses = 0,
             ticks = 0,
+            consecutiveMisses = 0,
             lastScoreTime = Time.time
         }
 
@@ -56,6 +57,7 @@ function ResetAllScores()
         scoreData.hits = 0
         scoreData.misses = 0
         scoreData.ticks = 0
+        scoreData.consecutiveMisses = 0
         scoreData.lastScoreTime = Time.time
     end
 
@@ -148,6 +150,9 @@ function AwardHunterTagScore(player, zoneWeight)
     scoreData.score = scoreData.score + points
     scoreData.lastScoreTime = Time.time
 
+    -- Reset consecutive misses on successful hit
+    scoreData.consecutiveMisses = 0
+
     -- Sync to network
     SyncScoreToNetwork(player, scoreData.score)
 
@@ -157,7 +162,7 @@ function AwardHunterTagScore(player, zoneWeight)
     ))
 end
 
---- Apply miss penalty to a hunter
+--- Apply miss penalty to a hunter (exponential based on consecutive misses)
 --- @param player Player The hunter player
 function ApplyHunterMissPenalty(player)
     local playerId = player.user.id
@@ -168,7 +173,14 @@ function ApplyHunterMissPenalty(player)
         return
     end
 
-    local penalty = PropHuntConfig.GetHunterMissPenalty()
+    -- Increment consecutive misses
+    scoreData.consecutiveMisses = scoreData.consecutiveMisses + 1
+
+    -- Exponential penalty: basePenalty * (2 ^ (consecutiveMisses - 1))
+    -- 1st miss: -10, 2nd: -20, 3rd: -40, 4th: -80, etc.
+    local basePenalty = PropHuntConfig.GetHunterMissPenalty()
+    local multiplier = math.pow(2, scoreData.consecutiveMisses - 1)
+    local penalty = math.floor(basePenalty * multiplier)
 
     -- Update score
     scoreData.score = scoreData.score + penalty -- penalty is negative
@@ -178,8 +190,8 @@ function ApplyHunterMissPenalty(player)
     SyncScoreToNetwork(player, scoreData.score)
 
     PropHuntConfig.DebugLog(string.format(
-        "ScoringSystem: Hunter %s miss penalty %d | Total: %d",
-        player.name, penalty, scoreData.score
+        "ScoringSystem: Hunter %s miss penalty %d (consecutive: %d, multiplier: %.1fx) | Total: %d",
+        player.name, penalty, scoreData.consecutiveMisses, multiplier, scoreData.score
     ))
 end
 
@@ -195,6 +207,9 @@ function TrackHunterHit(player)
     end
 
     scoreData.hits = scoreData.hits + 1
+
+    -- Reset consecutive misses on successful hit
+    scoreData.consecutiveMisses = 0
 
     PropHuntConfig.DebugLog(string.format(
         "ScoringSystem: Hunter %s hit tracked | Hits: %d Misses: %d",
