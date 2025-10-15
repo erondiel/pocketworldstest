@@ -75,6 +75,7 @@
 local VFXManager = require("PropHuntVFXManager")
 local PlayerManager = require("PropHuntPlayerManager")
 local GameManager = require("PropHuntGameManager")
+local ScoringSystem = require("PropHuntScoringSystem")
 
 -- Network Events (Module-scoped, accessible within this file only)
 local possessionRequestEvent = Event.new("PH_PossessionRequest")
@@ -804,7 +805,12 @@ function self:ServerAwake()
 
         -- Find which player possessed this prop
         local possessingPlayerId = possessedProps[propName]
+
         if not possessingPlayerId then
+            -- MISS: Hunter tapped a non-possessed prop - apply penalty
+            print("[PropPossessionSystem] SERVER: Hunter " .. hunter.name .. " tapped non-possessed prop: " .. propName .. " - applying miss penalty")
+            ScoringSystem.ApplyHunterMissPenalty(hunter)
+            ScoringSystem.TrackHunterMiss(hunter)
             return
         end
 
@@ -818,8 +824,12 @@ function self:ServerAwake()
         end
 
         if not propPlayer then
+            print("[PropPossessionSystem] SERVER: ERROR - Could not find prop player with ID: " .. tostring(possessingPlayerId))
             return
         end
+
+        -- HIT: Valid tag on possessed prop
+        print("[PropPossessionSystem] SERVER: Hunter " .. hunter.name .. " successfully tagged prop: " .. propName .. " (player: " .. propPlayer.name .. ")")
 
         -- Call GameManager's tag handler to process the tag (scoring, etc.)
         GameManager.OnPlayerTagged(hunter, propPlayer)

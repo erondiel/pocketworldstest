@@ -44,7 +44,7 @@ local _propSurviveBonus : number = 100
 local _hunterFindBase : number = 120
 --!Tooltip("Penalty for missing a tag")
 --!SerializeField
-local _hunterMissPenalty : number = -8
+local _hunterMissPenalty : number = -10
 --!Tooltip("Maximum accuracy bonus")
 --!SerializeField
 local _hunterAccuracyBonusMax : number = 50
