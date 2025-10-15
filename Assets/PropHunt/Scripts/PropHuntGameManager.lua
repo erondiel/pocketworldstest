@@ -12,6 +12,7 @@ local ScoringSystem = require("PropHuntScoringSystem")
 local Teleporter = require("PropHuntTeleporter")
 local ZoneManager = require("ZoneManager")
 local VFXManager = require("PropHuntVFXManager")
+local PropPossessionSystem = require("PropPossessionSystem")
 
 -- Enhanced logging
 local function Log(msg)
@@ -206,9 +207,21 @@ end
     HIDING STATE
     Props have time to find hiding spots
 ]]
+-- Track how many props have possessed
+local propsHiddenCount = 0
+
 function UpdateHiding()
     stateTimer.value = stateTimer.value - Time.deltaTime
-    
+
+    -- Auto-transition when all props are hidden
+    local totalProps = #propsTeam
+    if totalProps > 0 and propsHiddenCount >= totalProps then
+        Log(string.format("ALL PROPS HIDDEN (%d/%d) - Auto-transitioning to HUNTING", propsHiddenCount, totalProps))
+        TransitionToState(GameState.HUNTING)
+        return
+    end
+
+    -- Timer expired, transition anyway
     if stateTimer.value <= 0 then
         TransitionToState(GameState.HUNTING)
     end
@@ -262,6 +275,9 @@ function TransitionToState(newState)
         stateTimer.value = 0
         eliminatedPlayers = {}
 
+        -- Restore all possessed players' avatars
+        PropPossessionSystem.RestoreAllPossessedPlayers()
+
         -- Teleport all players to lobby
         Teleporter.TeleportAllToLobby(GetActivePlayers())
 
@@ -280,6 +296,12 @@ function TransitionToState(newState)
     elseif newState == GameState.HIDING then
         stateTimer.value = Config.GetHidePhaseTime()
         Log(string.format("HIDE %ds", Config.GetHidePhaseTime()))
+
+        -- Reset props hidden counter
+        propsHiddenCount = 0
+
+        -- Reset prop possessions from previous round
+        PropPossessionSystem.ResetPossessions()
 
         -- Teleport props to arena
         Teleporter.TeleportAllToArena(propsTeam)
@@ -472,19 +494,16 @@ function OnPlayerJoinedScene(sceneObj, player)
     Log(string.format("JOIN %s (%d)", player.name, count))
 
     -- If game is in progress (not lobby), force player into spectator mode
+    -- Keep them in Lobby (don't teleport to arena)
     if currentState.value ~= GameState.LOBBY then
-        Log(string.format("MID-GAME JOIN: %s → forcing spectator mode", player.name))
+        Log(string.format("MID-GAME JOIN: %s → forcing spectator mode (staying in Lobby)", player.name))
 
         -- Small delay to ensure player is fully tracked by PlayerManager
         Timer.After(0.5, function()
-            -- Force spectator mode (will trigger auto-teleport via OnSpectatorToggled callback)
+            -- Force spectator mode (but don't teleport - keep them in lobby)
             local success = PlayerManager.ForceSpectatorMode(player)
             if success then
-                Log(string.format("Mid-game joiner %s set as spectator and teleported to Arena", player.name))
-            else
-                -- Fallback: just teleport if forcing spectator failed
-                Teleporter.TeleportToArena(player)
-                Log(string.format("Mid-game player %s teleported to Arena (fallback)", player.name))
+                Log(string.format("Mid-game joiner %s set as spectator and remains in Lobby", player.name))
             end
         end)
     end
@@ -726,6 +745,16 @@ function OnSpectatorToggled(player, isNowSpectator)
     end
 end
 
+--[[
+    Prop Possession Tracking
+    Called by PropPossessionSystem when a prop successfully hides
+]]
+function OnPropHidden()
+    propsHiddenCount = propsHiddenCount + 1
+    local totalProps = #propsTeam
+    Log(string.format("PROP HIDDEN (%d/%d)", propsHiddenCount, totalProps))
+end
+
 -- ========== MODULE EXPORTS ==========
 -- Public API for other scripts (UIManager, ValidationTest, etc.)
 
@@ -741,6 +770,12 @@ return {
     GetHuntersTeam = function() return huntersTeam end,
 
     -- Game state
-    GameState = GameState
+    GameState = GameState,
+
+    -- Prop possession tracking
+    OnPropHidden = OnPropHidden,
+
+    -- Tag system (already used by PropPossessionSystem)
+    OnPlayerTagged = OnPlayerTagged
 }
 
