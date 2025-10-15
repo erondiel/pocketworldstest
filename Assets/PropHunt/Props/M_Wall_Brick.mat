@@ -227,7 +227,7 @@ Material:
     - _WorkflowMode: 1
     - _WorldAlign: 0
     - _WorldTile: 10.56
-    - _World_Tile: 1
+    - _World_Tile: 0.25
     - _ZWrite: 1
     m_Colors:
     - Color_609458B3: {r: 1, g: 1, b: 1, a: 1}

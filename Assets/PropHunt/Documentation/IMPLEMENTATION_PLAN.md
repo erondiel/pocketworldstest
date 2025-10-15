@@ -46,7 +46,7 @@
   - [x] Phases: Hide (35s), Hunt (240s), RoundEnd (15s)
   - [x] Tagging: R_tag (4.0m), Cooldown (0.5s)
   - [x] Scoring: PropTickSeconds (5), PropTickPoints (10), PropSurviveBonus (100)
-  - [x] Scoring: HunterFindBase (120), HunterMissPenalty (-8), HunterAccuracyBonusMax (50)
+  - [x] Scoring: HunterFindBase (120), HunterMissPenalty (-10, exponential), HunterAccuracyBonusMax (50)
   - [x] Zones: NearSpawn (1.5), Mid (1.0), Far (0.6)
   - [x] Taunt: Cooldown (13s), Window (10s), Reward (20), Enabled (false)
 - [x] Create debug logging functions with enable/disable toggle
@@ -220,12 +220,14 @@
   - [x] Fire tag success event to all clients
   - [x] Update remaining props counter
   - [x] Check win condition (all props found)
-- [x] On failed tag:
-  - [x] Apply miss penalty to hunter
+  - [x] Reset consecutive miss counter
+- [x] On failed tag (clicking non-possessed prop):
+  - [x] Apply exponential miss penalty to hunter (basePenalty × 2^(consecutiveMisses - 1))
+  - [x] Increment consecutive miss counter
   - [x] Fire tag miss event to hunter client
   - [x] Track hit/miss for accuracy bonus
 
-**Note:** HunterTagSystem fully integrated. Updated to V1 spec: raycast from player body origin, 4.0m distance validation, 0.5s cooldown. VFX placeholders in use, particle systems post-V1
+**Note:** HunterTagSystem fully integrated. Updated to V1 spec: raycast from player body origin, 4.0m distance validation, 0.5s cooldown. Miss penalty system implemented with exponential growth (1st miss: -10, 2nd: -20, 3rd: -40, etc.) to discourage spam-clicking. VFX placeholders in use, particle systems post-V1
 
 ---
 
@@ -245,8 +247,10 @@
 - [x] On successful tag:
   - Query zone of tagged prop's position
   - Award: +120 × ZoneWeight to hunter
-- [x] On missed tag:
-  - Apply penalty: -8 points to hunter
+- [x] On missed tag (clicking non-possessed props):
+  - Apply exponential penalty: basePenalty × 2^(consecutiveMisses - 1) where basePenalty = -10
+  - 1st consecutive miss: -10, 2nd: -20, 3rd: -40, 4th: -80, etc.
+  - Counter resets on successful tag
 - [x] Track hits and misses per hunter
 - [x] On round end:
   - Calculate accuracy bonus: floor((Hits / max(1, Hits+Misses)) × 50)
