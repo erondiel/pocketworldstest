@@ -32,6 +32,7 @@ local currentState = NumberValue.new("PH_CurrentState", GameState.LOBBY)
 local stateTimer = NumberValue.new("PH_StateTimer", 0)
 local playerCount = NumberValue.new("PH_PlayerCount", 0)
 local roundNumber = 0
+local quickStartActive = false  -- Track if we're in 5s quick-start mode
 
 -- Player tracking
 local activePlayers = {}
@@ -186,18 +187,24 @@ function UpdateLobby()
     -- NEW: Check if ALL players are ready (skip countdown)
     if readyCount >= minRequired and readyCount >= totalPlayers and totalPlayers >= minRequired then
         -- All players ready - skip countdown and start immediately with 5s delay
-        if stateTimer.value ~= 5 then
+        if not quickStartActive then
+            -- First time all players are ready - start quick countdown
+            quickStartActive = true
             stateTimer.value = 5
             Log(string.format("ALL READY [%d/%d] - Starting in 5s", readyCount, totalPlayers))
             BroadcastStateChange(GameState.LOBBY, stateTimer)
         else
+            -- Quick countdown already started - tick down
             stateTimer.value = stateTimer.value - Time.deltaTime
             if stateTimer.value <= 0 then
+                quickStartActive = false
                 StartNewRound()
             end
         end
     elseif readyCount >= minRequired then
         -- At least minimum players ready - run countdown
+        quickStartActive = false  -- Cancel quick start if someone un-readied
+
         if stateTimer.value > 0 and stateTimer.value <= Config.GetLobbyCountdown() then
             stateTimer.value = stateTimer.value - Time.deltaTime
 
@@ -212,6 +219,7 @@ function UpdateLobby()
         end
     else
         -- Not enough ready players, reset timer
+        quickStartActive = false
         if stateTimer.value ~= 0 then
             stateTimer.value = 0
             Log(string.format("WAIT [%d ready/%d total, need %d]", readyCount, totalPlayers, minRequired))

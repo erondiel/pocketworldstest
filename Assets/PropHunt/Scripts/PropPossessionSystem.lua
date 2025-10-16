@@ -88,11 +88,11 @@ local hideAvatarCommand = Event.new("PH_HideAvatarCommand")
 local restoreAvatarCommand = Event.new("PH_RestoreAvatarCommand")
 local playerTaggedEvent = Event.new("PH_PlayerTagged")  -- Listen for tag events from GameManager
 local tagPropRequest = Event.new("PH_TagPropRequest")  -- Hunter taps prop during HUNTING
-local postTeleportEvent = Event.new("PH_PostTeleport")  -- Listen for teleport completion
 
 -- VFX Network Events
 local playerVanishVFXEvent = Event.new("PH_PlayerVanishVFX")  -- Broadcast player vanish VFX to all clients
 local propInfillVFXEvent = Event.new("PH_PropInfillVFX")  -- Broadcast prop infill VFX to all clients
+local playerAppearVFXEvent = Event.new("PH_PlayerAppearVFX")  -- Broadcast player appear VFX to all clients
 
 -- Server-side prop tracking (One-Prop Rule)
 -- Maps propName -> playerId
@@ -104,7 +104,6 @@ local currentState = "LOBBY"
 local localRole = "unknown"
 local hasPossessedThisRound = false
 local shouldBeVisible = true  -- Track if local player's avatar should be visible
-local shouldPlayAppearVFX = false -- Track if the appear VFX should be played for the local player
 
 -- Client-side prop tracking (per-prop data)
 -- Maps propName -> { gameObject, renderer, outlineRenderer, savedEmission, isPossessed }
@@ -437,7 +436,8 @@ local function RestorePlayerAvatarExecute(userId)
     -- Track visibility state for local player
     if isLocalPlayer then
         shouldBeVisible = true
-        shouldPlayAppearVFX = true
+        -- NOTE: VFX will be broadcast from server via playerAppearVFXEvent
+        -- Don't set shouldPlayAppearVFX here anymore
     end
 
     local function AttemptRestore()
@@ -869,46 +869,64 @@ function self:ClientStart()
         Logger.Log("PropPossessionSystem", "PropInfill VFX triggered at " .. tostring(position))
     end)
 
-    -- Listen for post-teleport event to fix Rig visibility issues and play VFX
-    postTeleportEvent:Connect(function()
-        Logger.Log("PropPossessionSystem", "Post-teleport check triggered")
+    playerAppearVFXEvent:Connect(function(posX, posY, posZ, playerId)
+        -- Wait 0.3s for teleport to complete before triggering VFX
+        Timer.After(0.3, function()
+            -- Find the player character by ID
+            local playerCharacter = nil
+            for _, player in ipairs(scene.players) do
+                if player.id == playerId and player.character then
+                    playerCharacter = player.character
+                    break
+                end
+            end
 
-        -- If we should be visible, double-check that the Rig is actually enabled
-        if shouldBeVisible then
-            local localPlayer = client.localPlayer
-            if localPlayer and localPlayer.character then
-                local characterGameObject = localPlayer.character.gameObject
-                local rigTransform = characterGameObject.transform:Find("Rig")
+            if playerCharacter then
+                -- Use the player's current position (after teleport)
+                local currentPosition = playerCharacter.transform.position
+                VFXManager.PlayerAppearVFX(currentPosition, playerCharacter)
+                Logger.Log("PropPossessionSystem", "PlayerAppear VFX triggered at post-teleport position: " .. tostring(currentPosition))
+            else
+                Logger.Warn("PropPossessionSystem", "Could not find player character for appear VFX (playerId: " .. tostring(playerId) .. ")")
+            end
+        end)
+    end)
 
-                if rigTransform then
-                    local isActive = rigTransform.gameObject.activeSelf
-                    Logger.Log("PropPossessionSystem", "Post-teleport: Rig is " .. (isActive and "ACTIVE" or "INACTIVE") .. " (should be ACTIVE)")
+    -- REMOVED: postTeleportEvent listener (replaced with ClientUpdate polling)
+end
 
-                    if not isActive then
-                        Logger.Log("PropPossessionSystem", "Post-teleport: FORCING Rig to active")
-                        rigTransform.gameObject:SetActive(true)
+--[[
+    CLIENT UPDATE - Rig visibility polling
+    This runs every frame and checks if Rig needs to be fixed
+]]
+local rigCheckTimer = 0
 
-                        -- Verify again after a moment
-                        Timer.After(0.1, function()
-                            if rigTransform and rigTransform.gameObject then
-                                local nowActive = rigTransform.gameObject.activeSelf
-                                Logger.Log("PropPossessionSystem", "Post-teleport verification: Rig is now " .. (nowActive and "ACTIVE" or "INACTIVE"))
-                            end
-                        end)
-                    end
+function self:ClientUpdate()
+    local localPlayer = client.localPlayer
+    if not localPlayer or not localPlayer.character then
+        return
+    end
+
+    -- Double-check Rig visibility after restoration (poll for 1 second)
+    if shouldBeVisible then
+        rigCheckTimer = rigCheckTimer + Time.deltaTime
+
+        if rigCheckTimer <= 1.0 then  -- Check for 1 second after restoration
+            local characterGameObject = localPlayer.character.gameObject
+            local rigTransform = characterGameObject.transform:Find("Rig")
+
+            if rigTransform then
+                local isActive = rigTransform.gameObject.activeSelf
+
+                if not isActive then
+                    Logger.Log("PropPossessionSystem", "ClientUpdate: Rig is INACTIVE - forcing to active")
+                    rigTransform.gameObject:SetActive(true)
                 end
             end
         end
-
-        -- Play appear VFX if needed
-        if shouldPlayAppearVFX then
-            local localPlayer = client.localPlayer
-            if localPlayer and localPlayer.character then
-                VFXManager.PlayerAppearVFX(localPlayer.character.transform.position)
-            end
-            shouldPlayAppearVFX = false
-        end
-    end)
+    else
+        rigCheckTimer = 0
+    end
 end
 
 --[[
@@ -1007,6 +1025,12 @@ function self:ServerAwake()
         -- This prevents NavMesh/input issues with hidden player
         Logger.Log("PropPossessionSystem", "SERVER: Teleporting tagged player to Arena spawn: " .. propPlayer.name)
         Teleporter.TeleportToArena(propPlayer)
+
+        -- Broadcast PlayerAppear VFX to all clients (will wait 0.3s for teleport on client side)
+        -- Send pre-teleport position (will be ignored, client uses post-teleport position)
+        local propPlayerPos = propPlayer.character.transform.position
+        playerAppearVFXEvent:FireAllClients(propPlayerPos.x, propPlayerPos.y, propPlayerPos.z, propPlayer.id)
+        Logger.Log("PropPossessionSystem", "SERVER: Broadcast PlayerAppear VFX event for " .. propPlayer.name)
 
         -- Change role to spectator
         PlayerManager.SetPlayerRole(propPlayer, "spectator")

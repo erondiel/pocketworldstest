@@ -443,9 +443,84 @@ function PlayerVanishVFX(position, playerCharacter)
     end
 end
 
-function PlayerAppearVFX(position)
+--[[
+  PlayerAppearVFX: Triggers the player appear effect when a tagged prop is revealed
+
+  This is the reverse of PlayerVanishVFX:
+    - Player character scales from 0.0 to 1.0 (growing)
+    - Player character fades from transparent to opaque
+    - Duration is half of VFX timer (same as vanish)
+
+  @param position: Vector3 - World position where effect should play
+  @param playerCharacter: GameObject (optional) - The player character object
+  @return void
+]]
+function PlayerAppearVFX(position, playerCharacter)
     DebugVFX("PlayerAppearVFX at " .. tostring(position))
+
+    -- Spawn VFX using SerializeField reference
     local vfxInstance = SpawnVFX(_playerAppearVFXPrefab, _playerAppearDuration, position, "PlayerAppear")
+
+    -- Grow duration is half of VFX timer (same as vanish shrink duration)
+    local growDuration = _playerAppearDuration / 2
+
+    -- Scale up and fade in player character simultaneously (reverse of vanish)
+    if playerCharacter then
+        DebugVFX(string.format("Growing and fading in character over %.2fs (VFX timer: %.2fs)",
+            growDuration, _playerAppearDuration))
+
+        -- Get all renderers on the character to fade them in
+        local renderers = playerCharacter:GetComponentsInChildren(SkinnedMeshRenderer, true)
+
+        -- Create a group to run scale and fade in parallel
+        local tweenGroup = TweenGroup:new()
+
+        -- 1. Scale animation (0.0 → 1.0) - REVERSE of vanish
+        local originalScale = playerCharacter.transform.localScale
+        local easingFunc = GetEasingFunction("easeOutQuad")  -- Opposite of vanish's easeInQuad
+        local scaleTween = Tween:new(0.0, 1.0, growDuration, false, false, easingFunc, function(value, t)
+            playerCharacter.transform.localScale = Vector3.new(
+                originalScale.x * value,
+                originalScale.y * value,
+                originalScale.z * value
+            )
+        end, nil)
+
+        tweenGroup:add(scaleTween)
+
+        -- 2. Fade animation (0.0 → 1.0 alpha) - REVERSE of vanish
+        if renderers and #renderers > 0 then
+            for i = 1, #renderers do
+                local renderer = renderers[i]
+                if renderer and renderer.material then
+                    -- Get current color
+                    local material = renderer.material
+                    local originalColor = material.color
+
+                    -- Create fade tween for this renderer's material (fade IN from transparent)
+                    local fadeTween = Tween:new(0.0, 1.0, growDuration, false, false, easingFunc, function(alpha, t)
+                        -- Update material alpha
+                        material.color = Color.new(
+                            originalColor.r,
+                            originalColor.g,
+                            originalColor.b,
+                            alpha
+                        )
+                    end, nil)
+
+                    tweenGroup:add(fadeTween)
+                end
+            end
+
+            DebugVFX(string.format("Fading in %d renderer materials", #renderers))
+        else
+            DebugVFX("No renderers found on character - skipping fade")
+        end
+
+        -- Start all animations together
+        tweenGroup:start()
+    end
+
     return vfxInstance
 end
 
