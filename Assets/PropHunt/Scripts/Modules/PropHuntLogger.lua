@@ -52,36 +52,32 @@ local _enableHunterTagSystem : boolean = true
 local _enablePropPossessionSystem : boolean = true
 
 --!SerializeField
---!Tooltip("Enable/disable logging for PropDisguiseSystem (not implemented)")
-local _enablePropDisguiseSystem : boolean = true
+--!Tooltip("Enable/disable logging for PropDisguiseSystem - Not Implemented")
+local _enablePropDisguiseSystem_NotImplemented : boolean = true
 
 --!SerializeField
---!Tooltip("Enable/disable logging for RangeIndicator (not implemented)")
-local _enableRangeIndicator : boolean = false
+--!Tooltip("Enable/disable logging for RangeIndicator - Not Implemented")
+local _enableRangeIndicator_NotImplemented : boolean = false
 
 --!SerializeField
---!Tooltip("Enable/disable logging for ReadyButton (not implemented)")
-local _enableReadyButton : boolean = false
+--!Tooltip("Enable/disable logging for ReadyButton - Not Implemented")
+local _enableReadyButton_NotImplemented : boolean = false
 
 --!SerializeField
---!Tooltip("Enable/disable logging for SpectatorButton (not implemented)")
-local _enableSpectatorButton : boolean = false
+--!Tooltip("Enable/disable logging for SpectatorButton - Not Implemented")
+local _enableSpectatorButton_NotImplemented : boolean = false
 
 --!SerializeField
---!Tooltip("Enable/disable logging for RecapScreen (not implemented)")
-local _enableRecapScreen : boolean = true
+--!Tooltip("Enable/disable logging for RecapScreen - Not Implemented")
+local _enableRecapScreen_NotImplemented : boolean = true
 
 --!SerializeField
---!Tooltip("Enable/disable logging for HUD (not implemented)")
-local _enableHUD : boolean = false
+--!Tooltip("Enable/disable logging for HUD - Not Implemented")
+local _enableHUD_NotImplemented : boolean = false
 
 --!SerializeField
 --!Tooltip("Enable/disable logging for Config")
 local _enableConfig : boolean = true
-
---!SerializeField
---!Tooltip("Disable all logs (overrides everything)")
-local _disableAllLogs : boolean = false
 
 -- ========== SYSTEM NAME MAPPING ==========
 -- Maps system names to their toggle flags
@@ -96,12 +92,12 @@ local systemToggles = {
     ["UIManager"] = function() return _enableUIManager end,
     ["HunterTagSystem"] = function() return _enableHunterTagSystem end,
     ["PropPossessionSystem"] = function() return _enablePropPossessionSystem end,
-    ["PropDisguiseSystem"] = function() return _enablePropDisguiseSystem end,
-    ["RangeIndicator"] = function() return _enableRangeIndicator end,
-    ["ReadyButton"] = function() return _enableReadyButton end,
-    ["SpectatorButton"] = function() return _enableSpectatorButton end,
-    ["RecapScreen"] = function() return _enableRecapScreen end,
-    ["HUD"] = function() return _enableHUD end,
+    ["PropDisguiseSystem"] = function() return _enablePropDisguiseSystem_NotImplemented end,
+    ["RangeIndicator"] = function() return _enableRangeIndicator_NotImplemented end,
+    ["ReadyButton"] = function() return _enableReadyButton_NotImplemented end,
+    ["SpectatorButton"] = function() return _enableSpectatorButton_NotImplemented end,
+    ["RecapScreen"] = function() return _enableRecapScreen_NotImplemented end,
+    ["HUD"] = function() return _enableHUD_NotImplemented end,
     ["Config"] = function() return _enableConfig end,
 
     -- Alternative names / aliases
@@ -125,11 +121,6 @@ local systemToggles = {
     @return boolean - Whether logging is enabled
 ]]
 local function IsSystemEnabled(systemName)
-    -- Global override: disable all
-    if _disableAllLogs then
-        return false
-    end
-
     -- Check system-specific toggle
     local toggleFunc = systemToggles[systemName]
     if toggleFunc then
@@ -177,12 +168,12 @@ function Warn(systemName, message)
 end
 
 --[[
-    Log an ERROR message (always shown unless all logs disabled)
+    Log an ERROR message
     @param systemName: string - Name of the system
     @param message: string - The message to log
 ]]
 function Error(systemName, message)
-    if _disableAllLogs then return end  -- Only respect global disable
+    if not IsSystemEnabled(systemName) then return end
 
     print(FormatMessage(systemName, message, "ERROR"))
 end

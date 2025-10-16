@@ -794,8 +794,14 @@ local function HandlePossessionRequest(player, propName)
                 playerVanishVFXEvent:FireAllClients(playerPos.x, playerPos.y, playerPos.z, player.id)
                 propInfillVFXEvent:FireAllClients(propPos.x, propPos.y, propPos.z, propName)
 
-                -- SERVER: Directly broadcast hide command to ALL clients
-                hideAvatarCommand:FireAllClients(player.user.id)
+                -- SERVER: Delay hide command until AFTER VFX completes
+                -- This allows the scale-down animation to be visible before Rig is disabled
+                local VFXManager = require("PropHuntVFXManager")
+                -- Use PlayerVanish duration + small buffer to ensure VFX completes
+                Timer.After(3.7, function()
+                    hideAvatarCommand:FireAllClients(player.user.id)
+                    Logger.Log("PropPossessionSystem", "SERVER: Hide avatar command sent after VFX duration")
+                end)
             end
         end
     end

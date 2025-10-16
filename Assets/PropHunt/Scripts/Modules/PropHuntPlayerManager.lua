@@ -1,5 +1,6 @@
 --!Type(Module)
 
+local Logger = require("PropHuntLogger")
 local Config = require("PropHuntConfig")
 
 -- Forward declaration - will be set by GameManager
@@ -67,7 +68,7 @@ end
 ------------------------------------------------------------
 local function TrackPlayersClient()
     scene.PlayerJoined:Connect(function(sceneObj : Scene, player : Player)
-        print("[PlayerManager] Client tracking: " .. player.name)
+        Logger.Log("PlayerManager", "Client tracking: " .. player.name)
 
         players[player] = {
             player = player,
@@ -80,7 +81,7 @@ local function TrackPlayersClient()
     end)
 
     client.PlayerDisconnected:Connect(function(player : Player)
-        print("[PlayerManager] Client untracking: " .. player.name)
+        Logger.Log("PlayerManager", "Client untracking: " .. player.name)
         players[player] = nil
     end)
 end
@@ -93,7 +94,7 @@ end
 ------------------------------------------------------------
 local function TrackPlayersServer()
     scene.PlayerJoined:Connect(function(sceneObj : Scene, player : Player)
-        print("[PlayerManager] Server tracking: " .. player.name)
+        Logger.Log("PlayerManager", "Server tracking: " .. player.name)
 
         players[player] = {
             player = player,
@@ -106,7 +107,7 @@ local function TrackPlayersServer()
     end)
 
     server.PlayerDisconnected:Connect(function(player : Player)
-        print("[PlayerManager] Server untracking: " .. player.name)
+        Logger.Log("PlayerManager", "Server untracking: " .. player.name)
 
         players[player] = nil
 
@@ -132,18 +133,18 @@ function ResetAllPlayers()
     end
 
     readyPlayers.value = {}
-    print("[PlayerManager] All players reset to not ready")
+    Logger.Log("PlayerManager", "All players reset to not ready")
 end
 
 -- Server-side function to set player role
 function SetPlayerRole(player : Player, role : string)
     if not players[player] then
-        print("[PlayerManager] Cannot set role - player not tracked: " .. player.name)
+        Logger.Log("PlayerManager", "Cannot set role - player not tracked: " .. player.name)
         return false
     end
 
     players[player].role.value = role
-    print(string.format("[PlayerManager] %s role set to: %s", player.name, role))
+    Logger.Log("PlayerManager", string.format("%s role set to: %s", player.name, role))
     return true
 end
 
@@ -156,18 +157,18 @@ function BroadcastGameState(newState : number)
             count = count + 1
         end
     end
-    print(string.format("[PlayerManager] Broadcast state %d to %d players", newState, count))
+    Logger.Log("PlayerManager", string.format("Broadcast state %d to %d players", newState, count))
 end
 
 function ReadyUpPlayerRequest(player : Player)
     if not players[player] then
-        print("[PlayerManager] Player not tracked: " .. player.name)
+        Logger.Log("PlayerManager", "Player not tracked: " .. player.name)
         return
     end
 
     -- Can't ready up if spectator
     if players[player].isSpectator.value then
-        print("[PlayerManager] Spectators cannot ready up: " .. player.name)
+        Logger.Log("PlayerManager", "Spectators cannot ready up: " .. player.name)
         return
     end
 
@@ -179,11 +180,11 @@ function ReadyUpPlayerRequest(player : Player)
 
     if not wasReady then
         -- Player is now ready
-        print("[PlayerManager] Player ready: " .. player.name)
+        Logger.Log("PlayerManager", "Player ready: " .. player.name)
         readyPlayersTable[player] = true
     else
         -- Player is now unready
-        print("[PlayerManager] Player unready: " .. player.name)
+        Logger.Log("PlayerManager", "Player unready: " .. player.name)
         readyPlayersTable[player] = nil
     end
 
@@ -192,7 +193,7 @@ end
 
 function ToggleSpectatorRequest(player : Player)
     if not players[player] then
-        print("[PlayerManager] Player not tracked: " .. player.name)
+        Logger.Log("PlayerManager", "Player not tracked: " .. player.name)
         return false
     end
 
@@ -205,7 +206,7 @@ function ToggleSpectatorRequest(player : Player)
 
     if not wasSpectator then
         -- Becoming spectator
-        print("[PlayerManager] Player became spectator: " .. player.name)
+        Logger.Log("PlayerManager", "Player became spectator: " .. player.name)
 
         -- Un-ready if they were ready
         if players[player].isReady.value then
@@ -227,7 +228,7 @@ function ToggleSpectatorRequest(player : Player)
         return true -- Now spectator
     else
         -- Leaving spectator mode
-        print("[PlayerManager] Player left spectator mode: " .. player.name)
+        Logger.Log("PlayerManager", "Player left spectator mode: " .. player.name)
 
         -- Remove from spectator list
         spectatorPlayersTable[player] = nil
@@ -250,16 +251,16 @@ end
 -- Server-side function to force a player into spectator mode (for mid-game joins)
 function ForceSpectatorMode(player : Player)
     if not players[player] then
-        print("[PlayerManager] Cannot force spectator - player not tracked: " .. player.name)
+        Logger.Log("PlayerManager", "Cannot force spectator - player not tracked: " .. player.name)
         return false
     end
 
     if players[player].isSpectator.value then
-        print("[PlayerManager] Player already spectator: " .. player.name)
+        Logger.Log("PlayerManager", "Player already spectator: " .. player.name)
         return true
     end
 
-    print("[PlayerManager] Forcing spectator mode: " .. player.name)
+    Logger.Log("PlayerManager", "Forcing spectator mode: " .. player.name)
 
     -- Set spectator state
     players[player].isSpectator.value = true

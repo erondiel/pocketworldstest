@@ -16,6 +16,7 @@
 
 --!Type(Module)
 
+local Logger = require("PropHuntLogger")
 local VFXManager = require("PropHuntVFXManager")
 
 -- ========== NETWORK EVENTS ==========
@@ -30,7 +31,7 @@ local arenaSpawn = nil
     Debug logging
 ]]
 local function Log(msg)
-    print("[PropHunt Teleporter] " .. tostring(msg))
+    Logger.Log("Teleporter", tostring(msg))
 end
 
 --[[

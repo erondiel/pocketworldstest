@@ -1,5 +1,6 @@
 --!Type(UI)
 
+local Logger = require("PropHuntLogger")
 local PlayerManager = require("PropHuntPlayerManager")
 
 --!Bind
@@ -10,16 +11,16 @@ local _label : Label = nil
 function ReadyUpButton()
     local playerInfo = PlayerManager.GetPlayerInfo(client.localPlayer)
     if not playerInfo then
-        print("[PropHuntReadyButton] Player info not found")
+        Logger.Log("ReadyButton", "Player info not found")
         return
     end
 
     local isCurrentlyReady = playerInfo.isReady.value
 
     if isCurrentlyReady then
-        print("[PropHuntReadyButton] Un-ready button pressed")
+        Logger.Log("ReadyButton", "Un-ready button pressed")
     else
-        print("[PropHuntReadyButton] Ready button pressed")
+        Logger.Log("ReadyButton", "Ready button pressed")
     end
 
     PlayerManager.ReadyUpRequest:FireServer()
@@ -42,7 +43,7 @@ local function UpdateButtonVisuals(isReady)
 end
 
 function self:Start()
-    print("[PropHuntReadyButton] Started")
+    Logger.Log("ReadyButton", "Started")
 
     -- Listen to ready state changes to update button
     local playerInfo = PlayerManager.GetPlayerInfo(client.localPlayer)
@@ -54,9 +55,9 @@ function self:Start()
         playerInfo.isReady.Changed:Connect(function(newValue, oldValue)
             UpdateButtonVisuals(newValue)
             if newValue then
-                print("[PropHuntReadyButton] Player marked as ready")
+                Logger.Log("ReadyButton", "Player marked as ready")
             else
-                print("[PropHuntReadyButton] Player unmarked as ready")
+                Logger.Log("ReadyButton", "Player unmarked as ready")
             end
         end)
     end
