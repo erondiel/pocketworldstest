@@ -85,7 +85,7 @@ local possessionResultEvent = Event.new("PH_PossessionResult")
 local hideAvatarRequest = Event.new("PH_HideAvatarRequest")
 local restoreAvatarRequest = Event.new("PH_RestoreAvatarRequest")
 local hideAvatarCommand = Event.new("PH_HideAvatarCommand")
-local restoreAvatarCommand = Event.new("PH_RestoreAvatarCommand")
+local restoreAvatarCommand = Event.new("PH_RestoreAvatarCommand")  -- Params: userId, skipScaleReset (optional)
 local playerTaggedEvent = Event.new("PH_PlayerTagged")  -- Listen for tag events from GameManager
 local tagPropRequest = Event.new("PH_TagPropRequest")  -- Hunter taps prop during HUNTING
 
@@ -410,8 +410,8 @@ local function HidePlayerAvatarExecute(userId)
     end
 end
 
-local function RestorePlayerAvatarExecute(userId)
-    Logger.Log("PropPossessionSystem", "RestorePlayerAvatarExecute called for userId: " .. tostring(userId))
+local function RestorePlayerAvatarExecute(userId, skipScaleReset)
+    Logger.Log("PropPossessionSystem", "RestorePlayerAvatarExecute called for userId: " .. tostring(userId) .. " (skipScaleReset=" .. tostring(skipScaleReset or false) .. ")")
 
     -- Find the player with this userId
     local targetPlayer = nil
@@ -447,13 +447,20 @@ local function RestorePlayerAvatarExecute(userId)
             local character = targetPlayer.character
             local characterGameObject = character.gameObject
 
-            -- CRITICAL FIX: Reset character scale (VFX scaled it to 0)
-            local currentScale = characterGameObject.transform.localScale
-            Logger.Debug("PropPossessionSystem", "Current character scale: " .. tostring(currentScale.x) .. ", " .. tostring(currentScale.y) .. ", " .. tostring(currentScale.z))
+            -- CRITICAL: Handle scale based on whether VFX will animate it
+            if not skipScaleReset then
+                -- Round end / lobby transitions: Reset scale to 1.0 immediately
+                local currentScale = characterGameObject.transform.localScale
+                Logger.Debug("PropPossessionSystem", "Current character scale: " .. tostring(currentScale.x) .. ", " .. tostring(currentScale.y) .. ", " .. tostring(currentScale.z))
 
-            if currentScale.x < 0.1 or currentScale.y < 0.1 or currentScale.z < 0.1 then
-                Logger.Log("PropPossessionSystem", "Character was scaled to ~0 by VFX - resetting to (1,1,1)")
-                characterGameObject.transform.localScale = Vector3.new(1, 1, 1)
+                if currentScale.x < 0.1 or currentScale.y < 0.1 or currentScale.z < 0.1 then
+                    Logger.Log("PropPossessionSystem", "Character was scaled to ~0 by VFX - resetting to (1,1,1)")
+                    characterGameObject.transform.localScale = Vector3.new(1, 1, 1)
+                end
+            else
+                -- Tagged reveal: Set scale to 0.0 for PlayerAppear VFX to animate from 0→1
+                Logger.Log("PropPossessionSystem", "Setting scale to 0.0 - PlayerAppear VFX will animate scale 0→1")
+                characterGameObject.transform.localScale = Vector3.new(0, 0, 0)
             end
 
             -- Find and re-enable the Rig GameObject
@@ -793,9 +800,9 @@ local function HandlePossessionRequest(player, propName)
                 GameManager.OnPropHidden()
 
                 -- SERVER: Broadcast VFX to ALL clients
-                local playerPos = player.character.transform.position
+                -- PlayerVanish VFX spawns at PROP position (player will LERP toward it)
                 local propPos = GameObject.Find(propName).transform.position
-                playerVanishVFXEvent:FireAllClients(playerPos.x, playerPos.y, playerPos.z, player.id)
+                playerVanishVFXEvent:FireAllClients(propPos.x, propPos.y, propPos.z, player.id)
                 propInfillVFXEvent:FireAllClients(propPos.x, propPos.y, propPos.z, propName)
 
                 -- SERVER: Delay hide command until AFTER VFX completes
@@ -833,7 +840,9 @@ function self:ClientStart()
 
     -- Listen for avatar visibility commands from server
     hideAvatarCommand:Connect(HidePlayerAvatarExecute)
-    restoreAvatarCommand:Connect(RestorePlayerAvatarExecute)
+    restoreAvatarCommand:Connect(function(userId, skipScaleReset)
+        RestorePlayerAvatarExecute(userId, skipScaleReset)
+    end)
 
     -- Listen for player tagged events (to reveal tagged props)
     playerTaggedEvent:Connect(function(hunterId, propId)
@@ -847,7 +856,7 @@ function self:ClientStart()
 
     -- Listen for VFX events from server
     playerVanishVFXEvent:Connect(function(posX, posY, posZ, playerId)
-        local position = Vector3.new(posX, posY, posZ)
+        local propPosition = Vector3.new(posX, posY, posZ)
 
         -- Find the player character if available
         local playerCharacter = nil
@@ -858,8 +867,9 @@ function self:ClientStart()
             end
         end
 
-        VFXManager.PlayerVanishVFX(position, playerCharacter)
-        Logger.Log("PropPossessionSystem", "PlayerVanish VFX triggered at " .. tostring(position))
+        -- VFX spawns at prop position, player LERP moves toward it while shrinking
+        VFXManager.PlayerVanishVFX(propPosition, playerCharacter)
+        Logger.Log("PropPossessionSystem", "PlayerVanish VFX triggered at prop position: " .. tostring(propPosition))
     end)
 
     propInfillVFXEvent:Connect(function(posX, posY, posZ, propName)
@@ -1054,9 +1064,9 @@ function self:ServerAwake()
         -- Call GameManager's tag handler to process the tag (scoring, etc.)
         GameManager.OnPlayerTagged(hunter, propPlayer)
 
-        -- IMMEDIATELY restore the tagged player's avatar
+        -- IMMEDIATELY restore the tagged player's avatar (skip scale reset - VFX will handle it)
         Logger.Log("PropPossessionSystem", "SERVER: Restoring avatar for tagged player: " .. propPlayer.name)
-        restoreAvatarCommand:FireAllClients(propPlayer.user.id)
+        restoreAvatarCommand:FireAllClients(propPlayer.user.id, true)  -- true = skip scale reset
 
         -- Teleport tagged prop to arena spawn position WITHOUT screen fade
         -- This prevents NavMesh/input issues with hidden player

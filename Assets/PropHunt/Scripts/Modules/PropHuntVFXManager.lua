@@ -373,43 +373,61 @@ end
     - Vertical slice dissolve with soft sparks (0.4s)
     - Player model fades out in vertical bands from bottom to top
     - 3-5 micro sparkles trail upward
+    - Player LERP moves from current position to prop position while shrinking
 
-  @param position: Vector3 - World position where effect should play
+  @param propPosition: Vector3 - World position of the prop (where VFX spawns)
   @param playerCharacter: GameObject (optional) - The player character object
   @return void
 
-  TODO: Replace with particle system instantiation:
-    1. Instantiate PlayerVanishVFX prefab at position
-    2. Play dissolve shader on playerCharacter material
-    3. Spawn upward-moving sparkle particles
-    4. Destroy VFX after VFX_PLAYER_VANISH_DURATION
+  Implementation:
+    1. Spawn VFX at prop position (target)
+    2. LERP player character from current position to prop position
+    3. Simultaneously shrink player character from 1.0 to 0.0
+    4. Duration: half of VFX timer (same as shrink)
 ]]
-function PlayerVanishVFX(position, playerCharacter)
-    DebugVFX("PlayerVanishVFX at " .. tostring(position))
+function PlayerVanishVFX(propPosition, playerCharacter)
+    DebugVFX("PlayerVanishVFX at prop position: " .. tostring(propPosition))
 
-    -- Spawn VFX using SerializeField reference
-    local vfxInstance = SpawnVFX(_playerVanishVFXPrefab, _playerVanishDuration, position, "PlayerVanish")
+    -- Spawn VFX at prop position (the target destination)
+    local vfxInstance = SpawnVFX(_playerVanishVFXPrefab, _playerVanishDuration, propPosition, "PlayerVanish")
 
     -- Shrink duration is half of VFX timer (e.g., 2.5s VFX → 1.25s shrink)
     local shrinkDuration = _playerVanishDuration / 2
 
-    -- Scale down player character
+    -- Animate player character (scale down + LERP to prop)
     if playerCharacter then
-        DebugVFX(string.format("Shrinking character over %.2fs (VFX timer: %.2fs)",
-            shrinkDuration, _playerVanishDuration))
+        local startPosition = playerCharacter.transform.position
+        local targetPosition = propPosition
 
-        -- Scale animation (1.0 → 0.0)
+        DebugVFX(string.format("Shrinking and moving character over %.2fs (VFX timer: %.2fs)",
+            shrinkDuration, _playerVanishDuration))
+        DebugVFX(string.format("LERP from (%.1f, %.1f, %.1f) to (%.1f, %.1f, %.1f)",
+            startPosition.x, startPosition.y, startPosition.z,
+            targetPosition.x, targetPosition.y, targetPosition.z))
+
         local originalScale = playerCharacter.transform.localScale
         local easingFunc = GetEasingFunction("easeInQuad")
-        local scaleTween = Tween:new(1.0, 0.0, shrinkDuration, false, false, easingFunc, function(value, t)
+
+        -- Combined tween: scale + position
+        local combinedTween = Tween:new(0.0, 1.0, shrinkDuration, false, false, easingFunc, function(t, easedT)
+            -- Scale down (1.0 → 0.0)
+            local scaleValue = 1.0 - easedT
             playerCharacter.transform.localScale = Vector3.new(
-                originalScale.x * value,
-                originalScale.y * value,
-                originalScale.z * value
+                originalScale.x * scaleValue,
+                originalScale.y * scaleValue,
+                originalScale.z * scaleValue
             )
+
+            -- LERP position (startPosition → propPosition)
+            local lerpedPosition = Vector3.new(
+                startPosition.x + (targetPosition.x - startPosition.x) * easedT,
+                startPosition.y + (targetPosition.y - startPosition.y) * easedT,
+                startPosition.z + (targetPosition.z - startPosition.z) * easedT
+            )
+            playerCharacter.transform.position = lerpedPosition
         end, nil)
 
-        scaleTween:start()
+        combinedTween:start()
 
         -- NOTE: Material fading disabled - Highrise character materials don't support
         -- alpha modification via material.color. The shrinking animation provides
@@ -444,14 +462,12 @@ function PlayerAppearVFX(position, playerCharacter)
             growDuration, _playerAppearDuration))
 
         -- Scale animation (0.0 → 1.0) - REVERSE of vanish
-        local originalScale = playerCharacter.transform.localScale
+        -- NOTE: Use hardcoded Vector3(1,1,1) instead of originalScale because
+        -- the character scale is set to (0,0,0) before this VFX triggers,
+        -- so multiplying by originalScale would always result in zero.
         local easingFunc = GetEasingFunction("easeOutQuad")  -- Opposite of vanish's easeInQuad
         local scaleTween = Tween:new(0.0, 1.0, growDuration, false, false, easingFunc, function(value, t)
-            playerCharacter.transform.localScale = Vector3.new(
-                originalScale.x * value,
-                originalScale.y * value,
-                originalScale.z * value
-            )
+            playerCharacter.transform.localScale = Vector3.new(value, value, value)
         end, nil)
 
         scaleTween:start()
