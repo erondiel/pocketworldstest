@@ -173,31 +173,48 @@ end
 
 --[[
     LOBBY STATE
-    Wait for minimum players, countdown to start
+    New flow:
+    - At least 2 ready players → Start countdown (default 30s)
+    - If ALL players ready up before timer expires → Skip countdown and start immediately (with 5s delay)
+    - Timer reaches 0 → Start round
 ]]
 function UpdateLobby()
-    local playerCount = GetActivePlayerCount()
+    local totalPlayers = GetActivePlayerCount()
     local readyCount = PlayerManager.GetReadyPlayerCount()
-    
-    if readyCount >= Config.GetMinPlayersToStart() then
-        -- Check if we should start countdown
-        if stateTimer.value > 0 then
+    local minRequired = Config.GetMinPlayersToStart()
+
+    -- NEW: Check if ALL players are ready (skip countdown)
+    if readyCount >= minRequired and readyCount >= totalPlayers and totalPlayers >= minRequired then
+        -- All players ready - skip countdown and start immediately with 5s delay
+        if stateTimer.value ~= 5 then
+            stateTimer.value = 5
+            Log(string.format("ALL READY [%d/%d] - Starting in 5s", readyCount, totalPlayers))
+            BroadcastStateChange(GameState.LOBBY, stateTimer)
+        else
             stateTimer.value = stateTimer.value - Time.deltaTime
-            
+            if stateTimer.value <= 0 then
+                StartNewRound()
+            end
+        end
+    elseif readyCount >= minRequired then
+        -- At least minimum players ready - run countdown
+        if stateTimer.value > 0 and stateTimer.value <= Config.GetLobbyCountdown() then
+            stateTimer.value = stateTimer.value - Time.deltaTime
+
             if stateTimer.value <= 0 then
                 StartNewRound()
             end
         else
             -- Start countdown
             stateTimer.value = Config.GetLobbyCountdown()
-            Log(string.format("START %ds [%d ready/%d total]", math.floor(stateTimer.value), readyCount, playerCount))
+            Log(string.format("COUNTDOWN %ds [%d ready/%d total]", math.floor(stateTimer.value), readyCount, totalPlayers))
             BroadcastStateChange(GameState.LOBBY, stateTimer)
         end
     else
-        -- Not enough players, reset timer
+        -- Not enough ready players, reset timer
         if stateTimer.value ~= 0 then
             stateTimer.value = 0
-            Log(string.format("WAIT [%d ready/%d total, need %d]", readyCount, playerCount, Config.GetMinPlayersToStart()))
+            Log(string.format("WAIT [%d ready/%d total, need %d]", readyCount, totalPlayers, minRequired))
             BroadcastStateChange(GameState.LOBBY, stateTimer)
         end
     end
@@ -306,12 +323,8 @@ function TransitionToState(newState)
         -- Teleport props to arena
         Teleporter.TeleportAllToArena(propsTeam)
 
-        -- Teleport spectators to arena as well
-        local spectators = GetSpectatorPlayers()
-        if #spectators > 0 then
-            Teleporter.TeleportAllToArena(spectators)
-            Log(string.format("Teleported %d spectators to Arena", #spectators))
-        end
+        -- NOTE: Spectators (including non-ready players) stay in lobby
+        -- They are NOT teleported to arena
 
         -- Trigger hide phase VFX
         VFXManager.TriggerHidePhaseStart(propsTeam)
@@ -417,24 +430,40 @@ end
 --[[
     Role Assignment
     Split players into Props and Hunters
-    Spectators are excluded from role assignment
+    Only READY players are assigned roles
+    Non-ready players are forced into spectator mode
 ]]
 function AssignRoles()
     propsTeam = {}
     huntersTeam = {}
 
     local players = GetActivePlayers()
+    local readyPlayers = PlayerManager.GetReadyPlayers()
 
-    -- Filter out spectators from role assignment
+    -- Filter players: only ready players get roles
     local playingPlayers = {}
     local spectators = {}
+
     for _, player in ipairs(players) do
-        if PlayerManager.IsPlayerSpectator(player) then
+        local playerInfo = PlayerManager.GetPlayerInfo(player)
+        local isReady = playerInfo and playerInfo.isReady.value
+        local isSpectator = PlayerManager.IsPlayerSpectator(player)
+
+        if isSpectator then
+            -- Already a spectator
             table.insert(spectators, player)
             PlayerManager.SetPlayerRole(player, "spectator")
             NotifyPlayerRole(player, "spectator")
             Log(string.format("SPECTATOR: %s", player.name))
+        elseif not isReady then
+            -- Not ready - force into spectator mode
+            Log(string.format("NOT READY: %s → forced spectator (staying in Lobby)", player.name))
+            PlayerManager.ForceSpectatorMode(player)
+            PlayerManager.SetPlayerRole(player, "spectator")
+            NotifyPlayerRole(player, "spectator")
+            table.insert(spectators, player)
         else
+            -- Ready and not spectator - eligible to play
             table.insert(playingPlayers, player)
         end
     end

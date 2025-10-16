@@ -89,6 +89,14 @@ local _tagMissVFXPrefab : GameObject = nil
 --!Tooltip("Duration for tag miss VFX (auto-filled from particle system)")
 local _tagMissDuration : number = 0.15
 
+--!SerializeField
+--!Tooltip("VFX prefab for player appear effect")
+local _playerAppearVFXPrefab : GameObject = nil
+
+--!SerializeField
+--!Tooltip("Duration for player appear VFX")
+local _playerAppearDuration : number = 2.5
+
 -- ========== UTILITY FUNCTIONS ==========
 
 --[[
@@ -374,10 +382,71 @@ function PlayerVanishVFX(position, playerCharacter)
     -- Spawn VFX using SerializeField reference
     local vfxInstance = SpawnVFX(_playerVanishVFXPrefab, _playerVanishDuration, position, "PlayerVanish")
 
-    -- Scale down player character (keep existing placeholder for now)
+    -- Shrink duration is half of VFX timer (e.g., 2.5s VFX → 1.25s shrink)
+    local shrinkDuration = _playerVanishDuration / 2
+
+    -- Scale down and fade out player character simultaneously
     if playerCharacter then
-        ScalePulse(playerCharacter, 1.0, 0.0, _playerVanishDuration, "easeInQuad", false, false)
+        DebugVFX(string.format("Shrinking and fading character over %.2fs (VFX timer: %.2fs)",
+            shrinkDuration, _playerVanishDuration))
+
+        -- Get all renderers on the character to fade them out
+        local renderers = playerCharacter:GetComponentsInChildren(SkinnedMeshRenderer, true)
+
+        -- Create a group to run scale and fade in parallel
+        local tweenGroup = TweenGroup:new()
+
+        -- 1. Scale animation (1.0 → 0.0)
+        local originalScale = playerCharacter.transform.localScale
+        local easingFunc = GetEasingFunction("easeInQuad")
+        local scaleTween = Tween:new(1.0, 0.0, shrinkDuration, false, false, easingFunc, function(value, t)
+            playerCharacter.transform.localScale = Vector3.new(
+                originalScale.x * value,
+                originalScale.y * value,
+                originalScale.z * value
+            )
+        end, nil)
+
+        tweenGroup:add(scaleTween)
+
+        -- 2. Fade animation (1.0 → 0.0 alpha) for each renderer
+        if renderers and #renderers > 0 then
+            for i = 1, #renderers do
+                local renderer = renderers[i]
+                if renderer and renderer.material then
+                    -- Get current color
+                    local material = renderer.material
+                    local originalColor = material.color
+
+                    -- Create fade tween for this renderer's material
+                    local fadeTween = Tween:new(1.0, 0.0, shrinkDuration, false, false, easingFunc, function(alpha, t)
+                        -- Update material alpha
+                        material.color = Color.new(
+                            originalColor.r,
+                            originalColor.g,
+                            originalColor.b,
+                            alpha
+                        )
+                    end, nil)
+
+                    tweenGroup:add(fadeTween)
+                end
+            end
+
+            DebugVFX(string.format("Fading %d renderer materials", #renderers))
+        else
+            DebugVFX("No renderers found on character - skipping fade")
+        end
+
+        -- Start all animations together
+        tweenGroup:start()
     end
+end
+
+function PlayerAppearVFX(position)
+    DebugVFX("PlayerAppearVFX at " .. tostring(position))
+    local vfxInstance = SpawnVFX(_playerAppearVFXPrefab, _playerAppearDuration, position, "PlayerAppear")
+    return vfxInstance
 end
 
 --[[
@@ -861,6 +930,7 @@ return {
 
     -- Game VFX Placeholders
     PlayerVanishVFX = PlayerVanishVFX,
+    PlayerAppearVFX = PlayerAppearVFX,
     PropInfillVFX = PropInfillVFX,
     RejectionVFX = RejectionVFX,
     TagHitVFX = TagHitVFX,

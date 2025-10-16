@@ -2066,7 +2066,7 @@ MonoBehaviour:
   _uiOutputSettings:
     rid: -2
   _minPlayersToStart: 2
-  _lobbyCountdown: 5
+  _lobbyCountdown: 10
   _hidePhaseTime: 120
   _huntPhaseTime: 120
   _roundEndTime: 10
@@ -2197,6 +2197,8 @@ MonoBehaviour:
   _tagHitDuration: 0.25
   _tagMissVFXPrefab: {fileID: 0}
   _tagMissDuration: 0.15
+  _playerAppearVFXPrefab: {fileID: 223189155}
+  _playerAppearDuration: 3.5
   references:
     version: 2
     RefIds:
@@ -2296,16 +2298,15 @@ MonoBehaviour:
   _enableVFXManager: 0
   _enableZoneManager: 0
   _enableUIManager: 0
-  _enableHunterTagSystem: 1
+  _enableHunterTagSystem: 0
   _enablePropPossessionSystem: 0
-  _enablePropDisguiseSystem: 0
-  _enableRangeIndicator: 0
-  _enableReadyButton: 0
-  _enableSpectatorButton: 0
-  _enableRecapScreen: 0
-  _enableHUD: 0
+  _enablePropDisguiseSystem_NotImplemented: 0
+  _enableRangeIndicator_NotImplemented: 0
+  _enableReadyButton_NotImplemented: 0
+  _enableSpectatorButton_NotImplemented: 0
+  _enableRecapScreen_NotImplemented: 0
+  _enableHUD_NotImplemented: 0
   _enableConfig: 0
-  _disableAllLogs: 0
   references:
     version: 2
     RefIds:
@@ -3842,7 +3843,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &393817287
 Transform:
   m_ObjectHideFlags: 0

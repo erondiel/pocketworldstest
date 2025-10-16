@@ -125,15 +125,25 @@ end
 
 function ResetAllPlayers()
     for player, playerInfo in pairs(players) do
+        -- Reset ready status
         if playerInfo.isReady.value then
             playerInfo.isReady.value = false
         end
+
+        -- Reset spectator status (so forced spectators can ready up next round)
+        if playerInfo.isSpectator.value then
+            playerInfo.isSpectator.value = false
+        end
+
         -- Reset role to spectator when returning to lobby
         playerInfo.role.value = "spectator"
     end
 
+    -- Clear ready and spectator lists
     readyPlayers.value = {}
-    Logger.Log("PlayerManager", "All players reset to not ready")
+    spectatorPlayers.value = {}
+
+    Logger.Log("PlayerManager", "All players reset: ready=false, spectator=false")
 end
 
 -- Server-side function to set player role

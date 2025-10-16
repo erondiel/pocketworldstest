@@ -104,6 +104,7 @@ local currentState = "LOBBY"
 local localRole = "unknown"
 local hasPossessedThisRound = false
 local shouldBeVisible = true  -- Track if local player's avatar should be visible
+local shouldPlayAppearVFX = false -- Track if the appear VFX should be played for the local player
 
 -- Client-side prop tracking (per-prop data)
 -- Maps propName -> { gameObject, renderer, outlineRenderer, savedEmission, isPossessed }
@@ -421,12 +422,12 @@ local function RestorePlayerAvatarExecute(userId)
     end
 
     if not targetPlayer then
-        Logger.Log("PropPossessionSystem", "ERROR: Could not find player with userId: " .. tostring(userId))
+        Logger.Error("PropPossessionSystem", "Could not find player with userId: " .. tostring(userId))
         return
     end
 
     if not targetPlayer.character then
-        Logger.Log("PropPossessionSystem", "ERROR: Player has no character: " .. targetPlayer.name)
+        Logger.Error("PropPossessionSystem", "Player has no character: " .. targetPlayer.name)
         return
     end
 
@@ -436,6 +437,7 @@ local function RestorePlayerAvatarExecute(userId)
     -- Track visibility state for local player
     if isLocalPlayer then
         shouldBeVisible = true
+        shouldPlayAppearVFX = true
     end
 
     local function AttemptRestore()
@@ -445,7 +447,7 @@ local function RestorePlayerAvatarExecute(userId)
 
             -- CRITICAL FIX: Reset character scale (VFX scaled it to 0)
             local currentScale = characterGameObject.transform.localScale
-            Logger.Log("PropPossessionSystem", "Current character scale: " .. tostring(currentScale.x) .. ", " .. tostring(currentScale.y) .. ", " .. tostring(currentScale.z))
+            Logger.Debug("PropPossessionSystem", "Current character scale: " .. tostring(currentScale.x) .. ", " .. tostring(currentScale.y) .. ", " .. tostring(currentScale.z))
 
             if currentScale.x < 0.1 or currentScale.y < 0.1 or currentScale.z < 0.1 then
                 Logger.Log("PropPossessionSystem", "Character was scaled to ~0 by VFX - resetting to (1,1,1)")
@@ -463,16 +465,16 @@ local function RestorePlayerAvatarExecute(userId)
                 Timer.After(0.1, function()
                     if rigTransform and rigTransform.gameObject then
                         local nowActive = rigTransform.gameObject.activeSelf
-                        Logger.Log("PropPossessionSystem", "Rig active state after 0.1s: " .. tostring(nowActive) .. " for " .. targetPlayer.name)
+                        Logger.Debug("PropPossessionSystem", "Rig active state after 0.1s: " .. tostring(nowActive) .. " for " .. targetPlayer.name)
 
                         if not nowActive then
-                            Logger.Log("PropPossessionSystem", "WARNING: Rig still inactive, retrying...")
+                            Logger.Warn("PropPossessionSystem", "Rig still inactive, retrying...")
                             rigTransform.gameObject:SetActive(true)
                         end
                     end
                 end)
             else
-                Logger.Log("PropPossessionSystem", "ERROR: Could not find Rig child for " .. targetPlayer.name)
+                Logger.Error("PropPossessionSystem", "Could not find Rig child for " .. targetPlayer.name)
             end
 
             -- TODO: Re-enable movement (no CharacterController or NavMesh approach works)
@@ -480,7 +482,7 @@ local function RestorePlayerAvatarExecute(userId)
         end)
 
         if not success then
-            Logger.Log("PropPossessionSystem", "ERROR restoring avatar: " .. tostring(errorMsg))
+            Logger.Error("PropPossessionSystem", "ERROR restoring avatar: " .. tostring(errorMsg))
         else
             Logger.Log("PropPossessionSystem", "Successfully restored avatar for " .. targetPlayer.name)
         end
@@ -492,12 +494,12 @@ local function RestorePlayerAvatarExecute(userId)
     -- For local player, add a delayed retry to handle race conditions with teleportation
     if isLocalPlayer then
         Timer.After(0.5, function()
-            Logger.Log("PropPossessionSystem", "Delayed restore check for local player")
+            Logger.Debug("PropPossessionSystem", "Delayed restore check for local player")
             if targetPlayer and targetPlayer.character then
                 local characterGameObject = targetPlayer.character.gameObject
                 local rigTransform = characterGameObject.transform:Find("Rig")
                 if rigTransform and not rigTransform.gameObject.activeSelf then
-                    Logger.Log("PropPossessionSystem", "Local player Rig still inactive after 0.5s - forcing re-enable")
+                    Logger.Warn("PropPossessionSystem", "Local player Rig still inactive after 0.5s - forcing re-enable")
                     rigTransform.gameObject:SetActive(true)
                 end
             end
@@ -867,7 +869,7 @@ function self:ClientStart()
         Logger.Log("PropPossessionSystem", "PropInfill VFX triggered at " .. tostring(position))
     end)
 
-    -- Listen for post-teleport event to fix Rig visibility issues
+    -- Listen for post-teleport event to fix Rig visibility issues and play VFX
     postTeleportEvent:Connect(function()
         Logger.Log("PropPossessionSystem", "Post-teleport check triggered")
 
@@ -896,6 +898,15 @@ function self:ClientStart()
                     end
                 end
             end
+        end
+
+        -- Play appear VFX if needed
+        if shouldPlayAppearVFX then
+            local localPlayer = client.localPlayer
+            if localPlayer and localPlayer.character then
+                VFXManager.PlayerAppearVFX(localPlayer.character.transform.position)
+            end
+            shouldPlayAppearVFX = false
         end
     end)
 end
