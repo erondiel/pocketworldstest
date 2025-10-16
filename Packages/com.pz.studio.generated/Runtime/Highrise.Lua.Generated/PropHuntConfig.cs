@@ -49,9 +49,11 @@ namespace Highrise.Lua.Generated
         [Tooltip("Base points for finding a prop")]
         [SerializeField] public System.Double _hunterFindBase = 120;
         [Tooltip("Penalty for missing a tag")]
-        [SerializeField] public System.Double _hunterMissPenalty = -8;
+        [SerializeField] public System.Double _hunterMissPenalty = -10;
         [Tooltip("Maximum accuracy bonus")]
         [SerializeField] public System.Double _hunterAccuracyBonusMax = 50;
+        [Tooltip("Enable zone-based scoring multipliers (disable if zones block prop interaction)")]
+        [SerializeField] public System.Boolean _zonesEnabled = false;
         [Tooltip("Zone weight for Near Spawn areas")]
         [SerializeField] public System.Double _zoneWeightNearSpawn = 1.5;
         [Tooltip("Zone weight for Mid areas")]
@@ -95,17 +97,18 @@ namespace Highrise.Lua.Generated
                 CreateSerializedProperty(_script.GetPropertyAt(10), _hunterFindBase),
                 CreateSerializedProperty(_script.GetPropertyAt(11), _hunterMissPenalty),
                 CreateSerializedProperty(_script.GetPropertyAt(12), _hunterAccuracyBonusMax),
-                CreateSerializedProperty(_script.GetPropertyAt(13), _zoneWeightNearSpawn),
-                CreateSerializedProperty(_script.GetPropertyAt(14), _zoneWeightMid),
-                CreateSerializedProperty(_script.GetPropertyAt(15), _zoneWeightFar),
-                CreateSerializedProperty(_script.GetPropertyAt(16), _hunterTeamWinBonus),
-                CreateSerializedProperty(_script.GetPropertyAt(17), _propTeamWinBonusSurvived),
-                CreateSerializedProperty(_script.GetPropertyAt(18), _propTeamWinBonusFound),
-                CreateSerializedProperty(_script.GetPropertyAt(19), _tauntEnabled),
-                CreateSerializedProperty(_script.GetPropertyAt(20), _tauntCooldown),
-                CreateSerializedProperty(_script.GetPropertyAt(21), _tauntWindow),
-                CreateSerializedProperty(_script.GetPropertyAt(22), _tauntReward),
-                CreateSerializedProperty(_script.GetPropertyAt(23), _enableDebug),
+                CreateSerializedProperty(_script.GetPropertyAt(13), _zonesEnabled),
+                CreateSerializedProperty(_script.GetPropertyAt(14), _zoneWeightNearSpawn),
+                CreateSerializedProperty(_script.GetPropertyAt(15), _zoneWeightMid),
+                CreateSerializedProperty(_script.GetPropertyAt(16), _zoneWeightFar),
+                CreateSerializedProperty(_script.GetPropertyAt(17), _hunterTeamWinBonus),
+                CreateSerializedProperty(_script.GetPropertyAt(18), _propTeamWinBonusSurvived),
+                CreateSerializedProperty(_script.GetPropertyAt(19), _propTeamWinBonusFound),
+                CreateSerializedProperty(_script.GetPropertyAt(20), _tauntEnabled),
+                CreateSerializedProperty(_script.GetPropertyAt(21), _tauntCooldown),
+                CreateSerializedProperty(_script.GetPropertyAt(22), _tauntWindow),
+                CreateSerializedProperty(_script.GetPropertyAt(23), _tauntReward),
+                CreateSerializedProperty(_script.GetPropertyAt(24), _enableDebug),
             };
         }
         

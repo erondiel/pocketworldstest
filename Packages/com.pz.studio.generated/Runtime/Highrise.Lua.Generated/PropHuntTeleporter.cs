@@ -26,10 +26,6 @@ namespace Highrise.Lua.Generated
         private const string s_scriptGUID = "4cd692a909598f149a447b0fc165e36f";
         public override string ScriptGUID => s_scriptGUID;
 
-        [Tooltip("Lobby spawn position - drag LobbySpawn GameObject here")]
-        [SerializeField] public UnityEngine.GameObject _lobbySpawnPosition = default;
-        [Tooltip("Arena spawn position - drag ArenaSpawn GameObject here")]
-        [SerializeField] public UnityEngine.GameObject _arenaSpawnPosition = default;
 
         protected override SerializedPropertyValue[] SerializeProperties()
         {
@@ -38,8 +34,6 @@ namespace Highrise.Lua.Generated
 
             return new SerializedPropertyValue[]
             {
-                CreateSerializedProperty(_script.GetPropertyAt(0), _lobbySpawnPosition),
-                CreateSerializedProperty(_script.GetPropertyAt(1), _arenaSpawnPosition),
             };
         }
         

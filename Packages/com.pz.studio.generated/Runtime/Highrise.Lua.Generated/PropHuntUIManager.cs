@@ -27,7 +27,6 @@ namespace Highrise.Lua.Generated
         public override string ScriptGUID => s_scriptGUID;
 
         [SerializeField] public UnityEngine.GameObject _HUD = default;
-        [SerializeField] public UnityEngine.GameObject _ReadyButton = default;
 
         protected override SerializedPropertyValue[] SerializeProperties()
         {
@@ -37,7 +36,6 @@ namespace Highrise.Lua.Generated
             return new SerializedPropertyValue[]
             {
                 CreateSerializedProperty(_script.GetPropertyAt(0), _HUD),
-                CreateSerializedProperty(_script.GetPropertyAt(1), _ReadyButton),
             };
         }
         
