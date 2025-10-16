@@ -385,18 +385,12 @@ function PlayerVanishVFX(position, playerCharacter)
     -- Shrink duration is half of VFX timer (e.g., 2.5s VFX → 1.25s shrink)
     local shrinkDuration = _playerVanishDuration / 2
 
-    -- Scale down and fade out player character simultaneously
+    -- Scale down player character
     if playerCharacter then
-        DebugVFX(string.format("Shrinking and fading character over %.2fs (VFX timer: %.2fs)",
+        DebugVFX(string.format("Shrinking character over %.2fs (VFX timer: %.2fs)",
             shrinkDuration, _playerVanishDuration))
 
-        -- Get all renderers on the character to fade them out
-        local renderers = playerCharacter:GetComponentsInChildren(SkinnedMeshRenderer, true)
-
-        -- Create a group to run scale and fade in parallel
-        local tweenGroup = TweenGroup:new()
-
-        -- 1. Scale animation (1.0 → 0.0)
+        -- Scale animation (1.0 → 0.0)
         local originalScale = playerCharacter.transform.localScale
         local easingFunc = GetEasingFunction("easeInQuad")
         local scaleTween = Tween:new(1.0, 0.0, shrinkDuration, false, false, easingFunc, function(value, t)
@@ -407,39 +401,11 @@ function PlayerVanishVFX(position, playerCharacter)
             )
         end, nil)
 
-        tweenGroup:add(scaleTween)
+        scaleTween:start()
 
-        -- 2. Fade animation (1.0 → 0.0 alpha) for each renderer
-        if renderers and #renderers > 0 then
-            for i = 1, #renderers do
-                local renderer = renderers[i]
-                if renderer and renderer.material then
-                    -- Get current color
-                    local material = renderer.material
-                    local originalColor = material.color
-
-                    -- Create fade tween for this renderer's material
-                    local fadeTween = Tween:new(1.0, 0.0, shrinkDuration, false, false, easingFunc, function(alpha, t)
-                        -- Update material alpha
-                        material.color = Color.new(
-                            originalColor.r,
-                            originalColor.g,
-                            originalColor.b,
-                            alpha
-                        )
-                    end, nil)
-
-                    tweenGroup:add(fadeTween)
-                end
-            end
-
-            DebugVFX(string.format("Fading %d renderer materials", #renderers))
-        else
-            DebugVFX("No renderers found on character - skipping fade")
-        end
-
-        -- Start all animations together
-        tweenGroup:start()
+        -- NOTE: Material fading disabled - Highrise character materials don't support
+        -- alpha modification via material.color. The shrinking animation provides
+        -- enough visual feedback for the vanish effect.
     end
 end
 
@@ -464,18 +430,12 @@ function PlayerAppearVFX(position, playerCharacter)
     -- Grow duration is half of VFX timer (same as vanish shrink duration)
     local growDuration = _playerAppearDuration / 2
 
-    -- Scale up and fade in player character simultaneously (reverse of vanish)
+    -- Scale up player character (reverse of vanish)
     if playerCharacter then
-        DebugVFX(string.format("Growing and fading in character over %.2fs (VFX timer: %.2fs)",
+        DebugVFX(string.format("Growing character over %.2fs (VFX timer: %.2fs)",
             growDuration, _playerAppearDuration))
 
-        -- Get all renderers on the character to fade them in
-        local renderers = playerCharacter:GetComponentsInChildren(SkinnedMeshRenderer, true)
-
-        -- Create a group to run scale and fade in parallel
-        local tweenGroup = TweenGroup:new()
-
-        -- 1. Scale animation (0.0 → 1.0) - REVERSE of vanish
+        -- Scale animation (0.0 → 1.0) - REVERSE of vanish
         local originalScale = playerCharacter.transform.localScale
         local easingFunc = GetEasingFunction("easeOutQuad")  -- Opposite of vanish's easeInQuad
         local scaleTween = Tween:new(0.0, 1.0, growDuration, false, false, easingFunc, function(value, t)
@@ -486,39 +446,11 @@ function PlayerAppearVFX(position, playerCharacter)
             )
         end, nil)
 
-        tweenGroup:add(scaleTween)
+        scaleTween:start()
 
-        -- 2. Fade animation (0.0 → 1.0 alpha) - REVERSE of vanish
-        if renderers and #renderers > 0 then
-            for i = 1, #renderers do
-                local renderer = renderers[i]
-                if renderer and renderer.material then
-                    -- Get current color
-                    local material = renderer.material
-                    local originalColor = material.color
-
-                    -- Create fade tween for this renderer's material (fade IN from transparent)
-                    local fadeTween = Tween:new(0.0, 1.0, growDuration, false, false, easingFunc, function(alpha, t)
-                        -- Update material alpha
-                        material.color = Color.new(
-                            originalColor.r,
-                            originalColor.g,
-                            originalColor.b,
-                            alpha
-                        )
-                    end, nil)
-
-                    tweenGroup:add(fadeTween)
-                end
-            end
-
-            DebugVFX(string.format("Fading in %d renderer materials", #renderers))
-        else
-            DebugVFX("No renderers found on character - skipping fade")
-        end
-
-        -- Start all animations together
-        tweenGroup:start()
+        -- NOTE: Material fading disabled - Highrise character materials don't support
+        -- alpha modification via material.color. The growing animation provides
+        -- enough visual feedback for the appear effect.
     end
 
     return vfxInstance
