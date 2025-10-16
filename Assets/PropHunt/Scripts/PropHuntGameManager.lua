@@ -320,8 +320,12 @@ function TransitionToState(newState)
         stateTimer.value = Config.GetHuntPhaseTime()
         Log(string.format("HUNT %ds", Config.GetHuntPhaseTime()))
 
-        -- Teleport hunters to arena
-        Teleporter.TeleportAllToArena(huntersTeam)
+        -- Delay hunter teleport by 5 seconds to avoid seeing possession VFX
+        Timer.After(5.0, function()
+            -- Teleport hunters to arena after delay
+            Teleporter.TeleportAllToArena(huntersTeam)
+            Log("Hunters teleported to Arena after 5s delay")
+        end)
 
         -- Initialize scoring timer
         lastTickTime = Time.time
