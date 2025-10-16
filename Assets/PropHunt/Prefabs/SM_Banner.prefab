@@ -122,6 +122,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _checkDistance: 1
-  _distance: 1
+  _distance: 4
   _moveTo: 1
   _moveTarget: {fileID: 0}

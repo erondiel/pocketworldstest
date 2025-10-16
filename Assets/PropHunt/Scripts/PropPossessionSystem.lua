@@ -72,6 +72,7 @@
     7. PropPossessionSystem sets role to spectator
 ]]
 
+local Logger = require("PropHuntLogger")
 local VFXManager = require("PropHuntVFXManager")
 local PlayerManager = require("PropHuntPlayerManager")
 local GameManager = require("PropHuntGameManager")
@@ -187,10 +188,10 @@ end
 local function RequestHideAvatar()
     local player = client.localPlayer
     if not player then
-        print("[PropPossessionSystem] CLIENT: No local player to hide")
+        Logger.Warn("PropPossessionSystem", "CLIENT: No local player to hide")
         return
     end
-    print("[PropPossessionSystem] CLIENT: Requesting hide avatar for " .. player.name)
+    Logger.Log("PropPossessionSystem", "CLIENT: Requesting hide avatar for " .. player.name)
     -- FireServer automatically passes the calling player as first parameter to server
     hideAvatarRequest:FireServer()
 end
@@ -198,10 +199,10 @@ end
 local function RequestRestoreAvatar()
     local player = client.localPlayer
     if not player then
-        print("[PropPossessionSystem] CLIENT: No local player to restore")
+        Logger.Warn("PropPossessionSystem", "CLIENT: No local player to restore")
         return
     end
-    print("[PropPossessionSystem] CLIENT: Requesting restore avatar for " .. player.name)
+    Logger.Log("PropPossessionSystem", "CLIENT: Requesting restore avatar for " .. player.name)
     -- FireServer automatically passes the calling player as first parameter to server
     restoreAvatarRequest:FireServer()
 end

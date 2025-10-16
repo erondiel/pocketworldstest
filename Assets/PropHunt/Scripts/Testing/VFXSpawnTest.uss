@@ -1,0 +1,57 @@
+:root {
+  --vfx-test-green: #00ff00;
+  --vfx-test-white: #ffffff;
+}
+
+.vfx-test-root {
+  width: 100%;
+  height: 100%;
+
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+
+.vfx-test-container {
+  position: absolute;
+  top: 80px;
+  right: 20px;
+
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.vfx-test-button {
+  width: 180px;
+  height: 40px;
+  margin-bottom: 8px;
+
+  background-color: rgba(0, 0, 0, 0.7);
+  border-width: 2px;
+  border-color: var(--vfx-test-green);
+  border-radius: 8px;
+
+  align-items: center;
+  justify-content: center;
+
+  transition-property: background-color, scale;
+  transition-duration: 0.2s;
+}
+
+.vfx-test-button:hover {
+  background-color: rgba(0, 0, 0, 0.85);
+}
+
+.vfx-test-button:active {
+  scale: 0.95;
+  transition-duration: 0.1s;
+}
+
+.button-label {
+  -unity-text-align: middle-center;
+  font-size: 14px;
+
+  padding: 0;
+  margin: 0;
+
+  color: var(--vfx-test-white);
+}

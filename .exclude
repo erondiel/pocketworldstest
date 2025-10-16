@@ -1,0 +1,5 @@
+# Exclude files and directories from version control
+# This file is used by Highrise Studio to exclude content from the repository
+
+# Personal/Development files
+Assets/Rodrigo/

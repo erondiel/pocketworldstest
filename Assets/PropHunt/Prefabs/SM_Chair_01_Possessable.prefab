@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 6981056159600175582}
   - component: {fileID: 713381269049135134}
   - component: {fileID: 3283766195425848234}
-  - component: {fileID: 8762726613624821711}
   m_Layer: 0
   m_Name: SM_Chair_01_Possessable
   m_TagString: Possessable
@@ -123,22 +122,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _checkDistance: 1
-  _distance: 1
-  _moveTo: 1
-  _moveTarget: {fileID: 0}
---- !u!114 &8762726613624821711
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8926501591774316555}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 881728705, guid: 5e99434f214126023bd8db55a8296c39, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _checkDistance: 1
-  _distance: 1
+  _distance: 1.2
   _moveTo: 1
   _moveTarget: {fileID: 0}

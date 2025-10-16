@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="UnityEngine.UIElements"
+    xmlns:hr="Highrise.UI"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd"
+>
+
+  <hr:UILuaView class="vfx-test-root" picking-mode="Ignore">
+    <VisualElement class="vfx-test-container">
+      <VisualElement class="vfx-test-button" name="_playerVanishButton">
+        <Label class="button-label" text="PlayerVanish"/>
+      </VisualElement>
+
+      <VisualElement class="vfx-test-button" name="_propInfillButton">
+        <Label class="button-label" text="PropInfill"/>
+      </VisualElement>
+
+      <VisualElement class="vfx-test-button" name="_rejectionButton">
+        <Label class="button-label" text="Rejection"/>
+      </VisualElement>
+
+      <VisualElement class="vfx-test-button" name="_tagHitButton">
+        <Label class="button-label" text="TagHit"/>
+      </VisualElement>
+
+      <VisualElement class="vfx-test-button" name="_tagMissButton">
+        <Label class="button-label" text="TagMiss"/>
+      </VisualElement>
+    </VisualElement>
+  </hr:UILuaView>
+
+</UXML>

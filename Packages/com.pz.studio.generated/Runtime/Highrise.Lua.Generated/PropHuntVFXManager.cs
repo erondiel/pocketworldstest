@@ -36,6 +36,26 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.Double _slideInDuration = 0.35;
         [Tooltip("Default easing for UI animations")]
         [SerializeField] public System.String _defaultEasing = "easeOutQuad";
+        [Tooltip("VFX prefab for player vanish effect")]
+        [SerializeField] public UnityEngine.GameObject _playerVanishVFXPrefab = default;
+        [Tooltip("Duration for player vanish VFX (set to longest particle system duration)")]
+        [SerializeField] public System.Double _playerVanishDuration = 2.5;
+        [Tooltip("VFX prefab for prop infill effect")]
+        [SerializeField] public UnityEngine.GameObject _propInfillVFXPrefab = default;
+        [Tooltip("Duration for prop infill VFX (auto-filled from particle system)")]
+        [SerializeField] public System.Double _propInfillDuration = 1.2;
+        [Tooltip("VFX prefab for rejection effect")]
+        [SerializeField] public UnityEngine.GameObject _rejectionVFXPrefab = default;
+        [Tooltip("Duration for rejection VFX (auto-filled from particle system)")]
+        [SerializeField] public System.Double _rejectionDuration = 0.2;
+        [Tooltip("VFX prefab for tag hit effect")]
+        [SerializeField] public UnityEngine.GameObject _tagHitVFXPrefab = default;
+        [Tooltip("Duration for tag hit VFX (auto-filled from particle system)")]
+        [SerializeField] public System.Double _tagHitDuration = 0.25;
+        [Tooltip("VFX prefab for tag miss effect")]
+        [SerializeField] public UnityEngine.GameObject _tagMissVFXPrefab = default;
+        [Tooltip("Duration for tag miss VFX (auto-filled from particle system)")]
+        [SerializeField] public System.Double _tagMissDuration = 0.15;
 
         protected override SerializedPropertyValue[] SerializeProperties()
         {
@@ -49,6 +69,16 @@ namespace Highrise.Lua.Generated
                 CreateSerializedProperty(_script.GetPropertyAt(2), _pulseDuration),
                 CreateSerializedProperty(_script.GetPropertyAt(3), _slideInDuration),
                 CreateSerializedProperty(_script.GetPropertyAt(4), _defaultEasing),
+                CreateSerializedProperty(_script.GetPropertyAt(5), _playerVanishVFXPrefab),
+                CreateSerializedProperty(_script.GetPropertyAt(6), _playerVanishDuration),
+                CreateSerializedProperty(_script.GetPropertyAt(7), _propInfillVFXPrefab),
+                CreateSerializedProperty(_script.GetPropertyAt(8), _propInfillDuration),
+                CreateSerializedProperty(_script.GetPropertyAt(9), _rejectionVFXPrefab),
+                CreateSerializedProperty(_script.GetPropertyAt(10), _rejectionDuration),
+                CreateSerializedProperty(_script.GetPropertyAt(11), _tagHitVFXPrefab),
+                CreateSerializedProperty(_script.GetPropertyAt(12), _tagHitDuration),
+                CreateSerializedProperty(_script.GetPropertyAt(13), _tagMissVFXPrefab),
+                CreateSerializedProperty(_script.GetPropertyAt(14), _tagMissDuration),
             };
         }
         

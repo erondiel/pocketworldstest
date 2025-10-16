@@ -12,9 +12,10 @@ GameObject:
   - component: {fileID: 2903905753914653626}
   - component: {fileID: 1128232710299144048}
   - component: {fileID: 5896074779698119212}
+  - component: {fileID: 1288152440661144899}
   m_Layer: 0
   m_Name: SM_Drawer
-  m_TagString: Untagged
+  m_TagString: Possessable
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 123
@@ -33,7 +34,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!33 &2903905753914653626
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -108,3 +109,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.4829487, y: 1.3112231, z: 2.2219534}
   m_Center: {x: 0.044419587, y: 0.63660425, z: 0.0076801777}
+--- !u!114 &1288152440661144899
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1488639633745309349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 881728705, guid: 5e99434f214126023bd8db55a8296c39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _checkDistance: 1
+  _distance: 1
+  _moveTo: 1
+  _moveTarget: {fileID: 0}

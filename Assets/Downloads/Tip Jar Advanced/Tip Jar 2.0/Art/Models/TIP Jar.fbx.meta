@@ -12,6 +12,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: No Name
+    second: {fileID: 2100000, guid: bde70a1a54ec5e94685ddbb27b0337c5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: TipsTexture
     second: {fileID: 2100000, guid: 3c5a882881477c445978e60cf6a81868, type: 2}
   - first:

@@ -45,12 +45,49 @@ local _slideInDuration : number = 0.35
 --!SerializeField
 local _defaultEasing : string = "easeOutQuad"
 
--- VFX Timings (per Game Design Document - adjusted for visibility)
-local VFX_PLAYER_VANISH_DURATION = 1.0  -- Player scale down when possessing (increased for visibility)
-local VFX_PROP_INFILL_DURATION = 1.2    -- Prop scale up when possessed (increased for visibility)
-local VFX_REJECTION_DURATION = 0.2      -- Brief red flash
-local VFX_TAG_HIT_DURATION = 0.25       -- Compressed ring shock
-local VFX_TAG_MISS_DURATION = 0.15      -- Dust poof
+-- ========== VFX PREFAB REFERENCES (SerializeField) ==========
+-- Drag VFX prefabs from VFXPrefabs GameObject in Unity Inspector
+-- These are used to get the GameObject name, then we find it at runtime
+
+--!SerializeField
+--!Tooltip("VFX prefab for player vanish effect")
+local _playerVanishVFXPrefab : GameObject = nil
+
+--!SerializeField
+--!Tooltip("Duration for player vanish VFX (set to longest particle system duration)")
+local _playerVanishDuration : number = 2.5
+
+--!SerializeField
+--!Tooltip("VFX prefab for prop infill effect")
+local _propInfillVFXPrefab : GameObject = nil
+
+--!SerializeField
+--!Tooltip("Duration for prop infill VFX (auto-filled from particle system)")
+local _propInfillDuration : number = 1.2
+
+--!SerializeField
+--!Tooltip("VFX prefab for rejection effect")
+local _rejectionVFXPrefab : GameObject = nil
+
+--!SerializeField
+--!Tooltip("Duration for rejection VFX (auto-filled from particle system)")
+local _rejectionDuration : number = 0.2
+
+--!SerializeField
+--!Tooltip("VFX prefab for tag hit effect")
+local _tagHitVFXPrefab : GameObject = nil
+
+--!SerializeField
+--!Tooltip("Duration for tag hit VFX (auto-filled from particle system)")
+local _tagHitDuration : number = 0.25
+
+--!SerializeField
+--!Tooltip("VFX prefab for tag miss effect")
+local _tagMissVFXPrefab : GameObject = nil
+
+--!SerializeField
+--!Tooltip("Duration for tag miss VFX (auto-filled from particle system)")
+local _tagMissDuration : number = 0.15
 
 -- ========== UTILITY FUNCTIONS ==========
 
@@ -61,6 +98,52 @@ local VFX_TAG_MISS_DURATION = 0.15      -- Dust poof
 ]]
 local function GetEasingFunction(easingName : string)
     return Easing[easingName] or Easing.linear
+end
+
+--[[
+  SpawnVFX: Finds and spawns a VFX prefab at the specified position
+  Uses SerializeField reference to get GameObject name, then finds it in scene
+
+  @param prefabRef: GameObject - SerializeField reference to VFX prefab
+  @param position: Vector3 - World position to spawn VFX
+  @param duration: number - How long before destroying the VFX
+  @param vfxName: string - Name for logging (e.g., "PlayerVanish")
+  @return GameObject - The spawned VFX instance (or nil if failed)
+
+  Pattern:
+  1. Check if prefabRef is assigned in Inspector
+  2. Get the GameObject name from the reference
+  3. Find the GameObject in scene (should be child of VFXPrefabs, disabled)
+  4. Enable it at the target position
+  5. Schedule destruction after duration
+]]
+local function SpawnVFX(prefabRef, duration, position, vfxName)
+    -- Validate prefab reference
+    if not prefabRef then
+        print(string.format("[VFX] ERROR: %s prefab not assigned in Inspector!", vfxName))
+        return nil
+    end
+
+    -- The SerializeField reference IS the GameObject itself - use it directly
+    local vfxInstance = prefabRef
+
+    -- Move to target position
+    vfxInstance.transform.position = position
+
+    -- Enable the VFX GameObject (works even if it's disabled)
+    vfxInstance:SetActive(true)
+
+    print(string.format("[VFX] %s VFX spawned at %s (will disable after %.2fs)", vfxName, tostring(position), duration))
+
+    -- Schedule disable after duration
+    Timer.After(duration, function()
+        if vfxInstance then
+            vfxInstance:SetActive(false)
+            print(string.format("[VFX] %s VFX disabled after %.2fs", vfxName, duration))
+        end
+    end)
+
+    return vfxInstance
 end
 
 --[[
@@ -288,26 +371,13 @@ end
 function PlayerVanishVFX(position, playerCharacter)
     DebugVFX("PlayerVanishVFX at " .. tostring(position))
 
-    -- PLACEHOLDER: Log the effect
-    -- In final implementation, this will:
-    -- 1. Instantiate a particle system prefab
-    -- 2. Apply dissolve shader to player material
-    -- 3. Schedule destruction after duration
+    -- Spawn VFX using SerializeField reference
+    local vfxInstance = SpawnVFX(_playerVanishVFXPrefab, _playerVanishDuration, position, "PlayerVanish")
 
+    -- Scale down player character (keep existing placeholder for now)
     if playerCharacter then
-        -- Placeholder: Scale down player over time
-        ScalePulse(playerCharacter, 1.0, 0.0, VFX_PLAYER_VANISH_DURATION, "easeInQuad", false, false)
-
-        -- TODO: Apply vertical slice dissolve shader
-        -- local renderer = playerCharacter:GetComponent(Renderer)
-        -- if renderer then
-        --     local material = renderer.material
-        --     -- Animate _DissolveAmount from 0 to 1
-        -- end
+        ScalePulse(playerCharacter, 1.0, 0.0, _playerVanishDuration, "easeInQuad", false, false)
     end
-
-    -- TODO: Spawn sparkle particles
-    print("[VFX PLACEHOLDER] Player Vanish at " .. tostring(position))
 end
 
 --[[
@@ -332,13 +402,13 @@ end
 function PropInfillVFX(position, propObject)
     DebugVFX("PropInfillVFX at " .. tostring(position))
 
-    -- PLACEHOLDER: Log the effect
-    print("[VFX PLACEHOLDER] Prop Infill at " .. tostring(position))
+    -- Spawn VFX using SerializeField reference
+    local vfxInstance = SpawnVFX(_propInfillVFXPrefab, _propInfillDuration, position, "PropInfill")
 
     if propObject then
         -- Placeholder: Scale up prop from tiny to normal
         -- In final version, this will be handled by shader infill mask
-        ScalePulse(propObject, 0.1, 1.0, VFX_PROP_INFILL_DURATION, "easeOutBack", false, false)
+        ScalePulse(propObject, 0.1, 1.0, _propInfillDuration, "easeOutBack", false, false)
 
         -- TODO: Animate shader properties
         -- local renderer = propObject:GetComponent(Renderer)
@@ -371,8 +441,8 @@ end
 function RejectionVFX(position, propObject)
     DebugVFX("RejectionVFX at " .. tostring(position))
 
-    -- PLACEHOLDER: Log the effect
-    print("[VFX PLACEHOLDER] Rejection at " .. tostring(position))
+    -- Spawn VFX using SerializeField reference
+    local vfxInstance = SpawnVFX(_rejectionVFXPrefab, _rejectionDuration, position, "Rejection")
 
     if propObject then
         -- Placeholder: Quick shake effect
@@ -443,18 +513,12 @@ end
 function TagHitVFX(position, propObject)
     DebugVFX("TagHitVFX at " .. tostring(position))
 
-    -- PLACEHOLDER: Log the effect
-    print("[VFX PLACEHOLDER] Tag Hit at " .. tostring(position))
-
-    -- TODO: Instantiate hit VFX prefab
-    -- local hitVFX = Object.Instantiate(TagHitVFXPrefab, position, Quaternion.identity)
-    -- Timer.After(VFX_TAG_HIT_DURATION, function()
-    --     Object.Destroy(hitVFX)
-    -- end)
+    -- Spawn VFX using SerializeField reference
+    local vfxInstance = SpawnVFX(_tagHitVFXPrefab, _tagHitDuration, position, "TagHit")
 
     if propObject then
         -- Placeholder: Quick scale punch
-        ScalePulse(propObject, 1.0, 0.9, VFX_TAG_HIT_DURATION * 0.5, "easeOutQuad", false, false)
+        ScalePulse(propObject, 1.0, 0.9, _tagHitDuration * 0.5, "easeOutQuad", false, false)
     end
 end
 
@@ -482,18 +546,13 @@ end
 function TagMissVFX(position, normal)
     DebugVFX("TagMissVFX at " .. tostring(position))
 
-    -- PLACEHOLDER: Log the effect
-    print("[VFX PLACEHOLDER] Tag Miss at " .. tostring(position))
+    -- Spawn VFX using SerializeField reference
+    local vfxInstance = SpawnVFX(_tagMissVFXPrefab, _tagMissDuration, position, "TagMiss")
 
-    -- TODO: Instantiate miss VFX prefab
-    -- local rotation = Quaternion.identity
-    -- if normal then
-    --     rotation = Quaternion.LookRotation(normal)
+    -- TODO: Rotate VFX to align with surface normal if provided
+    -- if vfxInstance and normal then
+    --     vfxInstance.transform.rotation = Quaternion.LookRotation(normal)
     -- end
-    -- local missVFX = Object.Instantiate(TagMissVFXPrefab, position, rotation)
-    -- Timer.After(VFX_TAG_MISS_DURATION, function()
-    --     Object.Destroy(missVFX)
-    -- end)
 end
 
 -- ========== PHASE TRANSITION VFX ==========
