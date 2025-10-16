@@ -44,7 +44,7 @@ local _enableZoneManager : boolean = true
 local _enableUIManager : boolean = true
 
 --!SerializeField
---!Tooltip("Enable/disable logging for HunterTagSystem (not implemented)")
+--!Tooltip("Enable/disable logging for HunterTagSystem")
 local _enableHunterTagSystem : boolean = true
 
 --!SerializeField

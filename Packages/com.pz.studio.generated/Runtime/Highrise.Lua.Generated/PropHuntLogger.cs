@@ -40,21 +40,21 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.Boolean _enableZoneManager = true;
         [Tooltip("Enable/disable logging for UIManager")]
         [SerializeField] public System.Boolean _enableUIManager = true;
-        [Tooltip("Enable/disable logging for HunterTagSystem")]
+        [Tooltip("Enable/disable logging for HunterTagSystem (not implemented)")]
         [SerializeField] public System.Boolean _enableHunterTagSystem = true;
         [Tooltip("Enable/disable logging for PropPossessionSystem")]
         [SerializeField] public System.Boolean _enablePropPossessionSystem = true;
-        [Tooltip("Enable/disable logging for PropDisguiseSystem")]
+        [Tooltip("Enable/disable logging for PropDisguiseSystem (not implemented)")]
         [SerializeField] public System.Boolean _enablePropDisguiseSystem = true;
-        [Tooltip("Enable/disable logging for RangeIndicator")]
+        [Tooltip("Enable/disable logging for RangeIndicator (not implemented)")]
         [SerializeField] public System.Boolean _enableRangeIndicator = false;
-        [Tooltip("Enable/disable logging for ReadyButton")]
+        [Tooltip("Enable/disable logging for ReadyButton (not implemented)")]
         [SerializeField] public System.Boolean _enableReadyButton = false;
-        [Tooltip("Enable/disable logging for SpectatorButton")]
+        [Tooltip("Enable/disable logging for SpectatorButton (not implemented)")]
         [SerializeField] public System.Boolean _enableSpectatorButton = false;
-        [Tooltip("Enable/disable logging for RecapScreen")]
+        [Tooltip("Enable/disable logging for RecapScreen (not implemented)")]
         [SerializeField] public System.Boolean _enableRecapScreen = true;
-        [Tooltip("Enable/disable logging for HUD")]
+        [Tooltip("Enable/disable logging for HUD (not implemented)")]
         [SerializeField] public System.Boolean _enableHUD = false;
         [Tooltip("Enable/disable logging for Config")]
         [SerializeField] public System.Boolean _enableConfig = true;

@@ -6,6 +6,7 @@
 --!Type(Module)
 
 -- Import required modules
+local Logger = require("PropHuntLogger")
 local Config = require("PropHuntConfig")
 local VFXManager = require("PropHuntVFXManager")
 local PlayerManager = require("PropHuntPlayerManager")
@@ -52,11 +53,11 @@ end
 ]]
 
 function self:ClientStart()
-    print("[HunterTagSystem] ClientStart")
+    Logger.Log("HunterTagSystem", "ClientStart")
 
     -- Listen for tag events (for VFX feedback)
     playerTaggedEvent:Connect(function(hunterId, propId)
-        print("[HunterTagSystem] Player tagged -> hunter:", tostring(hunterId), "prop:", tostring(propId))
+        Logger.Log("HunterTagSystem", "Player tagged -> hunter:", tostring(hunterId), "prop:", tostring(propId))
     end)
 
     -- Setup NetworkValue tracking via PlayerManager
@@ -68,22 +69,22 @@ function self:ClientStart()
             if playerInfo.gameState then
                 currentStateValue = playerInfo.gameState
                 currentState = NormalizeState(currentStateValue.value)
-                print("[HunterTagSystem] Initial state from NetworkValue: " .. currentState)
+                Logger.Log("HunterTagSystem", "Initial state from NetworkValue: " .. currentState)
 
                 currentStateValue.Changed:Connect(function(newState, oldState)
                     currentState = NormalizeState(newState)
-                    print("[HunterTagSystem] State changed via NetworkValue: " .. currentState)
+                    Logger.Log("HunterTagSystem", "State changed via NetworkValue: " .. currentState)
                 end)
             end
 
             -- Track player role
             if playerInfo.role then
                 localRole = playerInfo.role.value
-                print("[HunterTagSystem] Initial role from NetworkValue: " .. localRole)
+                Logger.Log("HunterTagSystem", "Initial role from NetworkValue: " .. localRole)
 
                 playerInfo.role.Changed:Connect(function(newRole, oldRole)
                     localRole = newRole
-                    print("[HunterTagSystem] Role changed via NetworkValue: " .. localRole)
+                    Logger.Log("HunterTagSystem", "Role changed via NetworkValue: " .. localRole)
                 end)
             end
         end
@@ -92,11 +93,11 @@ function self:ClientStart()
     -- Listen for state/role updates (backup event system)
     stateChangedEvent:Connect(function(newState, timer)
         currentState = NormalizeState(newState)
-        print("[HunterTagSystem] State updated via event: " .. currentState)
+        Logger.Log("HunterTagSystem", "State updated via event: " .. currentState)
     end)
 
     roleAssignedEvent:Connect(function(role)
         localRole = tostring(role)
-        print("[HunterTagSystem] Role updated via event: " .. localRole)
+        Logger.Log("HunterTagSystem", "Role updated via event: " .. localRole)
     end)
 end

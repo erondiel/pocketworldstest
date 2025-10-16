@@ -2296,7 +2296,7 @@ MonoBehaviour:
   _enableVFXManager: 0
   _enableZoneManager: 0
   _enableUIManager: 0
-  _enableHunterTagSystem: 0
+  _enableHunterTagSystem: 1
   _enablePropPossessionSystem: 0
   _enablePropDisguiseSystem: 0
   _enableRangeIndicator: 0
