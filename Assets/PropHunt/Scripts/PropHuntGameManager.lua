@@ -360,6 +360,19 @@ function TransitionToState(newState)
 
         -- Clear zone tracking
         ZoneManager.ClearAllPlayerZones()
+
+        -- Trigger end round VFX
+        -- Determine winning team from EndRound function context
+        local winningTeam = "unknown"
+        local winningPlayers = {}
+        if huntersWins > propsWins then
+            winningTeam = "Hunters"
+            winningPlayers = huntersTeam
+        elseif propsWins > huntersWins then
+            winningTeam = "Props"
+            winningPlayers = propsTeam
+        end
+        VFXManager.TriggerEndRoundVFX(winningTeam, winningPlayers)
     end
 
     -- Notify all clients of state change (both methods for compatibility)

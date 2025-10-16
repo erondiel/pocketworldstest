@@ -21,6 +21,10 @@ local Easing = TweenModule.Easing
 
 local PropHuntConfig = require("PropHuntConfig")
 
+-- ========== NETWORK EVENTS ==========
+-- EndRound VFX event for broadcasting to all clients
+local endRoundVFXEvent = Event.new("PH_EndRoundVFX")
+
 -- ========== UI ANIMATION CONFIGURATION ==========
 -- These values define the visual characteristics of UI animations
 -- Adjust these to fine-tune the feel of VFX animations
@@ -111,16 +115,8 @@ local _tagMissScalePunchDuration : number = 0.3
 --!Space(10)
 --!Header("Phase Transition VFX")
 --!SerializeField
---!Tooltip("VFX prefab for end round effect")
+--!Tooltip("VFX prefab for end round effect (duration matches Round End timer from PropHuntConfig)")
 local _endRoundVFXPrefab : GameObject = nil
-
---!SerializeField
---!Tooltip("Enable looping end round VFX (duration matches Round End timer)")
-local _endRoundVFXLooping : boolean = true
-
---!SerializeField
---!Tooltip("Duration for end round VFX (only used if looping is disabled)")
-local _endRoundDuration : number = 3.0
 
 -- ========== UTILITY FUNCTIONS ==========
 
@@ -173,6 +169,46 @@ local function SpawnVFX(prefabRef, duration, position, vfxName)
         if vfxInstance then
             vfxInstance:SetActive(false)
             print(string.format("[VFX] %s VFX disabled after %.2fs", vfxName, duration))
+        end
+    end)
+
+    return vfxInstance
+end
+
+--[[
+  SpawnUIVFX: Spawns a UI-based VFX (Canvas with RectTransform)
+  Unlike SpawnVFX, this handles Screen Space Canvas elements that don't use world position
+
+  @param prefabRef: GameObject - SerializeField reference to UI VFX prefab (must have Canvas component)
+  @param duration: number - How long before disabling the VFX
+  @param vfxName: string - Name for logging (e.g., "EndRound")
+  @return GameObject - The spawned VFX instance (or nil if failed)
+
+  Pattern:
+  1. Verify prefabRef is assigned in Inspector
+  2. Enable the UI VFX (it positions itself via RectTransform anchors)
+  3. Schedule disable after duration
+]]
+local function SpawnUIVFX(prefabRef, duration, vfxName)
+    -- Validate prefab reference
+    if not prefabRef then
+        print(string.format("[VFX] ERROR: %s UI prefab not assigned in Inspector!", vfxName))
+        return nil
+    end
+
+    -- The SerializeField reference IS the GameObject itself - use it directly
+    local vfxInstance = prefabRef
+
+    -- Enable the VFX GameObject (UI elements position themselves via RectTransform)
+    vfxInstance:SetActive(true)
+
+    print(string.format("[VFX] %s UI VFX spawned (screen-space overlay, will disable after %.2fs)", vfxName, duration))
+
+    -- Schedule disable after duration
+    Timer.After(duration, function()
+        if vfxInstance then
+            vfxInstance:SetActive(false)
+            print(string.format("[VFX] %s UI VFX disabled after %.2fs", vfxName, duration))
         end
     end)
 
@@ -853,7 +889,10 @@ function TriggerHuntPhaseStart()
 end
 
 --[[
-  TriggerEndRoundVFX: Plays VFX when Round End state begins
+  TriggerEndRoundVFX: SERVER-SIDE ONLY - Broadcasts End Round VFX to all clients
+
+  This function should ONLY be called from server-side code (GameManager).
+  It broadcasts the event to all clients, who will then spawn the VFX locally.
 
   Spec from GDD:
     - Victory/defeat screen transition
@@ -866,30 +905,40 @@ end
   @return void
 ]]
 function TriggerEndRoundVFX(winningTeam, winningPlayers)
-    DebugVFX("TriggerEndRoundVFX - Round end with winning team: " .. tostring(winningTeam))
+    DebugVFX("SERVER: Broadcasting EndRound VFX to all clients - winning team: " .. tostring(winningTeam))
 
-    -- Determine VFX duration based on looping setting
-    local vfxDuration
-    if _endRoundVFXLooping then
-        -- Use Round End timer duration from PropHuntConfig
-        vfxDuration = PropHuntConfig.GetRoundEndTime()
-        DebugVFX("Using looping VFX duration: " .. vfxDuration .. "s (matches Round End timer)")
-    else
-        -- Use fixed duration from SerializeField
-        vfxDuration = _endRoundDuration
-        DebugVFX("Using fixed VFX duration: " .. vfxDuration .. "s")
-    end
+    -- Broadcast event to ALL clients (they will spawn the VFX locally)
+    local winningPlayersCount = winningPlayers and #winningPlayers or 0
+    endRoundVFXEvent:FireAllClients(winningTeam, winningPlayersCount)
 
-    -- Spawn VFX using SerializeField reference
-    local vfxInstance = SpawnVFX(_endRoundVFXPrefab, vfxDuration, Vector3.zero, "EndRound")
+    print("[VFX] SERVER: Broadcast EndRound VFX event (team: " .. tostring(winningTeam) .. ", players: " .. tostring(winningPlayersCount) .. ")")
+end
+
+--[[
+  PlayEndRoundVFX: CLIENT-SIDE ONLY - Spawns the End Round VFX locally
+
+  This function is called by the network event listener on each client.
+  It actually spawns and plays the VFX prefab.
+
+  @param winningTeam: string - "Props" or "Hunters"
+  @param winningPlayersCount: number - Number of winning players
+  @return void
+]]
+local function PlayEndRoundVFX(winningTeam, winningPlayersCount)
+    DebugVFX("CLIENT: Playing EndRound VFX - winning team: " .. tostring(winningTeam))
+
+    -- Use Round End timer duration from PropHuntConfig
+    local vfxDuration = PropHuntConfig.GetRoundEndTime()
+    DebugVFX("VFX duration: " .. vfxDuration .. "s (matches Round End timer)")
+
+    -- Spawn UI VFX (Screen Space Canvas) - no position needed
+    local vfxInstance = SpawnUIVFX(_endRoundVFXPrefab, vfxDuration, "EndRound")
 
     -- PLACEHOLDER: Log the transition
     print("[VFX PLACEHOLDER] End round VFX - victory screen, confetti, score celebration")
     print("[VFX] Winning team: " .. tostring(winningTeam))
-    print("[VFX] VFX duration: " .. vfxDuration .. "s (looping: " .. tostring(_endRoundVFXLooping) .. ")")
-    if winningPlayers then
-        print("[VFX] Winning players count: " .. tostring(#winningPlayers))
-    end
+    print("[VFX] VFX duration: " .. vfxDuration .. "s")
+    print("[VFX] Winning players count: " .. tostring(winningPlayersCount))
 
     -- TODO: Implement end round VFX:
     -- 1. Spawn confetti/sparkle particle systems
@@ -897,7 +946,6 @@ function TriggerEndRoundVFX(winningTeam, winningPlayers)
     -- 3. Trigger score celebration effects
     -- 4. Play winner announcement sound effects
     -- 5. Display team-specific victory animations
-    -- 6. If looping enabled, configure particle system to loop for full duration
 end
 
 -- ========== SCREEN FADE TRANSITIONS ==========
@@ -1106,6 +1154,18 @@ function ColorTween(fromColor, toColor, duration, onUpdate, easing, onComplete)
 
     tween:start()
     return tween
+end
+
+-- ========== CLIENT LIFECYCLE ==========
+-- Module type with ClientStart to listen for network events
+
+function self:ClientStart()
+    -- Listen for EndRound VFX event from server
+    endRoundVFXEvent:Connect(function(winningTeam, winningPlayersCount)
+        PlayEndRoundVFX(winningTeam, winningPlayersCount)
+    end)
+
+    print("[VFX] Client started - listening for EndRound VFX events")
 end
 
 -- ========== EXPORTED FUNCTIONS ==========
