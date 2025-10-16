@@ -76,6 +76,7 @@ local VFXManager = require("PropHuntVFXManager")
 local PlayerManager = require("PropHuntPlayerManager")
 local GameManager = require("PropHuntGameManager")
 local ScoringSystem = require("PropHuntScoringSystem")
+local Teleporter = require("PropHuntTeleporter")
 
 -- Network Events (Module-scoped, accessible within this file only)
 local possessionRequestEvent = Event.new("PH_PossessionRequest")
@@ -951,6 +952,11 @@ function self:ServerAwake()
         -- IMMEDIATELY restore the tagged player's avatar
         print("[PropPossessionSystem] SERVER: Restoring avatar for tagged player: " .. propPlayer.name)
         restoreAvatarCommand:FireAllClients(propPlayer.user.id)
+
+        -- Teleport tagged prop to arena spawn position
+        -- This prevents NavMesh/input issues with hidden player
+        print("[PropPossessionSystem] SERVER: Teleporting tagged player to Arena spawn: " .. propPlayer.name)
+        Teleporter.TeleportToArena(propPlayer)
 
         -- Change role to spectator
         PlayerManager.SetPlayerRole(propPlayer, "spectator")
