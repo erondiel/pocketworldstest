@@ -3,7 +3,12 @@ guid: f5a28c84cf4dc96479f3dea708ab3c50
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Lightray
+    second: {fileID: 2100000, guid: 9739469dc9dab654b93fa431208f3989, type: 2}
   materials:
     materialImportMode: 1
     materialName: 1
