@@ -21,10 +21,11 @@ local Easing = TweenModule.Easing
 
 local PropHuntConfig = require("PropHuntConfig")
 
--- ========== VFX CONFIGURATION ==========
--- These values define the visual characteristics of effects
+-- ========== UI ANIMATION CONFIGURATION ==========
+-- These values define the visual characteristics of UI animations
 -- Adjust these to fine-tune the feel of VFX animations
 
+--!Header("UI Animation Settings")
 --!Tooltip("Duration for fade in animations")
 --!SerializeField
 local _fadeInDuration : number = 0.3
@@ -45,10 +46,8 @@ local _slideInDuration : number = 0.35
 --!SerializeField
 local _defaultEasing : string = "easeOutQuad"
 
--- ========== VFX PREFAB REFERENCES (SerializeField) ==========
--- Drag VFX prefabs from VFXPrefabs GameObject in Unity Inspector
--- These are used to get the GameObject name, then we find it at runtime
-
+--!Space(10)
+--!Header("Player VFX")
 --!SerializeField
 --!Tooltip("VFX prefab for player vanish effect")
 local _playerVanishVFXPrefab : GameObject = nil
@@ -57,6 +56,16 @@ local _playerVanishVFXPrefab : GameObject = nil
 --!Tooltip("Duration for player vanish VFX (set to longest particle system duration)")
 local _playerVanishDuration : number = 2.5
 
+--!SerializeField
+--!Tooltip("VFX prefab for player appear effect")
+local _playerAppearVFXPrefab : GameObject = nil
+
+--!SerializeField
+--!Tooltip("Duration for player appear VFX")
+local _playerAppearDuration : number = 2.5
+
+--!Space(10)
+--!Header("Prop VFX")
 --!SerializeField
 --!Tooltip("VFX prefab for prop infill effect")
 local _propInfillVFXPrefab : GameObject = nil
@@ -73,6 +82,8 @@ local _rejectionVFXPrefab : GameObject = nil
 --!Tooltip("Duration for rejection VFX (auto-filled from particle system)")
 local _rejectionDuration : number = 0.2
 
+--!Space(10)
+--!Header("Tag VFX")
 --!SerializeField
 --!Tooltip("VFX prefab for tag hit effect")
 local _tagHitVFXPrefab : GameObject = nil
@@ -90,20 +101,26 @@ local _tagMissVFXPrefab : GameObject = nil
 local _tagMissDuration : number = 0.15
 
 --!SerializeField
---!Tooltip("VFX prefab for player appear effect")
-local _playerAppearVFXPrefab : GameObject = nil
-
---!SerializeField
---!Tooltip("Duration for player appear VFX")
-local _playerAppearDuration : number = 2.5
-
---!SerializeField
 --!Tooltip("Duration for tag hit scale punch animation")
 local _tagHitScalePunchDuration : number = 0.3
 
 --!SerializeField
 --!Tooltip("Duration for tag miss scale punch animation")
 local _tagMissScalePunchDuration : number = 0.3
+
+--!Space(10)
+--!Header("Phase Transition VFX")
+--!SerializeField
+--!Tooltip("VFX prefab for end round effect")
+local _endRoundVFXPrefab : GameObject = nil
+
+--!SerializeField
+--!Tooltip("Enable looping end round VFX (duration matches Round End timer)")
+local _endRoundVFXLooping : boolean = true
+
+--!SerializeField
+--!Tooltip("Duration for end round VFX (only used if looping is disabled)")
+local _endRoundDuration : number = 3.0
 
 -- ========== UTILITY FUNCTIONS ==========
 
@@ -835,6 +852,54 @@ function TriggerHuntPhaseStart()
     -- 5. Play hunt horn sound effect
 end
 
+--[[
+  TriggerEndRoundVFX: Plays VFX when Round End state begins
+
+  Spec from GDD:
+    - Victory/defeat screen transition
+    - Score celebration effects
+    - Confetti or sparkle bursts
+    - Winner announcement effects
+
+  @param winningTeam: string - "Props" or "Hunters"
+  @param winningPlayers: table - List of winning players
+  @return void
+]]
+function TriggerEndRoundVFX(winningTeam, winningPlayers)
+    DebugVFX("TriggerEndRoundVFX - Round end with winning team: " .. tostring(winningTeam))
+
+    -- Determine VFX duration based on looping setting
+    local vfxDuration
+    if _endRoundVFXLooping then
+        -- Use Round End timer duration from PropHuntConfig
+        vfxDuration = PropHuntConfig.GetRoundEndTime()
+        DebugVFX("Using looping VFX duration: " .. vfxDuration .. "s (matches Round End timer)")
+    else
+        -- Use fixed duration from SerializeField
+        vfxDuration = _endRoundDuration
+        DebugVFX("Using fixed VFX duration: " .. vfxDuration .. "s")
+    end
+
+    -- Spawn VFX using SerializeField reference
+    local vfxInstance = SpawnVFX(_endRoundVFXPrefab, vfxDuration, Vector3.zero, "EndRound")
+
+    -- PLACEHOLDER: Log the transition
+    print("[VFX PLACEHOLDER] End round VFX - victory screen, confetti, score celebration")
+    print("[VFX] Winning team: " .. tostring(winningTeam))
+    print("[VFX] VFX duration: " .. vfxDuration .. "s (looping: " .. tostring(_endRoundVFXLooping) .. ")")
+    if winningPlayers then
+        print("[VFX] Winning players count: " .. tostring(#winningPlayers))
+    end
+
+    -- TODO: Implement end round VFX:
+    -- 1. Spawn confetti/sparkle particle systems
+    -- 2. Play victory/defeat screen transition
+    -- 3. Trigger score celebration effects
+    -- 4. Play winner announcement sound effects
+    -- 5. Display team-specific victory animations
+    -- 6. If looping enabled, configure particle system to loop for full duration
+end
+
 -- ========== SCREEN FADE TRANSITIONS ==========
 -- Full-screen fade effects for camera transitions during teleportation
 
@@ -1072,6 +1137,7 @@ return {
     TriggerLobbyTransition = TriggerLobbyTransition,
     TriggerHidePhaseStart = TriggerHidePhaseStart,
     TriggerHuntPhaseStart = TriggerHuntPhaseStart,
+    TriggerEndRoundVFX = TriggerEndRoundVFX,
 
     -- Advanced Helpers
     CreateSequence = CreateSequence,

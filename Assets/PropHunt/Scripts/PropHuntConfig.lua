@@ -1,6 +1,6 @@
 --!Type(Module)
 
--- ========== LOBBY SETTINGS ==========
+--!Header("Lobby Settings")
 --!Tooltip("Minimum players required to start a round")
 --!SerializeField
 local _minPlayersToStart : number = 2
@@ -8,7 +8,8 @@ local _minPlayersToStart : number = 2
 --!SerializeField
 local _lobbyCountdown : number = 30
 
--- ========== PHASE TIMERS ==========
+--!Space(10)
+--!Header("Phase Timers")
 --!Tooltip("Time in seconds for the hiding phase")
 --!SerializeField
 local _hidePhaseTime : number = 35
@@ -19,7 +20,8 @@ local _huntPhaseTime : number = 240
 --!SerializeField
 local _roundEndTime : number = 15
 
--- ========== TAGGING SETTINGS ==========
+--!Space(10)
+--!Header("Tagging Settings")
 --!Tooltip("Maximum tag range in meters")
 --!SerializeField
 local _tagRange : number = 4.0
@@ -27,7 +29,8 @@ local _tagRange : number = 4.0
 --!SerializeField
 local _tagCooldown : number = 0.5
 
--- ========== SCORING: PROPS ==========
+--!Space(10)
+--!Header("Prop Scoring")
 --!Tooltip("Seconds between prop tick scoring")
 --!SerializeField
 local _propTickSeconds : number = 5
@@ -38,7 +41,8 @@ local _propTickPoints : number = 10
 --!SerializeField
 local _propSurviveBonus : number = 100
 
--- ========== SCORING: HUNTERS ==========
+--!Space(10)
+--!Header("Hunter Scoring")
 --!Tooltip("Base points for finding a prop")
 --!SerializeField
 local _hunterFindBase : number = 120
@@ -49,7 +53,8 @@ local _hunterMissPenalty : number = -10
 --!SerializeField
 local _hunterAccuracyBonusMax : number = 50
 
--- ========== ZONE WEIGHTS ==========
+--!Space(10)
+--!Header("Zone Weights")
 --!Tooltip("Enable zone-based scoring multipliers (disable if zones block prop interaction)")
 --!SerializeField
 local _zonesEnabled : boolean = false
@@ -63,7 +68,8 @@ local _zoneWeightMid : number = 1.0
 --!SerializeField
 local _zoneWeightFar : number = 0.6
 
--- ========== TEAM BONUSES ==========
+--!Space(10)
+--!Header("Team Bonuses")
 --!Tooltip("Hunter team win bonus per hunter")
 --!SerializeField
 local _hunterTeamWinBonus : number = 50
@@ -74,7 +80,8 @@ local _propTeamWinBonusSurvived : number = 30
 --!SerializeField
 local _propTeamWinBonusFound : number = 15
 
--- ========== TAUNT SYSTEM (Nice-to-Have) ==========
+--!Space(10)
+--!Header("Taunt System")
 --!Tooltip("Enable taunt system")
 --!SerializeField
 local _tauntEnabled : boolean = false
@@ -88,7 +95,8 @@ local _tauntWindow : number = 10
 --!SerializeField
 local _tauntReward : number = 20
 
--- ========== DEBUG ==========
+--!Space(10)
+--!Header("Debug")
 --!Tooltip("Enable debug logging")
 --!SerializeField
 local _enableDebug : boolean = true

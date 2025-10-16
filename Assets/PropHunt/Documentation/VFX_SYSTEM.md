@@ -913,6 +913,14 @@ end
 | `TagHitVFX(pos, prop)` | 0.25s | Successful tag |
 | `TagMissVFX(pos, normal)` | 0.15s | Missed tag |
 
+### Phase Transition VFX
+| Function | Spec Duration | Purpose |
+|----------|---------------|---------|
+| `TriggerLobbyTransition()` | - | Lobby state transition |
+| `TriggerHidePhaseStart(props)` | - | Hide phase start |
+| `TriggerHuntPhaseStart()` | - | Hunt phase start |
+| `TriggerEndRoundVFX(team, players)` | Configurable | Round end celebration |
+
 ### Advanced
 | Function | Returns | Purpose |
 |----------|---------|---------|

@@ -26,32 +26,38 @@ namespace Highrise.Lua.Generated
         private const string s_scriptGUID = "a0ab8357b9247ad47b44d724a2ace8c1";
         public override string ScriptGUID => s_scriptGUID;
 
+        [Header("Lobby Settings")]
         [Tooltip("Minimum players required to start a round")]
         [SerializeField] public System.Double _minPlayersToStart = 2;
         [Tooltip("Lobby countdown time in seconds")]
         [SerializeField] public System.Double _lobbyCountdown = 30;
+        [Header("Phase Timers")]
         [Tooltip("Time in seconds for the hiding phase")]
         [SerializeField] public System.Double _hidePhaseTime = 35;
         [Tooltip("Time in seconds for the hunting phase")]
         [SerializeField] public System.Double _huntPhaseTime = 240;
         [Tooltip("Time in seconds for the round end phase")]
         [SerializeField] public System.Double _roundEndTime = 15;
+        [Header("Tagging Settings")]
         [Tooltip("Maximum tag range in meters")]
         [SerializeField] public System.Double _tagRange = 4;
         [Tooltip("Tag cooldown in seconds")]
         [SerializeField] public System.Double _tagCooldown = 0.5;
+        [Header("Prop Scoring")]
         [Tooltip("Seconds between prop tick scoring")]
         [SerializeField] public System.Double _propTickSeconds = 5;
         [Tooltip("Base points per tick")]
         [SerializeField] public System.Double _propTickPoints = 10;
         [Tooltip("Bonus for surviving the round")]
         [SerializeField] public System.Double _propSurviveBonus = 100;
+        [Header("Hunter Scoring")]
         [Tooltip("Base points for finding a prop")]
         [SerializeField] public System.Double _hunterFindBase = 120;
         [Tooltip("Penalty for missing a tag")]
         [SerializeField] public System.Double _hunterMissPenalty = -10;
         [Tooltip("Maximum accuracy bonus")]
         [SerializeField] public System.Double _hunterAccuracyBonusMax = 50;
+        [Header("Zone Weights")]
         [Tooltip("Enable zone-based scoring multipliers (disable if zones block prop interaction)")]
         [SerializeField] public System.Boolean _zonesEnabled = false;
         [Tooltip("Zone weight for Near Spawn areas")]
@@ -60,12 +66,14 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.Double _zoneWeightMid = 1;
         [Tooltip("Zone weight for Far areas")]
         [SerializeField] public System.Double _zoneWeightFar = 0.6;
+        [Header("Team Bonuses")]
         [Tooltip("Hunter team win bonus per hunter")]
         [SerializeField] public System.Double _hunterTeamWinBonus = 50;
         [Tooltip("Prop team win bonus for survivors")]
         [SerializeField] public System.Double _propTeamWinBonusSurvived = 30;
         [Tooltip("Prop team win bonus for found props")]
         [SerializeField] public System.Double _propTeamWinBonusFound = 15;
+        [Header("Taunt System")]
         [Tooltip("Enable taunt system")]
         [SerializeField] public System.Boolean _tauntEnabled = false;
         [Tooltip("Taunt cooldown in seconds")]
@@ -74,6 +82,7 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.Double _tauntWindow = 10;
         [Tooltip("Taunt reward points")]
         [SerializeField] public System.Double _tauntReward = 20;
+        [Header("Debug")]
         [Tooltip("Enable debug logging")]
         [SerializeField] public System.Boolean _enableDebug = true;
 

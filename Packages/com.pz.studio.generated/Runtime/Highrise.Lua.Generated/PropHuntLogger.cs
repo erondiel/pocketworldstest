@@ -40,26 +40,24 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.Boolean _enableZoneManager = true;
         [Tooltip("Enable/disable logging for UIManager")]
         [SerializeField] public System.Boolean _enableUIManager = true;
-        [Tooltip("Enable/disable logging for HunterTagSystem (not implemented)")]
+        [Tooltip("Enable/disable logging for HunterTagSystem")]
         [SerializeField] public System.Boolean _enableHunterTagSystem = true;
         [Tooltip("Enable/disable logging for PropPossessionSystem")]
         [SerializeField] public System.Boolean _enablePropPossessionSystem = true;
-        [Tooltip("Enable/disable logging for PropDisguiseSystem (not implemented)")]
-        [SerializeField] public System.Boolean _enablePropDisguiseSystem = true;
-        [Tooltip("Enable/disable logging for RangeIndicator (not implemented)")]
-        [SerializeField] public System.Boolean _enableRangeIndicator = false;
-        [Tooltip("Enable/disable logging for ReadyButton (not implemented)")]
-        [SerializeField] public System.Boolean _enableReadyButton = false;
-        [Tooltip("Enable/disable logging for SpectatorButton (not implemented)")]
-        [SerializeField] public System.Boolean _enableSpectatorButton = false;
-        [Tooltip("Enable/disable logging for RecapScreen (not implemented)")]
-        [SerializeField] public System.Boolean _enableRecapScreen = true;
-        [Tooltip("Enable/disable logging for HUD (not implemented)")]
-        [SerializeField] public System.Boolean _enableHUD = false;
+        [Tooltip("Enable/disable logging for PropDisguiseSystem - Not Implemented")]
+        [SerializeField] public System.Boolean _enablePropDisguiseSystem_NotImplemented = true;
+        [Tooltip("Enable/disable logging for RangeIndicator - Not Implemented")]
+        [SerializeField] public System.Boolean _enableRangeIndicator_NotImplemented = false;
+        [Tooltip("Enable/disable logging for ReadyButton - Not Implemented")]
+        [SerializeField] public System.Boolean _enableReadyButton_NotImplemented = false;
+        [Tooltip("Enable/disable logging for SpectatorButton - Not Implemented")]
+        [SerializeField] public System.Boolean _enableSpectatorButton_NotImplemented = false;
+        [Tooltip("Enable/disable logging for RecapScreen - Not Implemented")]
+        [SerializeField] public System.Boolean _enableRecapScreen_NotImplemented = true;
+        [Tooltip("Enable/disable logging for HUD - Not Implemented")]
+        [SerializeField] public System.Boolean _enableHUD_NotImplemented = false;
         [Tooltip("Enable/disable logging for Config")]
         [SerializeField] public System.Boolean _enableConfig = true;
-        [Tooltip("Disable all logs (overrides everything)")]
-        [SerializeField] public System.Boolean _disableAllLogs = false;
 
         protected override SerializedPropertyValue[] SerializeProperties()
         {
@@ -77,14 +75,13 @@ namespace Highrise.Lua.Generated
                 CreateSerializedProperty(_script.GetPropertyAt(6), _enableUIManager),
                 CreateSerializedProperty(_script.GetPropertyAt(7), _enableHunterTagSystem),
                 CreateSerializedProperty(_script.GetPropertyAt(8), _enablePropPossessionSystem),
-                CreateSerializedProperty(_script.GetPropertyAt(9), _enablePropDisguiseSystem),
-                CreateSerializedProperty(_script.GetPropertyAt(10), _enableRangeIndicator),
-                CreateSerializedProperty(_script.GetPropertyAt(11), _enableReadyButton),
-                CreateSerializedProperty(_script.GetPropertyAt(12), _enableSpectatorButton),
-                CreateSerializedProperty(_script.GetPropertyAt(13), _enableRecapScreen),
-                CreateSerializedProperty(_script.GetPropertyAt(14), _enableHUD),
+                CreateSerializedProperty(_script.GetPropertyAt(9), _enablePropDisguiseSystem_NotImplemented),
+                CreateSerializedProperty(_script.GetPropertyAt(10), _enableRangeIndicator_NotImplemented),
+                CreateSerializedProperty(_script.GetPropertyAt(11), _enableReadyButton_NotImplemented),
+                CreateSerializedProperty(_script.GetPropertyAt(12), _enableSpectatorButton_NotImplemented),
+                CreateSerializedProperty(_script.GetPropertyAt(13), _enableRecapScreen_NotImplemented),
+                CreateSerializedProperty(_script.GetPropertyAt(14), _enableHUD_NotImplemented),
                 CreateSerializedProperty(_script.GetPropertyAt(15), _enableConfig),
-                CreateSerializedProperty(_script.GetPropertyAt(16), _disableAllLogs),
             };
         }
         
