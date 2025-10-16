@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.pathightree.spacenavigator-driver": "file:com.pathightree.spacenavigator-driver",
+    "com.3dconnexion.3dxunity3d": "file:C:/Program Files/3Dconnexion/3DxWare/3DxUnity3D/src",
     "com.pz.studio": "0.24.1",
     "com.unity.addressables": "1.21.20",
     "com.unity.ai.navigation": "1.1.5",

@@ -1,12 +1,10 @@
 {
   "dependencies": {
-    "com.pathightree.spacenavigator-driver": {
-      "version": "file:com.pathightree.spacenavigator-driver",
+    "com.3dconnexion.3dxunity3d": {
+      "version": "file:C:/Program Files/3Dconnexion/3DxWare/3DxUnity3D/src",
       "depth": 0,
-      "source": "embedded",
-      "dependencies": {
-        "com.unity.inputsystem": "1.0.2"
-      }
+      "source": "local",
+      "dependencies": {}
     },
     "com.pz.studio": {
       "version": "0.24.1",
