@@ -44,7 +44,7 @@ local _enableZoneManager : boolean = true
 local _enableUIManager : boolean = true
 
 --!SerializeField
---!Tooltip("Enable/disable logging for HunterTagSystem")
+--!Tooltip("Enable/disable logging for HunterTagSystem (not implemented)")
 local _enableHunterTagSystem : boolean = true
 
 --!SerializeField
@@ -52,27 +52,27 @@ local _enableHunterTagSystem : boolean = true
 local _enablePropPossessionSystem : boolean = true
 
 --!SerializeField
---!Tooltip("Enable/disable logging for PropDisguiseSystem")
+--!Tooltip("Enable/disable logging for PropDisguiseSystem (not implemented)")
 local _enablePropDisguiseSystem : boolean = true
 
 --!SerializeField
---!Tooltip("Enable/disable logging for RangeIndicator")
+--!Tooltip("Enable/disable logging for RangeIndicator (not implemented)")
 local _enableRangeIndicator : boolean = false
 
 --!SerializeField
---!Tooltip("Enable/disable logging for ReadyButton")
+--!Tooltip("Enable/disable logging for ReadyButton (not implemented)")
 local _enableReadyButton : boolean = false
 
 --!SerializeField
---!Tooltip("Enable/disable logging for SpectatorButton")
+--!Tooltip("Enable/disable logging for SpectatorButton (not implemented)")
 local _enableSpectatorButton : boolean = false
 
 --!SerializeField
---!Tooltip("Enable/disable logging for RecapScreen")
+--!Tooltip("Enable/disable logging for RecapScreen (not implemented)")
 local _enableRecapScreen : boolean = true
 
 --!SerializeField
---!Tooltip("Enable/disable logging for HUD")
+--!Tooltip("Enable/disable logging for HUD (not implemented)")
 local _enableHUD : boolean = false
 
 --!SerializeField

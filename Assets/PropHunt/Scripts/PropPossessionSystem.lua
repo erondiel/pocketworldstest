@@ -90,6 +90,10 @@ local playerTaggedEvent = Event.new("PH_PlayerTagged")  -- Listen for tag events
 local tagPropRequest = Event.new("PH_TagPropRequest")  -- Hunter taps prop during HUNTING
 local postTeleportEvent = Event.new("PH_PostTeleport")  -- Listen for teleport completion
 
+-- VFX Network Events
+local playerVanishVFXEvent = Event.new("PH_PlayerVanishVFX")  -- Broadcast player vanish VFX to all clients
+local propInfillVFXEvent = Event.new("PH_PropInfillVFX")  -- Broadcast prop infill VFX to all clients
+
 -- Server-side prop tracking (One-Prop Rule)
 -- Maps propName -> playerId
 local possessedProps = {}
@@ -216,41 +220,41 @@ function OnPropTapped(propName)
     if currentStateValue then
         local liveState = NormalizeState(currentStateValue.value)
         if liveState ~= currentState then
-            print("[PropPossessionSystem] State updated on tap: " .. currentState .. " -> " .. liveState)
+            Logger.Log("PropPossessionSystem", "State updated on tap: " .. currentState .. " -> " .. liveState)
             currentState = liveState
         end
     end
 
-    print("[PropPossessionSystem] Prop tapped: " .. propName .. " (state=" .. currentState .. ", role=" .. localRole .. ")")
+    Logger.Log("PropPossessionSystem", "Prop tapped: " .. propName .. " (state=" .. currentState .. ", role=" .. localRole .. ")")
 
     -- HUNTING PHASE: Hunter tapping on prop to tag the possessed player
     if currentState == "HUNTING" then
         if localRole == "hunter" then
-            print("[PropPossessionSystem] Hunter tapped prop during HUNTING - requesting tag")
+            Logger.Log("PropPossessionSystem", "Hunter tapped prop during HUNTING - requesting tag")
             -- Send tag request to server with prop name
             tagPropRequest:FireServer(propName)
-            print("[PropPossessionSystem] Sent tag prop request to server: " .. propName)
+            Logger.Log("PropPossessionSystem", "Sent tag prop request to server: " .. propName)
         else
-            print("[PropPossessionSystem] Only hunters can tag props during HUNTING phase")
+            Logger.Log("PropPossessionSystem", "Only hunters can tag props during HUNTING phase")
         end
         return
     end
 
     -- HIDING PHASE: Prop player possessing a prop
     if currentState ~= "HIDING" then
-        print("[PropPossessionSystem] Cannot possess outside HIDING phase (current: " .. currentState .. ")")
+        Logger.Log("PropPossessionSystem", "Cannot possess outside HIDING phase (current: " .. currentState .. ")")
         return
     end
 
     -- Only props can possess
     if localRole ~= "prop" then
-        print("[PropPossessionSystem] Only props can possess objects")
+        Logger.Log("PropPossessionSystem", "Only props can possess objects")
         return
     end
 
     -- One-Prop Rule: Can only possess once per round
     if hasPossessedThisRound then
-        print("[PropPossessionSystem] Already possessed a prop this round!")
+        Logger.Log("PropPossessionSystem", "Already possessed a prop this round!")
         local propData = propsData[propName]
         if propData then
             VFXManager.RejectionVFX(propData.gameObject.transform.position, propData.gameObject)
@@ -261,16 +265,16 @@ function OnPropTapped(propName)
     -- Check if already possessed by someone (client-side check)
     local propData = propsData[propName]
     if propData and propData.isPossessed then
-        print("[PropPossessionSystem] This prop is already possessed!")
+        Logger.Log("PropPossessionSystem", "This prop is already possessed!")
         VFXManager.RejectionVFX(propData.gameObject.transform.position, propData.gameObject)
         return
     end
 
-    print("[PropPossessionSystem] Attempting to possess: " .. propName)
+    Logger.Log("PropPossessionSystem", "Attempting to possess: " .. propName)
 
     -- Fire possession request to server
     possessionRequestEvent:FireServer(propName)
-    print("[PropPossessionSystem] Sent possession request to server")
+    Logger.Log("PropPossessionSystem", "Sent possession request to server")
 end
 
 --[[
@@ -287,7 +291,7 @@ local function OnPossessionResult(playerId, propName, success, message)
         -- Check if this was our failed attempt
         local localPlayer = client.localPlayer
         if localPlayer and playerId == localPlayer.id then
-            print("[PropPossessionSystem] Possession rejected: " .. tostring(message))
+            Logger.Log("PropPossessionSystem", "Possession rejected: " .. tostring(message))
             VFXManager.RejectionVFX(propData.gameObject.transform.position, propData.gameObject)
         end
         return
@@ -302,20 +306,16 @@ local function OnPossessionResult(playerId, propName, success, message)
 
     if isLocalPlayer then
         -- This is our player's successful possession
-        print("[PropPossessionSystem] Possession response for " .. propName .. ": SUCCESS")
+        Logger.Log("PropPossessionSystem", "Possession response for " .. propName .. ": SUCCESS")
         hasPossessedThisRound = true
 
-        -- Visual effects for local player
-        local playerPos = localPlayer.character.transform.position
-        VFXManager.PlayerVanishVFX(playerPos, localPlayer.character)
-        VFXManager.PropInfillVFX(propData.gameObject.transform.position, propData.gameObject)
+        -- NOTE: VFX will be triggered by network events broadcast from server
+        -- This ensures all clients see the VFX, not just the local player
 
-        -- Server will broadcast hide command directly - no need to request
-
-        print("[PropPossessionSystem] ✓✓✓ POSSESSION COMPLETE: " .. propName .. " ✓✓✓")
+        Logger.Log("PropPossessionSystem", "✓✓✓ POSSESSION COMPLETE: " .. propName .. " ✓✓✓")
     else
         -- Another player possessed this prop
-        print("[PropPossessionSystem] Prop " .. propName .. " possessed by player: " .. tostring(playerId))
+        Logger.Log("PropPossessionSystem", "Prop " .. propName .. " possessed by player: " .. tostring(playerId))
     end
 
     -- Hide prop visuals for ALL clients (so everyone sees the prop blend in)
@@ -354,7 +354,7 @@ end
     Receives userId and hides that player's avatar on ALL clients
 ]]
 local function HidePlayerAvatarExecute(userId)
-    print("[PropPossessionSystem] HidePlayerAvatarExecute called for userId: " .. tostring(userId))
+    Logger.Log("PropPossessionSystem", "HidePlayerAvatarExecute called for userId: " .. tostring(userId))
 
     -- Find the player with this userId
     local targetPlayer = nil
@@ -366,16 +366,16 @@ local function HidePlayerAvatarExecute(userId)
     end
 
     if not targetPlayer then
-        print("[PropPossessionSystem] ERROR: Could not find player with userId: " .. tostring(userId))
+        Logger.Log("PropPossessionSystem", "ERROR: Could not find player with userId: " .. tostring(userId))
         return
     end
 
     if not targetPlayer.character then
-        print("[PropPossessionSystem] ERROR: Player has no character: " .. targetPlayer.name)
+        Logger.Log("PropPossessionSystem", "ERROR: Player has no character: " .. targetPlayer.name)
         return
     end
 
-    print("[PropPossessionSystem] Hiding avatar for player: " .. targetPlayer.name)
+    Logger.Log("PropPossessionSystem", "Hiding avatar for player: " .. targetPlayer.name)
 
     -- Track visibility state for local player
     if targetPlayer == client.localPlayer then
@@ -394,22 +394,22 @@ local function HidePlayerAvatarExecute(userId)
         -- Find and disable the Rig GameObject (keeps network sync but hides avatar)
         local rigTransform = characterGameObject.transform:Find("Rig")
         if rigTransform then
-            print("[PropPossessionSystem] Disabling Rig GameObject for " .. targetPlayer.name)
+            Logger.Log("PropPossessionSystem", "Disabling Rig GameObject for " .. targetPlayer.name)
             rigTransform.gameObject:SetActive(false)
         else
-            print("[PropPossessionSystem] ERROR: Could not find Rig child for " .. targetPlayer.name)
+            Logger.Log("PropPossessionSystem", "ERROR: Could not find Rig child for " .. targetPlayer.name)
         end
     end)
 
     if not success then
-        print("[PropPossessionSystem] ERROR hiding avatar: " .. tostring(errorMsg))
+        Logger.Log("PropPossessionSystem", "ERROR hiding avatar: " .. tostring(errorMsg))
     else
-        print("[PropPossessionSystem] Successfully hid avatar for " .. targetPlayer.name)
+        Logger.Log("PropPossessionSystem", "Successfully hid avatar for " .. targetPlayer.name)
     end
 end
 
 local function RestorePlayerAvatarExecute(userId)
-    print("[PropPossessionSystem] RestorePlayerAvatarExecute called for userId: " .. tostring(userId))
+    Logger.Log("PropPossessionSystem", "RestorePlayerAvatarExecute called for userId: " .. tostring(userId))
 
     -- Find the player with this userId
     local targetPlayer = nil
@@ -421,17 +421,17 @@ local function RestorePlayerAvatarExecute(userId)
     end
 
     if not targetPlayer then
-        print("[PropPossessionSystem] ERROR: Could not find player with userId: " .. tostring(userId))
+        Logger.Log("PropPossessionSystem", "ERROR: Could not find player with userId: " .. tostring(userId))
         return
     end
 
     if not targetPlayer.character then
-        print("[PropPossessionSystem] ERROR: Player has no character: " .. targetPlayer.name)
+        Logger.Log("PropPossessionSystem", "ERROR: Player has no character: " .. targetPlayer.name)
         return
     end
 
     local isLocalPlayer = targetPlayer == client.localPlayer
-    print("[PropPossessionSystem] Restoring avatar for player: " .. targetPlayer.name .. " (isLocal: " .. tostring(isLocalPlayer) .. ")")
+    Logger.Log("PropPossessionSystem", "Restoring avatar for player: " .. targetPlayer.name .. " (isLocal: " .. tostring(isLocalPlayer) .. ")")
 
     -- Track visibility state for local player
     if isLocalPlayer then
@@ -445,10 +445,10 @@ local function RestorePlayerAvatarExecute(userId)
 
             -- CRITICAL FIX: Reset character scale (VFX scaled it to 0)
             local currentScale = characterGameObject.transform.localScale
-            print("[PropPossessionSystem] Current character scale: " .. tostring(currentScale.x) .. ", " .. tostring(currentScale.y) .. ", " .. tostring(currentScale.z))
+            Logger.Log("PropPossessionSystem", "Current character scale: " .. tostring(currentScale.x) .. ", " .. tostring(currentScale.y) .. ", " .. tostring(currentScale.z))
 
             if currentScale.x < 0.1 or currentScale.y < 0.1 or currentScale.z < 0.1 then
-                print("[PropPossessionSystem] Character was scaled to ~0 by VFX - resetting to (1,1,1)")
+                Logger.Log("PropPossessionSystem", "Character was scaled to ~0 by VFX - resetting to (1,1,1)")
                 characterGameObject.transform.localScale = Vector3.new(1, 1, 1)
             end
 
@@ -456,23 +456,23 @@ local function RestorePlayerAvatarExecute(userId)
             local rigTransform = characterGameObject.transform:Find("Rig")
             if rigTransform then
                 local wasActive = rigTransform.gameObject.activeSelf
-                print("[PropPossessionSystem] Re-enabling Rig GameObject for " .. targetPlayer.name .. " (was active: " .. tostring(wasActive) .. ")")
+                Logger.Log("PropPossessionSystem", "Re-enabling Rig GameObject for " .. targetPlayer.name .. " (was active: " .. tostring(wasActive) .. ")")
                 rigTransform.gameObject:SetActive(true)
 
                 -- Verify it's actually active now
                 Timer.After(0.1, function()
                     if rigTransform and rigTransform.gameObject then
                         local nowActive = rigTransform.gameObject.activeSelf
-                        print("[PropPossessionSystem] Rig active state after 0.1s: " .. tostring(nowActive) .. " for " .. targetPlayer.name)
+                        Logger.Log("PropPossessionSystem", "Rig active state after 0.1s: " .. tostring(nowActive) .. " for " .. targetPlayer.name)
 
                         if not nowActive then
-                            print("[PropPossessionSystem] WARNING: Rig still inactive, retrying...")
+                            Logger.Log("PropPossessionSystem", "WARNING: Rig still inactive, retrying...")
                             rigTransform.gameObject:SetActive(true)
                         end
                     end
                 end)
             else
-                print("[PropPossessionSystem] ERROR: Could not find Rig child for " .. targetPlayer.name)
+                Logger.Log("PropPossessionSystem", "ERROR: Could not find Rig child for " .. targetPlayer.name)
             end
 
             -- TODO: Re-enable movement (no CharacterController or NavMesh approach works)
@@ -480,9 +480,9 @@ local function RestorePlayerAvatarExecute(userId)
         end)
 
         if not success then
-            print("[PropPossessionSystem] ERROR restoring avatar: " .. tostring(errorMsg))
+            Logger.Log("PropPossessionSystem", "ERROR restoring avatar: " .. tostring(errorMsg))
         else
-            print("[PropPossessionSystem] Successfully restored avatar for " .. targetPlayer.name)
+            Logger.Log("PropPossessionSystem", "Successfully restored avatar for " .. targetPlayer.name)
         end
     end
 
@@ -492,12 +492,12 @@ local function RestorePlayerAvatarExecute(userId)
     -- For local player, add a delayed retry to handle race conditions with teleportation
     if isLocalPlayer then
         Timer.After(0.5, function()
-            print("[PropPossessionSystem] Delayed restore check for local player")
+            Logger.Log("PropPossessionSystem", "Delayed restore check for local player")
             if targetPlayer and targetPlayer.character then
                 local characterGameObject = targetPlayer.character.gameObject
                 local rigTransform = characterGameObject.transform:Find("Rig")
                 if rigTransform and not rigTransform.gameObject.activeSelf then
-                    print("[PropPossessionSystem] Local player Rig still inactive after 0.5s - forcing re-enable")
+                    Logger.Log("PropPossessionSystem", "Local player Rig still inactive after 0.5s - forcing re-enable")
                     rigTransform.gameObject:SetActive(true)
                 end
             end
@@ -554,7 +554,7 @@ function StartPropPulse(propName)
     pulseTween:start()
     propPulseTweens[propName] = pulseTween
 
-    print("[PropPossessionSystem] Started emissive pulse for " .. propName .. " (" .. savedStrength .. " -> " .. minStrength .. ")")
+    Logger.Log("PropPossessionSystem", "Started emissive pulse for " .. propName .. " (" .. savedStrength .. " -> " .. minStrength .. ")")
 end
 
 --[[
@@ -565,7 +565,7 @@ function StopPropPulse(propName)
     if propPulseTweens[propName] then
         propPulseTweens[propName]:stop()
         propPulseTweens[propName] = nil
-        print("[PropPossessionSystem] Stopped emissive pulse for " .. propName)
+        Logger.Log("PropPossessionSystem", "Stopped emissive pulse for " .. propName)
     end
 end
 
@@ -604,7 +604,7 @@ function HidePropVisuals(propName)
                         material:SetFloat("_EmissionStrength", value)
                     end,
                     function()
-                        print("[PropPossessionSystem] ✓ Emission fade-out complete on " .. propName)
+                        Logger.Log("PropPossessionSystem", "✓ Emission fade-out complete on " .. propName)
                     end
                 )
 
@@ -612,9 +612,9 @@ function HidePropVisuals(propName)
             end)
 
             if success then
-                print("[PropPossessionSystem] ✓ Started emission fade-out on " .. propName)
+                Logger.Log("PropPossessionSystem", "✓ Started emission fade-out on " .. propName)
             else
-                print("[PropPossessionSystem] WARNING: Could not fade emission on " .. propName .. " - " .. tostring(errorMsg))
+                Logger.Log("PropPossessionSystem", "WARNING: Could not fade emission on " .. propName .. " - " .. tostring(errorMsg))
             end
         end
     end
@@ -622,7 +622,7 @@ function HidePropVisuals(propName)
     -- Hide outline
     if propData.outlineRenderer then
         propData.outlineRenderer.enabled = false
-        print("[PropPossessionSystem] ✓ Disabled outline on " .. propName)
+        Logger.Log("PropPossessionSystem", "✓ Disabled outline on " .. propName)
     end
 end
 
@@ -639,9 +639,9 @@ function RestorePropVisuals(propName)
             end)
             
             if success then
-                print("[PropPossessionSystem] ✓ Restored emission on " .. propName)
+                Logger.Log("PropPossessionSystem", "✓ Restored emission on " .. propName)
             else
-                print("[PropPossessionSystem] WARNING: Could not restore emission on " .. propName .. " - " .. tostring(errorMsg))
+                Logger.Log("PropPossessionSystem", "WARNING: Could not restore emission on " .. propName .. " - " .. tostring(errorMsg))
             end
         end
     end
@@ -649,7 +649,7 @@ function RestorePropVisuals(propName)
     -- Show outline
     if propData.outlineRenderer then
         propData.outlineRenderer.enabled = true
-        print("[PropPossessionSystem] ✓ Enabled outline on " .. propName)
+        Logger.Log("PropPossessionSystem", "✓ Enabled outline on " .. propName)
     end
 end
 
@@ -692,7 +692,7 @@ local function SetupStateTracking()
                             StartPropPulse(propName)
                         end
 
-                        print("[PropPossessionSystem] Entering HIDING phase - all prop visuals restored and pulsing started")
+                        Logger.Log("PropPossessionSystem", "Entering HIDING phase - all prop visuals restored and pulsing started")
                     end
 
                     -- Show prop visuals during HIDING phase
@@ -706,7 +706,7 @@ local function SetupStateTracking()
                             end
                         end
 
-                        print("[PropPossessionSystem] HIDING phase - prop visuals visible and pulsing")
+                        Logger.Log("PropPossessionSystem", "HIDING phase - prop visuals visible and pulsing")
                     end
 
                     -- Hide ALL prop visuals during HUNTING phase (so hunters can't tell which are possessed)
@@ -714,7 +714,7 @@ local function SetupStateTracking()
                         for propName, propData in pairs(propsData) do
                             HidePropVisuals(propName)  -- This already calls StopPropPulse internally
                         end
-                        print("[PropPossessionSystem] Entering HUNTING phase - all prop visuals hidden and pulses stopped")
+                        Logger.Log("PropPossessionSystem", "Entering HUNTING phase - all prop visuals hidden and pulses stopped")
                     end
 
                     -- Restore prop visuals when returning to LOBBY
@@ -725,7 +725,7 @@ local function SetupStateTracking()
                         end
 
                         RestoreAllPropVisuals()
-                        print("[PropPossessionSystem] Returning to LOBBY - all prop visuals restored and pulses stopped")
+                        Logger.Log("PropPossessionSystem", "Returning to LOBBY - all prop visuals restored and pulses stopped")
                     end
                 end)
             end
@@ -788,6 +788,12 @@ local function HandlePossessionRequest(player, propName)
                 -- Notify GameManager that a prop has hidden (for auto-transition check)
                 GameManager.OnPropHidden()
 
+                -- SERVER: Broadcast VFX to ALL clients
+                local playerPos = player.character.transform.position
+                local propPos = GameObject.Find(propName).transform.position
+                playerVanishVFXEvent:FireAllClients(playerPos.x, playerPos.y, playerPos.z, player.id)
+                propInfillVFXEvent:FireAllClients(propPos.x, propPos.y, propPos.z, propName)
+
                 -- SERVER: Directly broadcast hide command to ALL clients
                 hideAvatarCommand:FireAllClients(player.user.id)
             end
@@ -829,9 +835,35 @@ function self:ClientStart()
         end
     end)
 
+    -- Listen for VFX events from server
+    playerVanishVFXEvent:Connect(function(posX, posY, posZ, playerId)
+        local position = Vector3.new(posX, posY, posZ)
+
+        -- Find the player character if available
+        local playerCharacter = nil
+        for _, player in ipairs(scene.players) do
+            if player.id == playerId and player.character then
+                playerCharacter = player.character
+                break
+            end
+        end
+
+        VFXManager.PlayerVanishVFX(position, playerCharacter)
+        Logger.Log("PropPossessionSystem", "PlayerVanish VFX triggered at " .. tostring(position))
+    end)
+
+    propInfillVFXEvent:Connect(function(posX, posY, posZ, propName)
+        local position = Vector3.new(posX, posY, posZ)
+        local propData = propsData[propName]
+        local propObject = propData and propData.gameObject or nil
+
+        VFXManager.PropInfillVFX(position, propObject)
+        Logger.Log("PropPossessionSystem", "PropInfill VFX triggered at " .. tostring(position))
+    end)
+
     -- Listen for post-teleport event to fix Rig visibility issues
     postTeleportEvent:Connect(function()
-        print("[PropPossessionSystem] Post-teleport check triggered")
+        Logger.Log("PropPossessionSystem", "Post-teleport check triggered")
 
         -- If we should be visible, double-check that the Rig is actually enabled
         if shouldBeVisible then
@@ -842,17 +874,17 @@ function self:ClientStart()
 
                 if rigTransform then
                     local isActive = rigTransform.gameObject.activeSelf
-                    print("[PropPossessionSystem] Post-teleport: Rig is " .. (isActive and "ACTIVE" or "INACTIVE") .. " (should be ACTIVE)")
+                    Logger.Log("PropPossessionSystem", "Post-teleport: Rig is " .. (isActive and "ACTIVE" or "INACTIVE") .. " (should be ACTIVE)")
 
                     if not isActive then
-                        print("[PropPossessionSystem] Post-teleport: FORCING Rig to active")
+                        Logger.Log("PropPossessionSystem", "Post-teleport: FORCING Rig to active")
                         rigTransform.gameObject:SetActive(true)
 
                         -- Verify again after a moment
                         Timer.After(0.1, function()
                             if rigTransform and rigTransform.gameObject then
                                 local nowActive = rigTransform.gameObject.activeSelf
-                                print("[PropPossessionSystem] Post-teleport verification: Rig is now " .. (nowActive and "ACTIVE" or "INACTIVE"))
+                                Logger.Log("PropPossessionSystem", "Post-teleport verification: Rig is now " .. (nowActive and "ACTIVE" or "INACTIVE"))
                             end
                         end)
                     end
@@ -868,16 +900,16 @@ end
 
 -- Called by GameManager when transitioning to LOBBY or ROUND_END to restore all possessed props
 function RestoreAllPossessedPlayers()
-    print("[PropPossessionSystem] SERVER: RestoreAllPossessedPlayers called")
+    Logger.Log("PropPossessionSystem", "SERVER: RestoreAllPossessedPlayers called")
     local count = 0
 
     for propName, playerId in pairs(possessedProps) do
-        print("[PropPossessionSystem] SERVER: Restoring player with ID: " .. tostring(playerId) .. " (prop: " .. tostring(propName) .. ")")
+        Logger.Log("PropPossessionSystem", "SERVER: Restoring player with ID: " .. tostring(playerId) .. " (prop: " .. tostring(propName) .. ")")
 
         -- Find the player
         for _, player in ipairs(scene.players) do
             if player.id == playerId then
-                print("[PropPossessionSystem] SERVER: Found player " .. player.name .. " - firing restore command")
+                Logger.Log("PropPossessionSystem", "SERVER: Found player " .. player.name .. " - firing restore command")
                 restoreAvatarCommand:FireAllClients(player.user.id)
                 count = count + 1
                 break
@@ -885,12 +917,12 @@ function RestoreAllPossessedPlayers()
         end
     end
 
-    print("[PropPossessionSystem] SERVER: Restored " .. count .. " possessed players")
+    Logger.Log("PropPossessionSystem", "SERVER: Restored " .. count .. " possessed players")
 end
 
 -- Called by GameManager when entering HIDING phase to reset possession tracking
 function ResetPossessions()
-    print("[PropPossessionSystem] SERVER: ResetPossessions called - clearing possessedProps table")
+    Logger.Log("PropPossessionSystem", "SERVER: ResetPossessions called - clearing possessedProps table")
     possessedProps = {}
 end
 
@@ -924,7 +956,7 @@ function self:ServerAwake()
 
         if not possessingPlayerId then
             -- MISS: Hunter tapped a non-possessed prop - apply penalty
-            print("[PropPossessionSystem] SERVER: Hunter " .. hunter.name .. " tapped non-possessed prop: " .. propName .. " - applying miss penalty")
+            Logger.Log("PropPossessionSystem", "SERVER: Hunter " .. hunter.name .. " tapped non-possessed prop: " .. propName .. " - applying miss penalty")
             ScoringSystem.ApplyHunterMissPenalty(hunter)
             ScoringSystem.TrackHunterMiss(hunter)
             return
@@ -940,23 +972,23 @@ function self:ServerAwake()
         end
 
         if not propPlayer then
-            print("[PropPossessionSystem] SERVER: ERROR - Could not find prop player with ID: " .. tostring(possessingPlayerId))
+            Logger.Log("PropPossessionSystem", "SERVER: ERROR - Could not find prop player with ID: " .. tostring(possessingPlayerId))
             return
         end
 
         -- HIT: Valid tag on possessed prop
-        print("[PropPossessionSystem] SERVER: Hunter " .. hunter.name .. " successfully tagged prop: " .. propName .. " (player: " .. propPlayer.name .. ")")
+        Logger.Log("PropPossessionSystem", "SERVER: Hunter " .. hunter.name .. " successfully tagged prop: " .. propName .. " (player: " .. propPlayer.name .. ")")
 
         -- Call GameManager's tag handler to process the tag (scoring, etc.)
         GameManager.OnPlayerTagged(hunter, propPlayer)
 
         -- IMMEDIATELY restore the tagged player's avatar
-        print("[PropPossessionSystem] SERVER: Restoring avatar for tagged player: " .. propPlayer.name)
+        Logger.Log("PropPossessionSystem", "SERVER: Restoring avatar for tagged player: " .. propPlayer.name)
         restoreAvatarCommand:FireAllClients(propPlayer.user.id)
 
         -- Teleport tagged prop to arena spawn position
         -- This prevents NavMesh/input issues with hidden player
-        print("[PropPossessionSystem] SERVER: Teleporting tagged player to Arena spawn: " .. propPlayer.name)
+        Logger.Log("PropPossessionSystem", "SERVER: Teleporting tagged player to Arena spawn: " .. propPlayer.name)
         Teleporter.TeleportToArena(propPlayer)
 
         -- Change role to spectator
