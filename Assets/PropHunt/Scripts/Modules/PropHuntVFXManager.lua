@@ -436,22 +436,65 @@ function PlayerVanishVFX(propPosition, playerCharacter)
 end
 
 --[[
+  GetPropBoundsSize: Calculates the maximum dimension of a prop's bounds
+  @param propGameObject: GameObject - The prop to measure
+  @return number - The maximum dimension (x, y, or z) of the bounds, or 1.0 if unavailable
+]]
+local function GetPropBoundsSize(propGameObject)
+    if not propGameObject then
+        return 1.0
+    end
+
+    local renderer = propGameObject:GetComponent(MeshRenderer)
+    if not renderer then
+        DebugVFX("GetPropBoundsSize: No MeshRenderer found on " .. propGameObject.name)
+        return 1.0
+    end
+
+    local bounds = renderer.bounds
+    if not bounds then
+        DebugVFX("GetPropBoundsSize: No bounds available on " .. propGameObject.name)
+        return 1.0
+    end
+
+    local size = bounds.size
+    -- Return the maximum dimension (largest of x, y, z)
+    local maxDim = math.max(size.x, math.max(size.y, size.z))
+
+    DebugVFX(string.format("GetPropBoundsSize: %s bounds = (%.2f, %.2f, %.2f), max = %.2f",
+        propGameObject.name, size.x, size.y, size.z, maxDim))
+
+    return maxDim
+end
+
+--[[
   PlayerAppearVFX: Triggers the player appear effect when a tagged prop is revealed
 
   This is the reverse of PlayerVanishVFX:
     - Player character scales from 0.0 to 1.0 (growing)
-    - Player character fades from transparent to opaque
+    - VFX particle system scales based on prop size
     - Duration is half of VFX timer (same as vanish)
 
   @param position: Vector3 - World position where effect should play
   @param playerCharacter: GameObject (optional) - The player character object
+  @param propGameObject: GameObject (optional) - The prop that was possessed (for VFX scaling)
   @return void
 ]]
-function PlayerAppearVFX(position, playerCharacter)
+function PlayerAppearVFX(position, playerCharacter, propGameObject)
     DebugVFX("PlayerAppearVFX at " .. tostring(position))
 
     -- Spawn VFX using SerializeField reference
     local vfxInstance = SpawnVFX(_playerAppearVFXPrefab, _playerAppearDuration, position, "PlayerAppear")
+
+    -- Scale VFX based on prop size (if provided)
+    if vfxInstance and propGameObject then
+        local propSize = GetPropBoundsSize(propGameObject)
+        -- Use a scale factor to make VFX proportional to prop size
+        -- Factor of 1.5 provides good coverage without being too large
+        local vfxScale = propSize * 1.5
+        vfxInstance.transform.localScale = Vector3.new(vfxScale, vfxScale, vfxScale)
+        DebugVFX(string.format("Scaled PlayerAppear VFX to %.2f (prop size: %.2f)", vfxScale, propSize))
+    end
 
     -- Grow duration is half of VFX timer (same as vanish shrink duration)
     local growDuration = _playerAppearDuration / 2

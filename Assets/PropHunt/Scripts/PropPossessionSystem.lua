@@ -881,7 +881,7 @@ function self:ClientStart()
         Logger.Log("PropPossessionSystem", "PropInfill VFX triggered at " .. tostring(position))
     end)
 
-    playerAppearVFXEvent:Connect(function(posX, posY, posZ, playerId)
+    playerAppearVFXEvent:Connect(function(posX, posY, posZ, playerId, propName)
         -- Wait 0.3s for teleport to complete before triggering VFX
         Timer.After(0.3, function()
             -- Find the player character by ID
@@ -893,11 +893,14 @@ function self:ClientStart()
                 end
             end
 
+            -- Find the prop GameObject for VFX scaling
+            local propGameObject = propName and GameObject.Find(propName) or nil
+
             if playerCharacter then
                 -- Use the player's current position (after teleport)
                 local currentPosition = playerCharacter.transform.position
-                VFXManager.PlayerAppearVFX(currentPosition, playerCharacter)
-                Logger.Log("PropPossessionSystem", "PlayerAppear VFX triggered at post-teleport position: " .. tostring(currentPosition))
+                VFXManager.PlayerAppearVFX(currentPosition, playerCharacter, propGameObject)
+                Logger.Log("PropPossessionSystem", "PlayerAppear VFX triggered at post-teleport position: " .. tostring(currentPosition) .. " (prop: " .. tostring(propName) .. ")")
             else
                 Logger.Warn("PropPossessionSystem", "Could not find player character for appear VFX (playerId: " .. tostring(playerId) .. ")")
             end
@@ -1076,9 +1079,10 @@ function self:ServerAwake()
 
         -- Broadcast PlayerAppear VFX to all clients (will wait 0.3s for teleport on client side)
         -- Send pre-teleport position (will be ignored, client uses post-teleport position)
+        -- Also send propName so clients can find the prop GameObject for VFX scaling
         local propPlayerPos = propPlayer.character.transform.position
-        playerAppearVFXEvent:FireAllClients(propPlayerPos.x, propPlayerPos.y, propPlayerPos.z, propPlayer.id)
-        Logger.Log("PropPossessionSystem", "SERVER: Broadcast PlayerAppear VFX event for " .. propPlayer.name)
+        playerAppearVFXEvent:FireAllClients(propPlayerPos.x, propPlayerPos.y, propPlayerPos.z, propPlayer.id, propName)
+        Logger.Log("PropPossessionSystem", "SERVER: Broadcast PlayerAppear VFX event for " .. propPlayer.name .. " (prop: " .. propName .. ")")
 
         -- Change role to spectator
         PlayerManager.SetPlayerRole(propPlayer, "spectator")
