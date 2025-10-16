@@ -186,8 +186,9 @@ end
 
   Pattern:
   1. Verify prefabRef is assigned in Inspector
-  2. Enable the UI VFX (it positions itself via RectTransform anchors)
-  3. Schedule disable after duration
+  2. Assign main camera to Canvas (for Screen Space - Camera rendering)
+  3. Enable the UI VFX (it positions itself via RectTransform anchors)
+  4. Schedule disable after duration
 ]]
 local function SpawnUIVFX(prefabRef, duration, vfxName)
     -- Validate prefab reference
@@ -199,10 +200,11 @@ local function SpawnUIVFX(prefabRef, duration, vfxName)
     -- The SerializeField reference IS the GameObject itself - use it directly
     local vfxInstance = prefabRef
 
-    -- Enable the VFX GameObject (UI elements position themselves via RectTransform)
+    -- Enable the VFX GameObject
+    -- NOTE: Canvas should already have RTSCamera assigned in the scene
     vfxInstance:SetActive(true)
 
-    print(string.format("[VFX] %s UI VFX spawned (screen-space overlay, will disable after %.2fs)", vfxName, duration))
+    print(string.format("[VFX] %s UI VFX spawned (will disable after %.2fs)", vfxName, duration))
 
     -- Schedule disable after duration
     Timer.After(duration, function()
