@@ -97,6 +97,10 @@ local _playerAppearVFXPrefab : GameObject = nil
 --!Tooltip("Duration for player appear VFX")
 local _playerAppearDuration : number = 2.5
 
+--!SerializeField
+--!Tooltip("Duration for tag hit scale punch animation")
+local _tagHitScalePunchDuration : number = 0.3
+
 -- ========== UTILITY FUNCTIONS ==========
 
 --[[
@@ -574,27 +578,56 @@ end
     - Chromatic ripples on prop surface
     - Impact sound effect
 
-  @param position: Vector3 - World position of the hit (prop's HitPoint)
-  @param propObject: GameObject (optional) - The tagged prop
+  @param position: Vector3 - World position of the possessed prop
+  @param propObject: GameObject (optional) - The tagged prop (should be provided)
   @return void
 
-  TODO: Replace with particle system:
-    1. Instantiate TagHitVFX prefab at position
-    2. Play ring shock particle system
-    3. Spawn 3-5 spark particles with radial velocity
-    4. Trigger chromatic aberration shader on prop
-    5. Play impact audio
-    6. Destroy VFX after VFX_TAG_HIT_DURATION
+  Implementation:
+    1. Spawn TagHitVFX particle prefab at prop position
+    2. Scale punch animation: 1.0 → 1.2 → 1.0 (ping-pong)
+    3. Duration configurable via _tagHitScalePunchDuration
 ]]
 function TagHitVFX(position, propObject)
     DebugVFX("TagHitVFX at " .. tostring(position))
 
-    -- Spawn VFX using SerializeField reference
+    -- Spawn VFX using SerializeField reference at prop position
     local vfxInstance = SpawnVFX(_tagHitVFXPrefab, _tagHitDuration, position, "TagHit")
 
     if propObject then
-        -- Placeholder: Quick scale punch
-        ScalePulse(propObject, 1.0, 0.9, _tagHitDuration * 0.5, "easeOutQuad", false, false)
+        -- Scale punch: grow to 120% then back to 100%
+        -- Half duration to grow, half duration to shrink back
+        local halfDuration = _tagHitScalePunchDuration / 2
+
+        DebugVFX(string.format("Tag hit scale punch on %s (%.2fs)", propObject.name, _tagHitScalePunchDuration))
+
+        -- Create sequence: scale up → scale down
+        local sequence = TweenSequence:new()
+
+        local originalScale = propObject.transform.localScale
+
+        -- Phase 1: Scale up to 120% (1.0 → 1.2)
+        local scaleUp = Tween:new(1.0, 1.2, halfDuration, false, false, Easing.easeOutQuad, function(value, t)
+            propObject.transform.localScale = Vector3.new(
+                originalScale.x * value,
+                originalScale.y * value,
+                originalScale.z * value
+            )
+        end, nil)
+
+        -- Phase 2: Scale back down to 100% (1.2 → 1.0)
+        local scaleDown = Tween:new(1.2, 1.0, halfDuration, false, false, Easing.easeInQuad, function(value, t)
+            propObject.transform.localScale = Vector3.new(
+                originalScale.x * value,
+                originalScale.y * value,
+                originalScale.z * value
+            )
+        end, nil)
+
+        sequence:add(scaleUp)
+        sequence:add(scaleDown)
+        sequence:start()
+    else
+        DebugVFX("WARNING: TagHitVFX called without propObject - scale punch skipped")
     end
 end
 

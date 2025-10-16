@@ -93,6 +93,7 @@ local tagPropRequest = Event.new("PH_TagPropRequest")  -- Hunter taps prop durin
 local playerVanishVFXEvent = Event.new("PH_PlayerVanishVFX")  -- Broadcast player vanish VFX to all clients
 local propInfillVFXEvent = Event.new("PH_PropInfillVFX")  -- Broadcast prop infill VFX to all clients
 local playerAppearVFXEvent = Event.new("PH_PlayerAppearVFX")  -- Broadcast player appear VFX to all clients
+local tagHitVFXEvent = Event.new("PH_TagHitVFX")  -- Broadcast tag hit VFX to all clients
 
 -- Server-side prop tracking (One-Prop Rule)
 -- Maps propName -> playerId
@@ -892,6 +893,15 @@ function self:ClientStart()
         end)
     end)
 
+    tagHitVFXEvent:Connect(function(posX, posY, posZ, propName)
+        local position = Vector3.new(posX, posY, posZ)
+        local propData = propsData[propName]
+        local propObject = propData and propData.gameObject or nil
+
+        VFXManager.TagHitVFX(position, propObject)
+        Logger.Log("PropPossessionSystem", "TagHit VFX triggered at " .. tostring(position) .. " for prop: " .. propName)
+    end)
+
     -- REMOVED: postTeleportEvent listener (replaced with ClientUpdate polling)
 end
 
@@ -1013,6 +1023,14 @@ function self:ServerAwake()
 
         -- HIT: Valid tag on possessed prop
         Logger.Log("PropPossessionSystem", "SERVER: Hunter " .. hunter.name .. " successfully tagged prop: " .. propName .. " (player: " .. propPlayer.name .. ")")
+
+        -- Broadcast TagHit VFX to all clients
+        local propGameObject = GameObject.Find(propName)
+        if propGameObject then
+            local propPos = propGameObject.transform.position
+            tagHitVFXEvent:FireAllClients(propPos.x, propPos.y, propPos.z, propName)
+            Logger.Log("PropPossessionSystem", "SERVER: Broadcast TagHit VFX event for " .. propName)
+        end
 
         -- Call GameManager's tag handler to process the tag (scoring, etc.)
         GameManager.OnPlayerTagged(hunter, propPlayer)
