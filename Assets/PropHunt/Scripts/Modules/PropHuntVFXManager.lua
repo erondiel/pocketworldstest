@@ -101,6 +101,10 @@ local _playerAppearDuration : number = 2.5
 --!Tooltip("Duration for tag hit scale punch animation")
 local _tagHitScalePunchDuration : number = 0.3
 
+--!SerializeField
+--!Tooltip("Duration for tag miss scale punch animation")
+local _tagMissScalePunchDuration : number = 0.3
+
 -- ========== UTILITY FUNCTIONS ==========
 
 --[[
@@ -641,27 +645,56 @@ end
     - Soft "whiff" sound
 
   @param position: Vector3 - World position where the ray hit (or max range point)
-  @param normal: Vector3 (optional) - Surface normal for orienting the decal
+  @param propObject: GameObject (optional) - The tapped prop (if any)
   @return void
 
-  TODO: Replace with particle system:
-    1. Instantiate TagMissVFX prefab at position
-    2. Align to surface normal if provided
-    3. Play dust poof particle burst
-    4. Spawn temporary dust decal
-    5. Play "whiff" audio
-    6. Destroy VFX after VFX_TAG_MISS_DURATION
+  Implementation:
+    1. Spawn TagMissVFX particle prefab at position
+    2. Scale punch animation: 1.0 → 0.8 → 1.0 (shrink then grow back)
+    3. Duration configurable via _tagMissScalePunchDuration
 ]]
-function TagMissVFX(position, normal)
+function TagMissVFX(position, propObject)
     DebugVFX("TagMissVFX at " .. tostring(position))
 
     -- Spawn VFX using SerializeField reference
     local vfxInstance = SpawnVFX(_tagMissVFXPrefab, _tagMissDuration, position, "TagMiss")
 
-    -- TODO: Rotate VFX to align with surface normal if provided
-    -- if vfxInstance and normal then
-    --     vfxInstance.transform.rotation = Quaternion.LookRotation(normal)
-    -- end
+    if propObject then
+        -- Scale punch: shrink to 80% then back to 100% (opposite of hit)
+        -- Half duration to shrink, half duration to grow back
+        local halfDuration = _tagMissScalePunchDuration / 2
+
+        DebugVFX(string.format("Tag miss scale punch on %s (%.2fs)", propObject.name, _tagMissScalePunchDuration))
+
+        -- Create sequence: scale down → scale up
+        local sequence = TweenSequence:new()
+
+        local originalScale = propObject.transform.localScale
+
+        -- Phase 1: Scale down to 80% (1.0 → 0.8)
+        local scaleDown = Tween:new(1.0, 0.8, halfDuration, false, false, Easing.easeInQuad, function(value, t)
+            propObject.transform.localScale = Vector3.new(
+                originalScale.x * value,
+                originalScale.y * value,
+                originalScale.z * value
+            )
+        end, nil)
+
+        -- Phase 2: Scale back up to 100% (0.8 → 1.0)
+        local scaleUp = Tween:new(0.8, 1.0, halfDuration, false, false, Easing.easeOutQuad, function(value, t)
+            propObject.transform.localScale = Vector3.new(
+                originalScale.x * value,
+                originalScale.y * value,
+                originalScale.z * value
+            )
+        end, nil)
+
+        sequence:add(scaleDown)
+        sequence:add(scaleUp)
+        sequence:start()
+    else
+        DebugVFX("WARNING: TagMissVFX called without propObject - scale punch skipped")
+    end
 end
 
 -- ========== PHASE TRANSITION VFX ==========

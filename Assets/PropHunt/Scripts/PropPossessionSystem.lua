@@ -94,6 +94,7 @@ local playerVanishVFXEvent = Event.new("PH_PlayerVanishVFX")  -- Broadcast playe
 local propInfillVFXEvent = Event.new("PH_PropInfillVFX")  -- Broadcast prop infill VFX to all clients
 local playerAppearVFXEvent = Event.new("PH_PlayerAppearVFX")  -- Broadcast player appear VFX to all clients
 local tagHitVFXEvent = Event.new("PH_TagHitVFX")  -- Broadcast tag hit VFX to all clients
+local tagMissVFXEvent = Event.new("PH_TagMissVFX")  -- Broadcast tag miss VFX to all clients
 
 -- Server-side prop tracking (One-Prop Rule)
 -- Maps propName -> playerId
@@ -902,6 +903,15 @@ function self:ClientStart()
         Logger.Log("PropPossessionSystem", "TagHit VFX triggered at " .. tostring(position) .. " for prop: " .. propName)
     end)
 
+    tagMissVFXEvent:Connect(function(posX, posY, posZ, propName)
+        local position = Vector3.new(posX, posY, posZ)
+        local propData = propsData[propName]
+        local propObject = propData and propData.gameObject or nil
+
+        VFXManager.TagMissVFX(position, propObject)
+        Logger.Log("PropPossessionSystem", "TagMiss VFX triggered at " .. tostring(position) .. " for prop: " .. propName)
+    end)
+
     -- REMOVED: postTeleportEvent listener (replaced with ClientUpdate polling)
 end
 
@@ -1002,6 +1012,15 @@ function self:ServerAwake()
         if not possessingPlayerId then
             -- MISS: Hunter tapped a non-possessed prop - apply penalty
             Logger.Log("PropPossessionSystem", "SERVER: Hunter " .. hunter.name .. " tapped non-possessed prop: " .. propName .. " - applying miss penalty")
+
+            -- Broadcast TagMiss VFX to all clients
+            local propGameObject = GameObject.Find(propName)
+            if propGameObject then
+                local propPos = propGameObject.transform.position
+                tagMissVFXEvent:FireAllClients(propPos.x, propPos.y, propPos.z, propName)
+                Logger.Log("PropPossessionSystem", "SERVER: Broadcast TagMiss VFX event for " .. propName)
+            end
+
             ScoringSystem.ApplyHunterMissPenalty(hunter)
             ScoringSystem.TrackHunterMiss(hunter)
             return
@@ -1039,10 +1058,11 @@ function self:ServerAwake()
         Logger.Log("PropPossessionSystem", "SERVER: Restoring avatar for tagged player: " .. propPlayer.name)
         restoreAvatarCommand:FireAllClients(propPlayer.user.id)
 
-        -- Teleport tagged prop to arena spawn position
+        -- Teleport tagged prop to arena spawn position WITHOUT screen fade
         -- This prevents NavMesh/input issues with hidden player
-        Logger.Log("PropPossessionSystem", "SERVER: Teleporting tagged player to Arena spawn: " .. propPlayer.name)
-        Teleporter.TeleportToArena(propPlayer)
+        -- skipFade = true so tagged props don't see a black screen
+        Logger.Log("PropPossessionSystem", "SERVER: Teleporting tagged player to Arena spawn (no fade): " .. propPlayer.name)
+        Teleporter.TeleportToArena(propPlayer, true)  -- true = skip screen fade
 
         -- Broadcast PlayerAppear VFX to all clients (will wait 0.3s for teleport on client side)
         -- Send pre-teleport position (will be ignored, client uses post-teleport position)

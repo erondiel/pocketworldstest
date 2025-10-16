@@ -599,9 +599,12 @@ function OnPlayerTagged(hunter, prop)
     BroadcastPlayerTagged(hunter, prop)
     debugEvent:FireAllClients("TAG", hunter.id, prop.id)
 
-    -- Check if round should end
+    -- Check if round should end (with 3s delay when last prop is tagged)
     if currentState.value == GameState.HUNTING and AreAllPropsEliminated() then
-        EndRound("hunters")
+        Log("All props eliminated! Ending round in 3 seconds...")
+        Timer.After(3.0, function()
+            EndRound("hunters")
+        end)
     end
 end
 

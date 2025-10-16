@@ -67,8 +67,12 @@ end
     Helper: Teleport player to a position
     Uses server-to-client event to trigger client-side Teleport() call
     Server sets position, then broadcasts to all clients for sync
+
+    @param player: Player - The player to teleport
+    @param targetPosition: Transform - The target position
+    @param skipFade: boolean (optional) - If true, skip screen fade transition
 ]]
-local function TeleportPlayerToPosition(player, targetPosition)
+local function TeleportPlayerToPosition(player, targetPosition, skipFade)
     if player == nil or player.character == nil then
         Log("ERROR: Cannot teleport nil player or character")
         return false
@@ -79,6 +83,8 @@ local function TeleportPlayerToPosition(player, targetPosition)
         return false
     end
 
+    skipFade = skipFade or false
+
     -- Get Vector3 position from Transform
     local pos = targetPosition.position
 
@@ -86,8 +92,8 @@ local function TeleportPlayerToPosition(player, targetPosition)
     player.character.transform.position = pos
 
     -- Broadcast to ALL clients so everyone sees the teleport
-    -- Each client will call player.character:Teleport(pos)
-    teleportEvent:FireAllClients(player, pos)
+    -- Pass skipFade flag to client
+    teleportEvent:FireAllClients(player, pos, skipFade)
 
     return true
 end
@@ -97,7 +103,9 @@ end
 ]]
 
 -- Teleport a single player to the Arena
-function TeleportToArena(player)
+-- @param player: Player - The player to teleport
+-- @param skipFade: boolean (optional) - If true, skip screen fade transition
+function TeleportToArena(player, skipFade)
     if player == nil then
         Log("ERROR: Cannot teleport nil player to Arena")
         return false
@@ -109,12 +117,14 @@ function TeleportToArena(player)
         return false
     end
 
-    Log(string.format("Teleporting %s to Arena", player.name))
-    return TeleportPlayerToPosition(player, spawn)
+    Log(string.format("Teleporting %s to Arena (skipFade=%s)", player.name, tostring(skipFade or false)))
+    return TeleportPlayerToPosition(player, spawn, skipFade)
 end
 
 -- Teleport a single player to the Lobby
-function TeleportToLobby(player)
+-- @param player: Player - The player to teleport
+-- @param skipFade: boolean (optional) - If true, skip screen fade transition
+function TeleportToLobby(player, skipFade)
     if player == nil then
         Log("ERROR: Cannot teleport nil player to Lobby")
         return false
@@ -126,8 +136,8 @@ function TeleportToLobby(player)
         return false
     end
 
-    Log(string.format("Teleporting %s to Lobby", player.name))
-    return TeleportPlayerToPosition(player, spawn)
+    Log(string.format("Teleporting %s to Lobby (skipFade=%s)", player.name, tostring(skipFade or false)))
+    return TeleportPlayerToPosition(player, spawn, skipFade)
 end
 
 -- Teleport multiple players to the Arena
@@ -208,47 +218,64 @@ end
 --[[
     Client-Side Teleport Handler
     Listens for server teleport events and executes client-side Teleport() call
-    Receives player object and position, so all clients see the movement
+    Receives player object, position, and skipFade flag
 
-    FADE TRANSITION:
+    FADE TRANSITION (when skipFade = false):
     - Fade to black (0.3s)
     - Teleport during black screen
     - Fade from black (0.3s)
     - Total duration: ~0.7s
+
+    INSTANT TELEPORT (when skipFade = true):
+    - Teleport immediately without fade
+    - Used for tagged props being revealed
 ]]
 function self:ClientStart()
-    teleportEvent:Connect(function(player, position)
+    teleportEvent:Connect(function(player, position, skipFade)
+        skipFade = skipFade or false
+
         -- Only apply fade transition for local player
         if player == client.localPlayer then
-            Log(string.format("Local player teleporting to (%.1f, %.1f, %.1f) with fade", position.x, position.y, position.z))
+            if skipFade then
+                -- Instant teleport without fade (for tagged props)
+                Log(string.format("Local player teleporting to (%.1f, %.1f, %.1f) WITHOUT fade", position.x, position.y, position.z))
 
-            -- Cache values before async callback (player reference may become nil)
-            local targetPos = position
-
-            -- Use ScreenFadeTransition to hide camera movement
-            VFXManager.ScreenFadeTransition(
-                0.3,  -- Fade out duration
-                0.1,  -- Wait duration (stay black)
-                0.3,  -- Fade in duration
-                function()
-                    -- Execute teleport during black screen
-                    -- Use client.localPlayer directly (safe from nil)
-                    local localPlayer = client.localPlayer
-                    if localPlayer and localPlayer.character then
-                        localPlayer.character:Teleport(targetPos)
-
-                        -- Trigger camera reset to snap to new position
-                        client.Reset:Fire()
-                        Log("Camera reset triggered during fade")
-                    else
-                        Log("WARNING: Local player or character nil during fade callback")
-                    end
-                end,
-                function()
-                    -- Fade complete
-                    Log("Fade transition complete")
+                if player.character then
+                    player.character:Teleport(position)
+                    client.Reset:Fire()
                 end
-            )
+            else
+                -- Teleport with fade transition (normal teleports)
+                Log(string.format("Local player teleporting to (%.1f, %.1f, %.1f) WITH fade", position.x, position.y, position.z))
+
+                -- Cache values before async callback (player reference may become nil)
+                local targetPos = position
+
+                -- Use ScreenFadeTransition to hide camera movement
+                VFXManager.ScreenFadeTransition(
+                    0.3,  -- Fade out duration
+                    0.1,  -- Wait duration (stay black)
+                    0.3,  -- Fade in duration
+                    function()
+                        -- Execute teleport during black screen
+                        -- Use client.localPlayer directly (safe from nil)
+                        local localPlayer = client.localPlayer
+                        if localPlayer and localPlayer.character then
+                            localPlayer.character:Teleport(targetPos)
+
+                            -- Trigger camera reset to snap to new position
+                            client.Reset:Fire()
+                            Log("Camera reset triggered during fade")
+                        else
+                            Log("WARNING: Local player or character nil during fade callback")
+                        end
+                    end,
+                    function()
+                        -- Fade complete
+                        Log("Fade transition complete")
+                    end
+                )
+            end
         else
             -- Other players teleport without fade (we just see them move)
             if player and player.character then
