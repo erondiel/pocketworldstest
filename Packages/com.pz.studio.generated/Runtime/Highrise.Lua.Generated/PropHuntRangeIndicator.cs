@@ -23,7 +23,7 @@ namespace Highrise.Lua.Generated
     [LuaRegisterType(0xd462a080f0fd20f7, typeof(LuaBehaviour))]
     public class PropHuntRangeIndicator : LuaBehaviourThunk
     {
-        private const string s_scriptGUID = "6819554eed1f0934a99e3edb8bbb9d33";
+        private const string s_scriptGUID = "7697d22da66250047aa660418187778f";
         public override string ScriptGUID => s_scriptGUID;
 
         [Tooltip("The range indicator prefab from the Range Indicator asset")]

@@ -23,7 +23,7 @@ namespace Highrise.Lua.Generated
     [LuaRegisterType(0xfc3f634c49d6491e, typeof(LuaBehaviour))]
     public class PropHuntGameManager : LuaBehaviourThunk
     {
-        private const string s_scriptGUID = "65f089c15ccc03e439fd1c159cd0b660";
+        private const string s_scriptGUID = "88adf8a31a7046f4c8d4e46ea07a4848";
         public override string ScriptGUID => s_scriptGUID;
 
 

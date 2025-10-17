@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: c463df4bd846a2b459820820765812aa
+guid: a1bec676935f33f4e924e0eeead382aa
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -8,6 +8,6 @@ ScriptedImporter:
   assetBundleName: 
   assetBundleVariant: 
   script: {fileID: 1355218169, guid: 6f9c394430e33933bbac989b158f2ac4, type: 3}
-  _scriptType: 1
+  _scriptType: 0
   _defaultReferences: []
   _lastErrorLine: 0

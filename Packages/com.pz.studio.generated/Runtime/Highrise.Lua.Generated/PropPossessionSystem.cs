@@ -23,7 +23,7 @@ namespace Highrise.Lua.Generated
     [LuaRegisterType(0x970b68d2c6a88c17, typeof(LuaBehaviour))]
     public class PropPossessionSystem : LuaBehaviourThunk
     {
-        private const string s_scriptGUID = "34e0a636aaeb3f54db077a0ca6749aa0";
+        private const string s_scriptGUID = "f71f63b3f7b51cc4cbf83e945444067c";
         public override string ScriptGUID => s_scriptGUID;
 
 

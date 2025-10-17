@@ -23,7 +23,7 @@ namespace Highrise.Lua.Generated
     [LuaRegisterType(0x10425d32c6b2cc9a, typeof(LuaBehaviour))]
     public class ValidationTest : LuaBehaviourThunk
     {
-        private const string s_scriptGUID = "c463df4bd846a2b459820820765812aa";
+        private const string s_scriptGUID = "42734aaebb9870048a5ea95f40f35047";
         public override string ScriptGUID => s_scriptGUID;
 
 

@@ -23,7 +23,7 @@ namespace Highrise.Lua.Generated
     [LuaRegisterType(0x9f18b1cd036b4fe5, typeof(LuaBehaviour))]
     public class DebugVirtualPlayerOffset : LuaBehaviourThunk
     {
-        private const string s_scriptGUID = "6638f9f9fdcdc464b885426edd9bf64d";
+        private const string s_scriptGUID = "a1bec676935f33f4e924e0eeead382aa";
         public override string ScriptGUID => s_scriptGUID;
 
 

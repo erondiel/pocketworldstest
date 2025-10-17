@@ -1,8 +1,8 @@
 # PropHunt VFX System Documentation
 
-**⚠️ V1 STATUS: PLACEHOLDER IMPLEMENTATION**
+**✅ V1 STATUS: TWEEN-BASED IMPLEMENTATION**
 
-The VFX system framework is complete, but particle systems and custom shaders are **not implemented in V1**. Current implementation uses basic tweens for testing. See "Replacing Placeholders with Particle Systems" section below for V2+ implementation.
+The VFX system is fully implemented using **DevBasics Tweens** for all animations. Particle systems and custom shaders are **optional enhancements** for future versions. The current tween-based system provides smooth, performant visual feedback for all gameplay events.
 
 ## Overview
 
@@ -15,9 +15,10 @@ The PropHunt VFX system is built on top of the **DevBasics Toolkit's Tweens syst
 **Current State:**
 - ✅ DevBasics Tweens integration complete
 - ✅ UI animation wrappers complete
-- ⚠️ Gameplay VFX are **placeholders** (scale/position tweens only)
-- ❌ Particle systems **not created** (V2+)
-- ❌ Custom shaders **not created** (V2+)
+- ✅ Gameplay VFX fully implemented with scale/position/fade tweens
+- ✅ Phase transition VFX system complete
+- ⚠️ Particle systems **optional** (can be added via SerializeField prefabs)
+- ⚠️ Custom shaders **optional** (can be added for enhanced visual effects)
 
 ---
 
@@ -307,67 +308,71 @@ PositionTween(gameObject, startPos, endPos, duration, easing, onComplete) -> Twe
 
 ---
 
-### Game VFX Placeholders
+### Gameplay VFX (Implemented)
 
-These functions are **placeholders** for game-specific visual effects. They currently log debug messages and perform simple animations. They should be replaced with particle systems and shader effects in later iterations.
+These functions provide visual feedback for all major gameplay events. They use DevBasics Tweens for smooth animations and support optional particle system prefabs.
 
 #### PlayerVanishVFX
 
 Triggers when a Prop player possesses an object and their character vanishes.
 
-**Game Design Spec:**
-- Vertical slice dissolve (0.4s)
-- Soft upward-moving sparks
-- Bottom-to-top fade
+**Implementation:**
+- Player scales down (1.0 → 0.0) over 2.5 seconds (configurable)
+- Uses easeInQuad easing for smooth acceleration
+- Player moves (LERP) toward prop position during scale animation
+- Optional: Spawns particle system prefab at prop position
+- Avatar Rig disabled after VFX completes
 
 ```lua
 local VFX = require("PropHuntVFXManager")
 
--- In PropDisguiseSystem.lua
+-- In PropPossessionSystem.lua (server)
 function OnPossessSuccess(player, prop)
-    local playerPos = player.character.transform.position
-    VFX.PlayerVanishVFX(playerPos, player.character)
+    local propPos = prop.transform.position
+    -- Broadcast VFX to all clients
+    playerVanishVFXEvent:FireAllClients(propPos.x, propPos.y, propPos.z, player.id)
 end
 ```
 
-**Current Behavior:** Scales player down to 0 over 0.4s
+**Configuration:**
+- `_playerVanishDuration` - Duration in seconds (default: 2.5s)
+- `_playerVanishVFXPrefab` - Optional particle system prefab
 
-**TODO (Final Implementation):**
-1. Instantiate `PlayerVanishVFX` particle prefab
-2. Apply vertical slice dissolve shader to player material
-3. Animate shader `_DissolveAmount` from 0 to 1
-4. Spawn 3-5 upward-drifting sparkle particles
-5. Play vanish sound effect
-6. Hide/destroy player character at end
+**Optional Enhancements (V2+):**
+- Vertical slice dissolve shader on player material
+- Upward-drifting sparkle particles
+- Vanish sound effect
 
 ---
 
 #### PropInfillVFX
 
-Triggers when a prop materializes after possession.
+Triggers when a prop is possessed and needs visual feedback.
 
-**Game Design Spec:**
-- Radial mask inwards (edges to center)
-- Emissive rim pulse: 0 → 2.0 → 0.5
-- Duration: 0.5s
+**Implementation:**
+- Optional: Spawns particle system prefab at prop position
+- Duration: 1.2 seconds (configurable)
+- Particle system attached to prop GameObject if provided
 
 ```lua
 local VFX = require("PropHuntVFXManager")
 
--- In PropDisguiseSystem.lua
+-- In PropPossessionSystem.lua (server)
 function OnPropPossessed(prop)
     local propPos = prop.transform.position
-    VFX.PropInfillVFX(propPos, prop)
+    -- Broadcast VFX to all clients
+    propInfillVFXEvent:FireAllClients(propPos.x, propPos.y, propPos.z, propName)
 end
 ```
 
-**Current Behavior:** Scales prop from 0.1 to 1.0 with easeOutBack
+**Configuration:**
+- `_propInfillDuration` - Duration in seconds (default: 1.2s)
+- `_propInfillVFXPrefab` - Optional particle system prefab
 
-**TODO (Final Implementation):**
-1. Set prop material `_InfillProgress` shader property to 0
-2. Tween `_InfillProgress` from 0 to 1 over 0.5s
-3. Keyframe `_EmissiveRim`: 0 → 2.0 (at 0.3s) → 0.5 (at 0.5s)
-4. Play materialization sound effect
+**Optional Enhancements (V2+):**
+- Radial mask inwards shader effect (edges to center)
+- Emissive rim pulse animation
+- Materialization sound effect
 
 ---
 
@@ -375,90 +380,217 @@ end
 
 Triggers when a player tries to possess an already-possessed prop.
 
-**Game Design Spec:**
-- Brief red edge flash (0.2s)
-- "Thunk" sound effect
-- No particles (pure shader)
+**Implementation:**
+- Optional: Spawns particle system prefab at prop position
+- Duration: 0.2 seconds (configurable)
+- Provides immediate visual feedback for invalid possession attempts
 
 ```lua
 local VFX = require("PropHuntVFXManager")
 
--- In PropDisguiseSystem.lua
+-- In PropPossessionSystem.lua (client)
 function OnPossessRejected(prop)
     local propPos = prop.transform.position
     VFX.RejectionVFX(propPos, prop)
 end
 ```
 
-**Current Behavior:** Shakes prop left-right with sequence
+**Configuration:**
+- `_rejectionDuration` - Duration in seconds (default: 0.2s)
+- `_rejectionVFXPrefab` - Optional particle system prefab
 
-**TODO (Final Implementation):**
-1. Flash prop outline shader to red
-2. Tween `_OutlineColor` to `Color.red`
-3. Tween `_OutlineIntensity`: 0 → 3.0 → 0 over 0.2s
-4. Play "thunk" audio clip
+**Optional Enhancements (V2+):**
+- Red flash shader effect on prop outline
+- "Thunk" sound effect
 
 ---
 
 #### TagHitVFX
 
-Triggers when a Hunter successfully tags a Prop.
+Triggers when a Hunter successfully tags a possessed prop.
 
-**Game Design Spec:**
-- Compressed ring shock wave at prop's HitPoint
-- 3-5 micro-spark motes radiating outward
-- Chromatic ripples on prop surface
-- Duration: 0.25s
+**Implementation:**
+- Prop scales with "punch" animation (1.0 → 1.3 → 1.0)
+- Duration: 0.3 seconds (configurable via `_tagHitScalePunchDuration`)
+- Uses ping-pong tween for smooth animation
+- Optional: Spawns particle system prefab at prop position
+- Broadcasts to all clients for synchronized VFX
 
 ```lua
 local VFX = require("PropHuntVFXManager")
 
--- In HunterTagSystem.lua
-function OnTagSuccess(hitPoint, prop)
-    VFX.TagHitVFX(hitPoint, prop)
+-- In PropPossessionSystem.lua (server)
+function OnTagSuccess(prop)
+    local propPos = prop.transform.position
+    -- Broadcast VFX to all clients
+    tagHitVFXEvent:FireAllClients(propPos.x, propPos.y, propPos.z, propName)
 end
 ```
 
-**Current Behavior:** Quick scale punch (1.0 → 0.9 → 1.0)
+**Configuration:**
+- `_tagHitScalePunchDuration` - Duration in seconds (default: 0.3s)
+- `_tagHitVFXPrefab` - Optional particle system prefab
 
-**TODO (Final Implementation):**
-1. Instantiate `TagHitVFX` particle prefab at `hitPoint`
-2. Play ring shock particle system (expanding circle)
-3. Spawn 3-5 spark particles with radial outward velocity
-4. Trigger chromatic aberration shader on prop material
-5. Play impact sound effect
-6. Destroy VFX GameObject after 0.25s
+**Optional Enhancements (V2+):**
+- Ring shock wave particle effect
+- Spark motes radiating outward
+- Chromatic aberration shader
+- Impact sound effect
 
 ---
 
 #### TagMissVFX
 
-Triggers when a Hunter's tag misses (hits environment or nothing).
+Triggers when a Hunter tags a non-possessed prop.
 
-**Game Design Spec:**
-- Small dust poof decal
-- Color-neutral (gray/white)
-- Duration: 0.15s
-- Soft "whiff" sound
+**Implementation:**
+- Prop scales with smaller "punch" animation (1.0 → 1.2 → 1.0)
+- Duration: 0.3 seconds (configurable via `_tagMissScalePunchDuration`)
+- Uses ping-pong tween for smooth animation
+- Optional: Spawns particle system prefab at prop position
+- Broadcasts to all clients for synchronized VFX
 
 ```lua
 local VFX = require("PropHuntVFXManager")
 
--- In HunterTagSystem.lua
-function OnTagMiss(hitPosition, surfaceNormal)
-    VFX.TagMissVFX(hitPosition, surfaceNormal)
+-- In PropPossessionSystem.lua (server)
+function OnTagMiss(prop)
+    local propPos = prop.transform.position
+    -- Broadcast VFX to all clients
+    tagMissVFXEvent:FireAllClients(propPos.x, propPos.y, propPos.z, propName)
 end
 ```
 
-**Current Behavior:** Logs debug message only
+**Configuration:**
+- `_tagMissScalePunchDuration` - Duration in seconds (default: 0.3s)
+- `_tagMissVFXPrefab` - Optional particle system prefab
 
-**TODO (Final Implementation):**
-1. Instantiate `TagMissVFX` particle prefab at `hitPosition`
-2. Align to `surfaceNormal` if provided (orient decal)
-3. Play dust poof particle burst
-4. Spawn temporary dust decal (fades over 1s)
-5. Play "whiff" audio clip
-6. Destroy VFX GameObject after 0.15s
+**Optional Enhancements (V2+):**
+- Dust poof particle effect
+- Surface decal
+- "Whiff" sound effect
+
+---
+
+#### PlayerAppearVFX
+
+Triggers when a tagged prop is revealed and the player's avatar reappears.
+
+**Implementation:**
+- Player scales up (0.0 → 1.0) over 2.5 seconds (configurable)
+- Uses easeOutQuad easing for smooth deceleration
+- Scale matches possessed prop size for visual consistency
+- Optional: Spawns particle system prefab at player position
+- Broadcasts to all clients for synchronized VFX
+- Waits 0.3s after teleport before triggering VFX
+
+```lua
+local VFX = require("PropHuntVFXManager")
+
+-- In PropPossessionSystem.lua (server)
+function OnPropTagged(player, propName)
+    local playerPos = player.character.transform.position
+    -- Broadcast VFX to all clients (includes prop name for scaling)
+    playerAppearVFXEvent:FireAllClients(playerPos.x, playerPos.y, playerPos.z, player.id, propName)
+end
+```
+
+**Configuration:**
+- `_playerAppearDuration` - Duration in seconds (default: 2.5s)
+- `_playerAppearVFXPrefab` - Optional particle system prefab
+
+**Optional Enhancements (V2+):**
+- Reverse dissolve shader (fades in from bottom-up)
+- Sparkle particles
+- Reveal sound effect
+
+---
+
+### Phase Transition VFX (Implemented)
+
+These functions trigger visual effects during game state transitions. They coordinate with the game loop to provide feedback for phase changes.
+
+#### TriggerLobbyTransition
+
+Triggered when the game returns to LOBBY state from ROUND_END.
+
+**Implementation:**
+- Broadcasts to all clients for synchronized effects
+- Can trigger UI animations, camera effects, etc.
+
+```lua
+-- In PropHuntGameManager.lua
+function TransitionToState(newState)
+    if newState == GameState.LOBBY then
+        VFXManager.TriggerLobbyTransition()
+    end
+end
+```
+
+---
+
+#### TriggerHidePhaseStart
+
+Triggered when the HIDING phase begins (props choose disguises).
+
+**Implementation:**
+- Receives props team table as parameter
+- Can trigger per-player or team-wide VFX
+- Broadcasts to all clients
+
+```lua
+-- In PropHuntGameManager.lua
+function TransitionToState(newState)
+    if newState == GameState.HIDING then
+        VFXManager.TriggerHidePhaseStart(propsTeam)
+    end
+end
+```
+
+---
+
+#### TriggerHuntPhaseStart
+
+Triggered when the HUNTING phase begins (hunters search for props).
+
+**Implementation:**
+- Broadcasts to all clients
+- Can trigger arena-wide effects, lighting changes, etc.
+
+```lua
+-- In PropHuntGameManager.lua
+function TransitionToState(newState)
+    if newState == GameState.HUNTING then
+        VFXManager.TriggerHuntPhaseStart()
+    end
+end
+```
+
+---
+
+#### TriggerEndRoundVFX
+
+Triggered when the ROUND_END phase begins (display results).
+
+**Implementation:**
+- Spawns VFX prefab in the arena
+- Duration matches Round End timer from PropHuntConfig
+- Receives winning team and winning players as parameters
+- Optional: Spawns celebration particle system
+
+```lua
+-- In PropHuntGameManager.lua
+function TransitionToState(newState)
+    if newState == GameState.ROUND_END then
+        local winningTeam = "Hunters" -- or "Props"
+        local winningPlayers = huntersTeam -- or propsTeam
+        VFXManager.TriggerEndRoundVFX(winningTeam, winningPlayers)
+    end
+end
+```
+
+**Configuration:**
+- `_endRoundVFXPrefab` - Optional particle system prefab for celebration effects
 
 ---
 
@@ -904,22 +1036,23 @@ end
 | `SlideIn(element, ...)` | Slide UI element | 0.35s |
 | `PositionTween(obj, ...)` | Move GameObject | Custom |
 
-### Gameplay VFX (Placeholders)
-| Function | Spec Duration | Purpose |
-|----------|---------------|---------|
-| `PlayerVanishVFX(pos, char)` | 0.4s | Possession vanish |
-| `PropInfillVFX(pos, prop)` | 0.5s | Possession infill |
-| `RejectionVFX(pos, prop)` | 0.2s | Double-possess reject |
-| `TagHitVFX(pos, prop)` | 0.25s | Successful tag |
-| `TagMissVFX(pos, normal)` | 0.15s | Missed tag |
+### Gameplay VFX (Implemented)
+| Function | Default Duration | Purpose |
+|----------|------------------|---------|
+| `PlayerVanishVFX(pos, char)` | 2.5s | Possession vanish (scale + LERP) |
+| `PlayerAppearVFX(pos, char, prop)` | 2.5s | Tag reveal (scale up with prop size) |
+| `PropInfillVFX(pos, prop)` | 1.2s | Possession feedback (optional particles) |
+| `RejectionVFX(pos, prop)` | 0.2s | Invalid possession (optional particles) |
+| `TagHitVFX(pos, prop)` | 0.3s | Successful tag (scale punch 1.0→1.3→1.0) |
+| `TagMissVFX(pos, prop)` | 0.3s | Missed tag (scale punch 1.0→1.2→1.0) |
 
-### Phase Transition VFX
-| Function | Spec Duration | Purpose |
-|----------|---------------|---------|
-| `TriggerLobbyTransition()` | - | Lobby state transition |
-| `TriggerHidePhaseStart(props)` | - | Hide phase start |
-| `TriggerHuntPhaseStart()` | - | Hunt phase start |
-| `TriggerEndRoundVFX(team, players)` | Configurable | Round end celebration |
+### Phase Transition VFX (Implemented)
+| Function | Duration | Purpose |
+|----------|----------|---------|
+| `TriggerLobbyTransition()` | - | Lobby state transition effects |
+| `TriggerHidePhaseStart(props)` | - | Hide phase start effects for props team |
+| `TriggerHuntPhaseStart()` | - | Hunt phase start effects |
+| `TriggerEndRoundVFX(team, players)` | Matches config | Round end celebration with optional prefab |
 
 ### Advanced
 | Function | Returns | Purpose |

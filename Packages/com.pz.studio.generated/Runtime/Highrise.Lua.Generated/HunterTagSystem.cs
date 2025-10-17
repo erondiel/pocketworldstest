@@ -23,7 +23,7 @@ namespace Highrise.Lua.Generated
     [LuaRegisterType(0xabbebaf37988a110, typeof(LuaBehaviour))]
     public class HunterTagSystem : LuaBehaviourThunk
     {
-        private const string s_scriptGUID = "f4d6031d86847ae4f9f02d9add272a74";
+        private const string s_scriptGUID = "13d588241d3cd7e4ca0d2f5a12c28749";
         public override string ScriptGUID => s_scriptGUID;
 
 
