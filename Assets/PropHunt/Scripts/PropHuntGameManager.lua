@@ -54,6 +54,7 @@ local roleAssignedEvent = Event.new("PH_RoleAssigned")
 local playerTaggedEvent = Event.new("PH_PlayerTagged")
 local debugEvent = Event.new("PH_Debug")
 local recapScreenEvent = Event.new("PH_RecapScreen")
+local endRoundScoresEvent = Event.new("PH_EndRoundScores")
 
 -- Remote Functions
 local tagRequest = RemoteFunction.new("PH_TagRequest")
@@ -373,6 +374,9 @@ function TransitionToState(newState)
             winningPlayers = propsTeam
         end
         VFXManager.TriggerEndRoundVFX(winningTeam, winningPlayers)
+
+        -- Broadcast End Round scores to all players
+        BroadcastEndRoundScores()
     end
 
     -- Notify all clients of state change (both methods for compatibility)
@@ -711,6 +715,56 @@ end
 
 function BroadcastPlayerTagged(hunter, prop)
     playerTaggedEvent:FireAllClients(hunter.id, prop.id)
+end
+
+function BroadcastEndRoundScores()
+    Log("[EndRoundScores] ========================================")
+    Log("[EndRoundScores] Broadcasting scores...")
+
+    local players = GetActivePlayers()
+    local scoresData = {}
+
+    Log(string.format("[EndRoundScores] Active players: %d", #players))
+
+    -- Collect scores for all players
+    for _, player in ipairs(players) do
+        local playerInfo = PlayerManager.GetPlayerInfo(player)
+        if playerInfo then
+            local playerScore = ScoringSystem.GetPlayerScore(player)
+            table.insert(scoresData, {
+                id = player.id,
+                name = player.name,
+                score = playerScore,
+                role = playerInfo.role.value
+            })
+            Log(string.format("[EndRoundScores] Player: %s | Score: %d | Role: %s", player.name, playerScore, playerInfo.role.value))
+        end
+    end
+
+    -- Sort by score (highest first)
+    table.sort(scoresData, function(a, b) return a.score > b.score end)
+
+    -- Add rank
+    for i, data in ipairs(scoresData) do
+        data.rank = i
+        Log(string.format("[EndRoundScores] Rank %d: %s (%d points)", i, data.name, data.score))
+    end
+
+    -- Determine winner (highest score)
+    local winnerId = scoresData[1] and scoresData[1].id or nil
+
+    Log(string.format("[EndRoundScores] Winner: %s", winnerId and scoresData[1].name or "None"))
+    Log(string.format("[EndRoundScores] Broadcasting to %d players...", #players))
+
+    -- Broadcast to each client with winner flag
+    for i, player in ipairs(players) do
+        local isWinner = (player.id == winnerId)
+        Log(string.format("[EndRoundScores] Firing to client %d/%d: %s (isWinner: %s)", i, #players, player.name, tostring(isWinner)))
+        endRoundScoresEvent:FireClient(player, scoresData, isWinner)
+    end
+
+    Log("[EndRoundScores] Broadcast complete!")
+    Log("[EndRoundScores] ========================================")
 end
 
 --[[

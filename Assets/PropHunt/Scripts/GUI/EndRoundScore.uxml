@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="UnityEngine.UIElements"
+    xmlns:hr="Highrise.UI"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd"
+>
+
+  <hr:UILuaView class="endround-score" picking-mode="Ignore">
+    <!-- Main Score Container -->
+    <VisualElement class="score-container" name="_scoreContainer" picking-mode="Ignore">
+
+      <!-- Header -->
+      <VisualElement class="score-header">
+        <Label class="score-title" text="ROUND END" />
+        <Label class="score-subtitle" text="Final Scores" name="_roundSubtitle" />
+      </VisualElement>
+
+      <!-- Player List (Scrollable) -->
+      <ScrollView class="player-list" name="_playerList" picking-mode="Position">
+        <!-- Player entries will be added dynamically via Lua -->
+        <!-- Template for each entry (created in Lua):
+        <VisualElement class="player-entry">
+          <Label class="player-rank" text="1" />
+          <Label class="player-name" text="PlayerName" />
+          <Label class="player-score" text="220" />
+          <Label class="player-role" text="Hunter" />
+        </VisualElement>
+        -->
+      </ScrollView>
+
+      <!-- Footer Info -->
+      <VisualElement class="score-footer">
+        <Label class="footer-text" text="Next round starting soon..." name="_footerText" />
+      </VisualElement>
+
+    </VisualElement>
+
+    <!-- Winner Overlay (Only shown to winner) -->
+    <VisualElement class="winner-overlay hidden" name="_winnerOverlay" picking-mode="Ignore">
+      <VisualElement class="winner-content">
+        <Label class="winner-trophy" text="🏆" />
+        <Label class="winner-title" text="WINNER!" />
+        <Label class="winner-subtitle" text="Congratulations!" />
+      </VisualElement>
+    </VisualElement>
+
+  </hr:UILuaView>
+
+</UXML>

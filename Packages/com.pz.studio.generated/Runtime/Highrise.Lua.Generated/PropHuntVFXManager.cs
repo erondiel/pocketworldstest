@@ -39,6 +39,7 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.String _defaultEasing = "easeOutQuad";
         [Header("Player VFX")]
         [Tooltip("VFX prefab for player vanish effect")]
+        [Space]
         [SerializeField] public UnityEngine.GameObject _playerVanishVFXPrefab = default;
         [Tooltip("Duration for player vanish VFX (set to longest particle system duration)")]
         [SerializeField] public System.Double _playerVanishDuration = 2.5;
@@ -48,6 +49,7 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.Double _playerAppearDuration = 2.5;
         [Header("Prop VFX")]
         [Tooltip("VFX prefab for prop infill effect")]
+        [Space]
         [SerializeField] public UnityEngine.GameObject _propInfillVFXPrefab = default;
         [Tooltip("Duration for prop infill VFX (auto-filled from particle system)")]
         [SerializeField] public System.Double _propInfillDuration = 1.2;
@@ -57,6 +59,7 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.Double _rejectionDuration = 0.2;
         [Header("Tag VFX")]
         [Tooltip("VFX prefab for tag hit effect")]
+        [Space]
         [SerializeField] public UnityEngine.GameObject _tagHitVFXPrefab = default;
         [Tooltip("Duration for tag hit VFX (auto-filled from particle system)")]
         [SerializeField] public System.Double _tagHitDuration = 0.25;
@@ -70,6 +73,7 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.Double _tagMissScalePunchDuration = 0.3;
         [Header("Phase Transition VFX")]
         [Tooltip("VFX prefab for end round effect (duration matches Round End timer from PropHuntConfig)")]
+        [Space]
         [SerializeField] public UnityEngine.GameObject _endRoundVFXPrefab = default;
 
         protected override SerializedPropertyValue[] SerializeProperties()

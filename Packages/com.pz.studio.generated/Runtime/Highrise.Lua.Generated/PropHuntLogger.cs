@@ -26,25 +26,40 @@ namespace Highrise.Lua.Generated
         private const string s_scriptGUID = "dc9d03ac08b229249bc33853a8c59247";
         public override string ScriptGUID => s_scriptGUID;
 
+        [Header("Core Systems")]
         [Tooltip("Enable/disable logging for GameManager")]
         [SerializeField] public System.Boolean _enableGameManager = true;
         [Tooltip("Enable/disable logging for PlayerManager")]
         [SerializeField] public System.Boolean _enablePlayerManager = true;
         [Tooltip("Enable/disable logging for ScoringSystem")]
         [SerializeField] public System.Boolean _enableScoringSystem = true;
+        [Tooltip("Enable/disable logging for Config")]
+        [SerializeField] public System.Boolean _enableConfig = true;
+        [Header("Gameplay Systems")]
         [Tooltip("Enable/disable logging for Teleporter")]
+        [Space]
         [SerializeField] public System.Boolean _enableTeleporter = true;
-        [Tooltip("Enable/disable logging for VFXManager")]
-        [SerializeField] public System.Boolean _enableVFXManager = true;
         [Tooltip("Enable/disable logging for ZoneManager")]
         [SerializeField] public System.Boolean _enableZoneManager = true;
-        [Tooltip("Enable/disable logging for UIManager")]
-        [SerializeField] public System.Boolean _enableUIManager = true;
         [Tooltip("Enable/disable logging for HunterTagSystem")]
         [SerializeField] public System.Boolean _enableHunterTagSystem = true;
         [Tooltip("Enable/disable logging for PropPossessionSystem")]
         [SerializeField] public System.Boolean _enablePropPossessionSystem = true;
+        [Header("UI Systems")]
+        [Tooltip("Enable/disable logging for UIManager")]
+        [Space]
+        [SerializeField] public System.Boolean _enableUIManager = true;
+        [Tooltip("Enable/disable logging for EndRoundScore")]
+        [SerializeField] public System.Boolean _enableEndRoundScore = true;
+        [Tooltip("Enable/disable logging for RecapScreen")]
+        [SerializeField] public System.Boolean _enableRecapScreen = true;
+        [Header("VFX Systems")]
+        [Tooltip("Enable/disable logging for VFXManager")]
+        [Space]
+        [SerializeField] public System.Boolean _enableVFXManager = true;
+        [Header("Not Implemented (Future Systems)")]
         [Tooltip("Enable/disable logging for PropDisguiseSystem - Not Implemented")]
+        [Space]
         [SerializeField] public System.Boolean _enablePropDisguiseSystem_NotImplemented = true;
         [Tooltip("Enable/disable logging for RangeIndicator - Not Implemented")]
         [SerializeField] public System.Boolean _enableRangeIndicator_NotImplemented = false;
@@ -52,12 +67,8 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.Boolean _enableReadyButton_NotImplemented = false;
         [Tooltip("Enable/disable logging for SpectatorButton - Not Implemented")]
         [SerializeField] public System.Boolean _enableSpectatorButton_NotImplemented = false;
-        [Tooltip("Enable/disable logging for RecapScreen - Not Implemented")]
-        [SerializeField] public System.Boolean _enableRecapScreen_NotImplemented = true;
         [Tooltip("Enable/disable logging for HUD - Not Implemented")]
         [SerializeField] public System.Boolean _enableHUD_NotImplemented = false;
-        [Tooltip("Enable/disable logging for Config")]
-        [SerializeField] public System.Boolean _enableConfig = true;
 
         protected override SerializedPropertyValue[] SerializeProperties()
         {
@@ -69,19 +80,20 @@ namespace Highrise.Lua.Generated
                 CreateSerializedProperty(_script.GetPropertyAt(0), _enableGameManager),
                 CreateSerializedProperty(_script.GetPropertyAt(1), _enablePlayerManager),
                 CreateSerializedProperty(_script.GetPropertyAt(2), _enableScoringSystem),
-                CreateSerializedProperty(_script.GetPropertyAt(3), _enableTeleporter),
-                CreateSerializedProperty(_script.GetPropertyAt(4), _enableVFXManager),
+                CreateSerializedProperty(_script.GetPropertyAt(3), _enableConfig),
+                CreateSerializedProperty(_script.GetPropertyAt(4), _enableTeleporter),
                 CreateSerializedProperty(_script.GetPropertyAt(5), _enableZoneManager),
-                CreateSerializedProperty(_script.GetPropertyAt(6), _enableUIManager),
-                CreateSerializedProperty(_script.GetPropertyAt(7), _enableHunterTagSystem),
-                CreateSerializedProperty(_script.GetPropertyAt(8), _enablePropPossessionSystem),
-                CreateSerializedProperty(_script.GetPropertyAt(9), _enablePropDisguiseSystem_NotImplemented),
-                CreateSerializedProperty(_script.GetPropertyAt(10), _enableRangeIndicator_NotImplemented),
-                CreateSerializedProperty(_script.GetPropertyAt(11), _enableReadyButton_NotImplemented),
-                CreateSerializedProperty(_script.GetPropertyAt(12), _enableSpectatorButton_NotImplemented),
-                CreateSerializedProperty(_script.GetPropertyAt(13), _enableRecapScreen_NotImplemented),
-                CreateSerializedProperty(_script.GetPropertyAt(14), _enableHUD_NotImplemented),
-                CreateSerializedProperty(_script.GetPropertyAt(15), _enableConfig),
+                CreateSerializedProperty(_script.GetPropertyAt(6), _enableHunterTagSystem),
+                CreateSerializedProperty(_script.GetPropertyAt(7), _enablePropPossessionSystem),
+                CreateSerializedProperty(_script.GetPropertyAt(8), _enableUIManager),
+                CreateSerializedProperty(_script.GetPropertyAt(9), _enableEndRoundScore),
+                CreateSerializedProperty(_script.GetPropertyAt(10), _enableRecapScreen),
+                CreateSerializedProperty(_script.GetPropertyAt(11), _enableVFXManager),
+                CreateSerializedProperty(_script.GetPropertyAt(12), _enablePropDisguiseSystem_NotImplemented),
+                CreateSerializedProperty(_script.GetPropertyAt(13), _enableRangeIndicator_NotImplemented),
+                CreateSerializedProperty(_script.GetPropertyAt(14), _enableReadyButton_NotImplemented),
+                CreateSerializedProperty(_script.GetPropertyAt(15), _enableSpectatorButton_NotImplemented),
+                CreateSerializedProperty(_script.GetPropertyAt(16), _enableHUD_NotImplemented),
             };
         }
         

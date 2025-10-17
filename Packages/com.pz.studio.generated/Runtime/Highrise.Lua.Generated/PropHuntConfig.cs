@@ -33,6 +33,7 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.Double _lobbyCountdown = 30;
         [Header("Phase Timers")]
         [Tooltip("Time in seconds for the hiding phase")]
+        [Space]
         [SerializeField] public System.Double _hidePhaseTime = 35;
         [Tooltip("Time in seconds for the hunting phase")]
         [SerializeField] public System.Double _huntPhaseTime = 240;
@@ -40,11 +41,13 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.Double _roundEndTime = 15;
         [Header("Tagging Settings")]
         [Tooltip("Maximum tag range in meters")]
+        [Space]
         [SerializeField] public System.Double _tagRange = 4;
         [Tooltip("Tag cooldown in seconds")]
         [SerializeField] public System.Double _tagCooldown = 0.5;
         [Header("Prop Scoring")]
         [Tooltip("Seconds between prop tick scoring")]
+        [Space]
         [SerializeField] public System.Double _propTickSeconds = 5;
         [Tooltip("Base points per tick")]
         [SerializeField] public System.Double _propTickPoints = 10;
@@ -52,6 +55,7 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.Double _propSurviveBonus = 100;
         [Header("Hunter Scoring")]
         [Tooltip("Base points for finding a prop")]
+        [Space]
         [SerializeField] public System.Double _hunterFindBase = 120;
         [Tooltip("Penalty for missing a tag")]
         [SerializeField] public System.Double _hunterMissPenalty = -10;
@@ -59,6 +63,7 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.Double _hunterAccuracyBonusMax = 50;
         [Header("Zone Weights")]
         [Tooltip("Enable zone-based scoring multipliers (disable if zones block prop interaction)")]
+        [Space]
         [SerializeField] public System.Boolean _zonesEnabled = false;
         [Tooltip("Zone weight for Near Spawn areas")]
         [SerializeField] public System.Double _zoneWeightNearSpawn = 1.5;
@@ -68,6 +73,7 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.Double _zoneWeightFar = 0.6;
         [Header("Team Bonuses")]
         [Tooltip("Hunter team win bonus per hunter")]
+        [Space]
         [SerializeField] public System.Double _hunterTeamWinBonus = 50;
         [Tooltip("Prop team win bonus for survivors")]
         [SerializeField] public System.Double _propTeamWinBonusSurvived = 30;
@@ -75,6 +81,7 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.Double _propTeamWinBonusFound = 15;
         [Header("Taunt System")]
         [Tooltip("Enable taunt system")]
+        [Space]
         [SerializeField] public System.Boolean _tauntEnabled = false;
         [Tooltip("Taunt cooldown in seconds")]
         [SerializeField] public System.Double _tauntCooldown = 13;
@@ -84,6 +91,7 @@ namespace Highrise.Lua.Generated
         [SerializeField] public System.Double _tauntReward = 20;
         [Header("Debug")]
         [Tooltip("Enable debug logging")]
+        [Space]
         [SerializeField] public System.Boolean _enableDebug = true;
 
         protected override SerializedPropertyValue[] SerializeProperties()
