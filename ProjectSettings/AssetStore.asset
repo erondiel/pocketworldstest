@@ -371,3 +371,102 @@ MonoBehaviour:
     - 1f44e3af0452b854ba550b80de259e3f
     - d4dee8066ef75b44ebb2337a0c2ea229
     IsBundle: 0
+  - Guid: 6b0f605335de674479df18b36c4ceaa6
+    StoreId: 672c34f8842b116b690c3056
+    Name: Fireworks VFX Pack
+    ThumbnailUrl: https://d4v5j9dz6t9fz.cloudfront.net/web_uploads/world_builder_assets/647622d2106a74bac609d8ea/672c34f8842b116b690c3056/19304b0bd80_0.jpg
+    AdditionalImageUrls:
+    - https://d4v5j9dz6t9fz.cloudfront.net/web_uploads/world_builder_assets/647622d2106a74bac609d8ea/672c34f8842b116b690c3056/19304b0a610_0.jpg
+    AdditionalAssetGUIDs:
+    - f7ca8542ecc20134886f0775f941b6a6
+    - 9ce7007a0cec3914b92b4e0b0e9c813f
+    - 5d323efa98bf30846ad26b7dda0160dc
+    - f91595a1847aecc4f91f7dcf2548123f
+    - 1b94047704309c649bab921ac70b75b2
+    - 72e2ec9cff261a14b8a0951f3e300b00
+    - 5ef052ccd2fd8f94e8fdfd23e227b7b5
+    - 4a13b21f5c6a778428269197c2470f08
+    - 887af580a1a41c7498c40c42d4f6f5c6
+    IsBundle: 1
+  - Guid: e9821ab8826f1f54ab8a2103bf8ccadc
+    StoreId: 672c31d5842b116b690c3054
+    Name: VFX Bonfires Pack
+    ThumbnailUrl: https://d4v5j9dz6t9fz.cloudfront.net/web_uploads/world_builder_assets/647622d2106a74bac609d8ea/672c31d5842b116b690c3054/19304a49820_0.jpg
+    AdditionalImageUrls:
+    - https://d4v5j9dz6t9fz.cloudfront.net/web_uploads/world_builder_assets/647622d2106a74bac609d8ea/672c31d5842b116b690c3054/19304a48498_0.jpg
+    AdditionalAssetGUIDs:
+    - 0aae6b571838be642ace9d0b8eb475a4
+    - 90a52ecf746e45f46853bfb596cce43b
+    - f17c67e7a720b6448866b3ee69130e14
+    - 81760c821665b9443af19187d8e10341
+    - 2334cb745d48a854a9a42c4a244dbd7b
+    - a91f10ba17e9d0b438d5d5a9c2797966
+    - 086c99521979fd545aaba738123de65d
+    - a6305175ecfe8c04fa5d94ba8a16a9f5
+    - bda0ee3b050d123409c7c25a06c91cd6
+    - cc55361bbf134824a99d42bb7e4874d1
+    - 1e15232baaeb4464b9a96a5f0573113e
+    - 004e60177b09dbc4f84e074fb1cfc202
+    - 9e05c2a4d6601d14db8cc0439b8ae027
+    - 6d4663b66f6b4bb40845f459ecf50c8c
+    - ef0b299f23bb68c4085ac0e2643e6301
+    - 2679335d8c6121243bcbb13ac94280ce
+    - 0f44c1c3f0699674c909bdba8c83aaf6
+    - ae9b7051b40ce8243ad0ea27a65681ff
+    - dbb423f32b308324785fd98dac10d8c7
+    - 735b31af2301e6048bc8bf66f1748902
+    - 3323fe374f1a2194ba52e144ede61276
+    - dd4ed8397e697a54bb98147b057ee8c8
+    - 57983bbc628358b41886da7203b91e81
+    - b44067cc2f8669f4fb15fb2bd51f9af0
+    - bd8ad3ca1159cd14181a845074d1c937
+    - ba6e70fad1d8696478d7c7fedbc889d0
+    - 4d7b06a6a7acb824f875e830c847edb2
+    - acf15390d0e79d74e9ad4ef7c2fe6da5
+    - 287bb16fe02f29349888df63d5d2dbca
+    - 9cc4c514873119043ad571ca1eedd925
+    - 4d935ea126b5d044380b650bcd8d06d6
+    - fa11d6bf61dc4a64fbef7bc61315e261
+    - 8f78d5b3384931f49903ec5ae50b89d3
+    - a2aa2bf3ab65c4140844773472aae419
+    - fe01daffc3f9f1945b76517fbc22d7b0
+    - 8bf1d58d1cfc30a40816ef084ce1a5cb
+    - 7c52592975768d347877f002de4360fc
+    - f76da180e9bdc0c498b8904430998d71
+    - 91a9ac412f51aea4db0473db9f7be465
+    - 2c61ce1cc3fba804baff321d527aaa2c
+    - f69b03e5f6d699e4c9e2ed215c0d1078
+    - 488b1b96e84fcf043985930fb875eeac
+    - 1d985ed9b5d70f34a855056352d88569
+    - 342d6850998ec1640b4abd2e3f40f5e6
+    - 11d9e532c9ec4a14facce2e08e8ff190
+    - e697059ab6cf41f48a15041674b3117b
+    - 5c7a10f739bf0cc4e99eef923cb4d12d
+    IsBundle: 1
+  - Guid: 28b8948f10e951347bf1c7ac721c12a4
+    StoreId: 672c2f4d842b116b690c3050
+    Name: VFX Magic Spawns
+    ThumbnailUrl: https://d4v5j9dz6t9fz.cloudfront.net/web_uploads/world_builder_assets/647622d2106a74bac609d8ea/672c2f4d842b116b690c3050/193049dbe38_0.jpg
+    AdditionalImageUrls:
+    - https://d4v5j9dz6t9fz.cloudfront.net/web_uploads/world_builder_assets/647622d2106a74bac609d8ea/672c2f4d842b116b690c3050/193049d8b70_0.jpg
+    AdditionalAssetGUIDs:
+    - def2dc3cae0bdf94baa1bc8155e4b659
+    - b2b24b7db7d98c24e969c635cd82679a
+    - 5b3f1650664c33747a90970c36f88dff
+    - 26a7232043c805a43adb6095820964aa
+    - 769d27c31f6c0684c8804775f2aee591
+    - d9cd857ee2f3e654b8a8cc7adac2eb15
+    - a4944d4e4bbe8634a85655783688827c
+    - 19506c0c8fd929149bb7075c8ee82222
+    - 6a7b987a236dc9842abaee207b410933
+    - 834fb1e4b7356c94d9fb93bd1d4e4680
+    - 626f00e385f06054eaaab4a7a990be8a
+    - c6702fa81bbd4d04aa7cb06e10ab4a72
+    - 0fa3bdcb3f89c8042a5f734232ecaea1
+    - 24677d5455463d34d9b75582a9945e1a
+    - ad74dc93796ebc640bebf06de40a7e27
+    - a612380f4ea4ee74388ad9c1899998c2
+    - 7f319a4511a569444924528e5c97cb79
+    - 1c8242f89ed61bd41a43b52d56b7d523
+    - 99d632cf6b9084642ad7a370857ae997
+    IsBundle: 1

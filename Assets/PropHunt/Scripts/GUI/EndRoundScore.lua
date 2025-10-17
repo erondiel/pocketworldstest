@@ -33,29 +33,12 @@ local Logger = require("PropHuntLogger")
 -- Reference to the actual list container where we add entries
 local playerListContainer = nil
 
--- Network Event
-local endRoundScoresEvent = Event.new("PH_EndRoundScores")
-
--- Register event listener at module load time (not in lifecycle)
-Logger.Log("EndRoundScore", "========================================")
-Logger.Log("EndRoundScore", "MODULE LOADING")
-Logger.Log("EndRoundScore", "========================================")
-
-endRoundScoresEvent:Connect(function(playersData, localPlayerIsWinner)
-    Logger.Log("EndRoundScore", "*** EVENT RECEIVED ***")
-    Logger.Log("EndRoundScore", "playersData type: " .. type(playersData))
-    Logger.Log("EndRoundScore", "localPlayerIsWinner: " .. tostring(localPlayerIsWinner))
-    ShowScores(playersData, localPlayerIsWinner)
-end)
-
-Logger.Log("EndRoundScore", "Event listener registered for PH_EndRoundScores")
-
 --[[
     UI Initialize
 ]]
-function self:ClientAwake()
+function self:Start()
     Logger.Log("EndRoundScore", "========================================")
-    Logger.Log("EndRoundScore", "CLIENT AWAKE")
+    Logger.Log("EndRoundScore", "STARTED")
     Logger.Log("EndRoundScore", "========================================")
 
     if not _scoreContainer or not _playerList or not _winnerOverlay then
@@ -82,6 +65,41 @@ function self:ClientAwake()
 
     Logger.Log("EndRoundScore", "playerListContainer: " .. tostring(playerListContainer ~= nil))
 
+    -- Hide the score container by default (will show when ShowScores is called)
+    if _scoreContainer then
+        _scoreContainer:AddToClassList("hidden")
+        Logger.Log("EndRoundScore", "Score container hidden by default")
+    end
+
+    -- Access the GLOBAL event object created by GameManager
+    local endRoundScoresEvent = _G.PH_EndRoundScoresEvent
+    if endRoundScoresEvent then
+        Logger.Log("EndRoundScore", "Found global event object")
+
+        -- Register event listener
+        endRoundScoresEvent:Connect(function(scoresData, winnerId)
+            Logger.Log("EndRoundScore", "========================================")
+            Logger.Log("EndRoundScore", "EVENT RECEIVED")
+            Logger.Log("EndRoundScore", "Scores count: " .. tostring(#scoresData))
+            Logger.Log("EndRoundScore", "Winner ID: " .. tostring(winnerId))
+            Logger.Log("EndRoundScore", "========================================")
+
+            -- Determine if local player is winner
+            local localPlayer = client.localPlayer
+            local isWinner = (localPlayer and winnerId and localPlayer.id == winnerId)
+
+            Logger.Log("EndRoundScore", "Local player: " .. tostring(localPlayer and localPlayer.name or "nil"))
+            Logger.Log("EndRoundScore", "Is local player winner: " .. tostring(isWinner))
+
+            -- Display scores
+            ShowScores(scoresData, isWinner)
+        end)
+
+        Logger.Log("EndRoundScore", "Event listener registered")
+    else
+        Logger.Error("EndRoundScore", "Global event object not found!")
+    end
+
     Logger.Log("EndRoundScore", "UI initialized and ready for scores")
 end
 
@@ -100,6 +118,12 @@ function ShowScores(playersData, localPlayerIsWinner)
     if not playerListContainer then
         Logger.Error("EndRoundScore", "playerListContainer is nil! Cannot display scores.")
         return
+    end
+
+    -- Show the score container
+    if _scoreContainer then
+        _scoreContainer:RemoveFromClassList("hidden")
+        Logger.Log("EndRoundScore", "Score container shown")
     end
 
     -- Clear existing player entries

@@ -54,7 +54,10 @@ local roleAssignedEvent = Event.new("PH_RoleAssigned")
 local playerTaggedEvent = Event.new("PH_PlayerTagged")
 local debugEvent = Event.new("PH_Debug")
 local recapScreenEvent = Event.new("PH_RecapScreen")
-local endRoundScoresEvent = Event.new("PH_EndRoundScores")
+
+-- IMPORTANT: Create as GLOBAL so UI scripts can access the same Event object
+_G.PH_EndRoundScoresEvent = Event.new("PH_EndRoundScores")
+local endRoundScoresEvent = _G.PH_EndRoundScoresEvent
 
 -- Remote Functions
 local tagRequest = RemoteFunction.new("PH_TagRequest")
@@ -375,7 +378,7 @@ function TransitionToState(newState)
         end
         VFXManager.TriggerEndRoundVFX(winningTeam, winningPlayers)
 
-        -- Broadcast End Round scores to all players
+        -- Broadcast End Round scores (UI is always active so event listener is ready)
         BroadcastEndRoundScores()
     end
 
@@ -754,14 +757,10 @@ function BroadcastEndRoundScores()
     local winnerId = scoresData[1] and scoresData[1].id or nil
 
     Log(string.format("[EndRoundScores] Winner: %s", winnerId and scoresData[1].name or "None"))
-    Log(string.format("[EndRoundScores] Broadcasting to %d players...", #players))
+    Log("[EndRoundScores] Broadcasting to all clients...")
 
-    -- Broadcast to each client with winner flag
-    for i, player in ipairs(players) do
-        local isWinner = (player.id == winnerId)
-        Log(string.format("[EndRoundScores] Firing to client %d/%d: %s (isWinner: %s)", i, #players, player.name, tostring(isWinner)))
-        endRoundScoresEvent:FireClient(player, scoresData, isWinner)
-    end
+    -- Broadcast to all clients (they determine locally if they are winner)
+    endRoundScoresEvent:FireAllClients(scoresData, winnerId)
 
     Log("[EndRoundScores] Broadcast complete!")
     Log("[EndRoundScores] ========================================")

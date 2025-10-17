@@ -5035,7 +5035,6 @@ GameObject:
   m_Component:
   - component: {fileID: 575006168}
   - component: {fileID: 575006169}
-  - component: {fileID: 575006170}
   m_Layer: 0
   m_Name: EndRoundScore
   m_TagString: Untagged
@@ -5081,26 +5080,6 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
---- !u!114 &575006170
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 575006167}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_PanelSettings: {fileID: 11400000, guid: bcc7b7b161b0d19448fd91b0391ccfb0, type: 2}
-  m_ParentUI: {fileID: 0}
-  sourceAsset: {fileID: 9197481963319205126, guid: 8def43fdbaae0434d99ca7ec165090e3,
-    type: 3}
-  m_SortingOrder: 0
-  m_WorldSpaceSizeMode: 1
-  m_WorldSpaceWidth: 1920
-  m_WorldSpaceHeight: 1080
 --- !u!4 &576132609 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8118474226590716593, guid: a2c532c6d5f3e6f4ab694f65947617a2,

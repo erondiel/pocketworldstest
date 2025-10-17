@@ -45,10 +45,14 @@ local GameManager = require("PropHuntGameManager")
 local PlayerManager = require("PropHuntPlayerManager")
 
 local _HudScript : PropHuntHUD = nil
+local _EndRoundScoreScript = nil  -- Will be populated in ClientAwake
 local _hudUpdateTimer : Timer | nil = nil
 
 -- State changed event from server
 local stateChangedEvent = Event.new("PH_StateChanged")
+
+-- End round scores event from server
+local endRoundScoresEvent = Event.new("PH_EndRoundScores")
 
 local stateMapping = {
     [1] = "LOBBY",
@@ -174,6 +178,12 @@ function self:ClientAwake()
     if _HUD then
         _HudScript = _HUD:GetComponent(PropHuntHUD)
     end
+
+    -- Get reference to EndRoundScore script
+    if _EndRoundScoreUI then
+        _EndRoundScoreScript = _EndRoundScoreUI:GetComponent("EndRoundScore")
+        Logger.Log("UIManager", "Got EndRoundScore script reference: " .. tostring(_EndRoundScoreScript ~= nil))
+    end
 end
 
 function self:ClientStart()
@@ -190,11 +200,11 @@ function self:ClientStart()
         end
     end
 
-    -- Find EndRoundScore UI (managed separately - shown only during ROUND_END)
+    -- Find EndRoundScore UI (kept active the entire game to ensure event listeners are registered)
     _EndRoundScoreUI = GameObject.Find("EndRoundScore")
     if _EndRoundScoreUI then
-        Logger.Log("UIManager", "Found EndRoundScore UI")
-        _EndRoundScoreUI:SetActive(false) -- Hide by default
+        Logger.Log("UIManager", "Found EndRoundScore UI - keeping active for event listeners")
+        _EndRoundScoreUI:SetActive(true) -- ALWAYS keep active
     else
         Logger.Log("UIManager", "WARNING: Could not find EndRoundScore GameObject")
     end
@@ -233,23 +243,14 @@ function self:ClientStart()
                     Logger.Log("UIManager", "CLIENT: State = LOBBY → Showing UI")
                     SetUIVisibility(true)
                     if _HUD then _HUD:SetActive(true) end
-                    if _EndRoundScoreUI then
-                        _EndRoundScoreUI:SetActive(false)
-                    end
                 elseif newState == GameState.ROUND_END then
-                    Logger.Log("UIManager", "CLIENT: State = ROUND_END → Showing EndRoundScore")
+                    Logger.Log("UIManager", "CLIENT: State = ROUND_END")
                     SetUIVisibility(false) -- Hide lobby UI
                     if _HUD then _HUD:SetActive(false) end -- Hide HUD during end screen
-                    if _EndRoundScoreUI then
-                        _EndRoundScoreUI:SetActive(true)
-                    end
                 else
                     Logger.Log("UIManager", "CLIENT: State = " .. tostring(newState) .. " → Hiding UI")
                     SetUIVisibility(false)
                     if _HUD then _HUD:SetActive(true) end -- Show HUD during gameplay
-                    if _EndRoundScoreUI then
-                        _EndRoundScoreUI:SetActive(false)
-                    end
                 end
             end)
 
@@ -261,6 +262,30 @@ function self:ClientStart()
         Logger.Log("UIManager", "ERROR: Could not get local player!")
     end
 
+    -- Listen for end round scores event
+    endRoundScoresEvent:Connect(function(scoresData, winnerId)
+        Logger.Log("UIManager", "========================================")
+        Logger.Log("UIManager", "END ROUND SCORES EVENT RECEIVED")
+        Logger.Log("UIManager", "Scores count: " .. tostring(#scoresData))
+        Logger.Log("UIManager", "Winner ID: " .. tostring(winnerId))
+        Logger.Log("UIManager", "========================================")
+
+        -- Determine if local player is winner
+        local localPlayer = client.localPlayer
+        local isWinner = (localPlayer and winnerId and localPlayer.id == winnerId)
+
+        Logger.Log("UIManager", "Local player: " .. tostring(localPlayer and localPlayer.name or "nil"))
+        Logger.Log("UIManager", "Is local player winner: " .. tostring(isWinner))
+
+        -- Call EndRoundScore script to display scores
+        if _EndRoundScoreScript and _EndRoundScoreScript.ShowScores then
+            _EndRoundScoreScript.ShowScores(scoresData, isWinner)
+            Logger.Log("UIManager", "Called EndRoundScore.ShowScores()")
+        else
+            Logger.Error("UIManager", "EndRoundScore script or ShowScores function not found!")
+        end
+    end)
+
     -- Backup: Also listen to event-based state changes (fallback)
     stateChangedEvent:Connect(function(newState, timer)
         Logger.Log("UIManager", "CLIENT: State changed via Event to " .. tostring(newState))
@@ -268,21 +293,12 @@ function self:ClientStart()
         if newState == GameState.LOBBY then
             SetUIVisibility(true)
             if _HUD then _HUD:SetActive(true) end
-            if _EndRoundScoreUI then
-                _EndRoundScoreUI:SetActive(false)
-            end
         elseif newState == GameState.ROUND_END then
             SetUIVisibility(false)
             if _HUD then _HUD:SetActive(false) end -- Hide HUD during end screen
-            if _EndRoundScoreUI then
-                _EndRoundScoreUI:SetActive(true)
-            end
         else
             SetUIVisibility(false)
             if _HUD then _HUD:SetActive(true) end -- Show HUD during gameplay
-            if _EndRoundScoreUI then
-                _EndRoundScoreUI:SetActive(false)
-            end
         end
     end)
 end
