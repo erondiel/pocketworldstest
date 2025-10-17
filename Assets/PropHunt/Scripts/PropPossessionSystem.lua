@@ -1056,6 +1056,10 @@ function self:ServerAwake()
         -- HIT: Valid tag on possessed prop
         Logger.Log("PropPossessionSystem", "SERVER: Hunter " .. hunter.name .. " successfully tagged prop: " .. propName .. " (player: " .. propPlayer.name .. ")")
 
+        -- CRITICAL: Remove prop from possessedProps to prevent duplicate tags
+        possessedProps[propName] = nil
+        Logger.Log("PropPossessionSystem", "SERVER: Removed " .. propName .. " from possessedProps table")
+
         -- Broadcast TagHit VFX to all clients
         local propGameObject = GameObject.Find(propName)
         if propGameObject then
