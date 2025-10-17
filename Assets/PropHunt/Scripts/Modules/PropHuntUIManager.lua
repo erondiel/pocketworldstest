@@ -102,7 +102,7 @@ local function StartHUDTimer()
         -- Show ready count in lobby, total count during game
         local playersText
         if gameState == 1 then -- LOBBY
-            playersText = "Ready: " .. tostring(readyCount) .. "/" .. tostring(minPlayers)
+            playersText = "Ready: " .. tostring(readyCount)
         else
             playersText = "Players: " .. tostring(playerCount)
         end

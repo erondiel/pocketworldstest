@@ -11,13 +11,18 @@ local _fadeOverlay : VisualElement = nil
 
 local PlayerManager = require("PropHuntPlayerManager")
 local VFXManager = require("PropHuntVFXManager")
+local GameManager = require("PropHuntGameManager")
 
 -- Current player role (default to Spectator in LOBBY)
 local currentRole = "Spectator"
+local currentPropsCount = 0  -- Track remaining props count
 
 -- Network events (kept for backward compatibility)
 local roleAssignedEvent = Event.new("PH_RoleAssigned")
 local stateChangedEvent = Event.new("PH_StateChanged")
+
+-- Global Event for props count (same pattern as EndRoundScores)
+local propsCountEvent = _G.PH_PropsCountEvent
 
 -- Helper function to format role display
 local function FormatRole(roleStr)
@@ -33,20 +38,29 @@ local function FormatRole(roleStr)
 end
 
 function UpdateHud(stateText, timerText, playersText, scoreText)
+  -- Get current game state to determine what to display
+  local currentState = GameManager.GetCurrentState()
+
+  -- Modify playersText for HIDING/HUNTING phases to show remaining props
+  local displayPlayersText = playersText
+  if currentState == 2 or currentState == 3 then -- HIDING or HUNTING
+    -- Use tracked props count from Global Event
+    displayPlayersText = "Props: " .. tostring(currentPropsCount)
+  end
+
   if _stateLabel then
-    -- Format: "LOBBY | Spectator" or "HUNTING | Hunter"
-    -- Include score in state label if provided
-    if scoreText then
-      _stateLabel.text = stateText .. " | " .. currentRole .. " | " .. scoreText
-    else
-      _stateLabel.text = stateText .. " | " .. currentRole
-    end
+    -- Line 1: State only
+    _stateLabel.text = stateText
   end
   if _timerLabel then
-    _timerLabel.text = timerText
+    -- Line 2: Role
+    -- Line 3: Timer
+    _timerLabel.text = currentRole .. "\n" .. timerText
   end
   if _playersLabel then
-    _playersLabel.text = playersText
+    -- Line 4: Score
+    -- Line 5: Players/Props count
+    _playersLabel.text = (scoreText or "Score: 0") .. "\n" .. displayPlayersText
   end
 end
 
@@ -63,7 +77,7 @@ function self:Start()
 
   -- Initial text (LOBBY with Spectator role)
   currentRole = "Spectator"
-  UpdateHud("LOBBY", "0s", "Players: 0/0")
+  UpdateHud("LOBBY", "0s", "Ready: 0", "Score: 0")
 
   -- Get local player's role from PlayerManager NetworkValue
   local localPlayer = client.localPlayer
@@ -97,4 +111,14 @@ function self:Start()
       print("[PropHuntHUD] Returned to LOBBY - role reset to Spectator")
     end
   end)
+
+  -- Listen for props count updates via Global Event (same pattern as EndRoundScores)
+  if propsCountEvent then
+    propsCountEvent:Connect(function(count)
+      currentPropsCount = count
+      print("[PropHuntHUD] Props count updated: " .. tostring(count))
+    end)
+  else
+    print("[PropHuntHUD] WARNING: Props count event not found!")
+  end
 end

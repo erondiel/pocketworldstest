@@ -63,6 +63,10 @@ local recapScreenEvent = Event.new("PH_RecapScreen")
 _G.PH_EndRoundScoresEvent = Event.new("PH_EndRoundScores")
 local endRoundScoresEvent = _G.PH_EndRoundScoresEvent
 
+-- IMPORTANT: Create as GLOBAL for props count updates
+_G.PH_PropsCountEvent = Event.new("PH_PropsCount")
+local propsCountEvent = _G.PH_PropsCountEvent
+
 -- Remote Functions
 local tagRequest = RemoteFunction.new("PH_TagRequest")
 local forceStateRequest = RemoteFunction.new("PH_ForceState")
@@ -308,6 +312,10 @@ function TransitionToState(newState)
         stateTimer.value = 0
         eliminatedPlayers = {}
 
+        -- Broadcast reset props count to all clients
+        propsCountEvent:FireAllClients(0)
+        Log("[PropsCount] Reset to 0 (LOBBY)")
+
         -- Restore all possessed players' avatars
         PropPossessionSystem.RestoreAllPossessedPlayers()
 
@@ -552,6 +560,10 @@ function AssignRoles()
 
     Log(string.format("ROLES: %d Hunters, %d Props, %d Spectators (total %d players)",
         #huntersTeam, #propsTeam, #spectators, #players))
+
+    -- Broadcast props count to all clients
+    propsCountEvent:FireAllClients(#propsTeam)
+    Log(string.format("[PropsCount] Roles assigned. Props: %d", #propsTeam))
 end
 
 --[[
@@ -680,10 +692,13 @@ function RemoveFromTeams(player)
     for i, p in ipairs(propsTeam) do
         if p.id == player.id then
             table.remove(propsTeam, i)
+            -- Broadcast updated props count to all clients
+            propsCountEvent:FireAllClients(#propsTeam)
+            Log(string.format("[PropsCount] Prop removed. Remaining: %d", #propsTeam))
             break
         end
     end
-    
+
     -- Remove from hunters team
     for i, p in ipairs(huntersTeam) do
         if p.id == player.id then
