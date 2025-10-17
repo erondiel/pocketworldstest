@@ -11,12 +11,9 @@ local _fadeOverlay : VisualElement = nil
 
 local PlayerManager = require("PropHuntPlayerManager")
 local VFXManager = require("PropHuntVFXManager")
-local GameManager = require("PropHuntGameManager")
 
 -- Current player role (default to Spectator in LOBBY)
 local currentRole = "Spectator"
-local currentState = 1  -- LOBBY
-local currentScore = 0
 
 -- Network events (kept for backward compatibility)
 local roleAssignedEvent = Event.new("PH_RoleAssigned")
@@ -35,48 +32,21 @@ local function FormatRole(roleStr)
   end
 end
 
--- Helper function to get remaining props count
-local function GetRemainingPropsCount()
-  local propsTeam = GameManager.GetPropsTeam()
-  return #propsTeam
-end
-
--- Helper function to get ready players count
-local function GetReadyPlayersCount()
-  return PlayerManager.GetReadyPlayerCount()
-end
-
 function UpdateHud(stateText, timerText, playersText, scoreText)
   if _stateLabel then
-    -- Line 1: State only
-    _stateLabel.text = stateText
+    -- Format: "LOBBY | Spectator" or "HUNTING | Hunter"
+    -- Include score in state label if provided
+    if scoreText then
+      _stateLabel.text = stateText .. " | " .. currentRole .. " | " .. scoreText
+    else
+      _stateLabel.text = stateText .. " | " .. currentRole
+    end
   end
   if _timerLabel then
-    -- Line 2: Role
-    -- Line 3: Timer
-    _timerLabel.text = currentRole .. "\n" .. timerText
+    _timerLabel.text = timerText
   end
   if _playersLabel then
-    -- Line 4: Score
-    -- Line 5: Players/Props count depending on state
-    local scoreDisplay = scoreText or ("Score: " .. currentScore)
-    local playersDisplay = playersText
-
-    -- Update players display based on game state
-    if currentState == GameManager.GameState.LOBBY then
-      -- In LOBBY: Show ready players count
-      local readyCount = GetReadyPlayersCount()
-      playersDisplay = "Ready: " .. readyCount
-    elseif currentState == GameManager.GameState.HIDING or currentState == GameManager.GameState.HUNTING then
-      -- During game: Show remaining props
-      local propsCount = GetRemainingPropsCount()
-      playersDisplay = "Props: " .. propsCount
-    else
-      -- ROUND_END: Show nothing or keep last value
-      playersDisplay = playersText or ""
-    end
-
-    _playersLabel.text = scoreDisplay .. "\n" .. playersDisplay
+    _playersLabel.text = playersText
   end
 end
 
@@ -93,10 +63,9 @@ function self:Start()
 
   -- Initial text (LOBBY with Spectator role)
   currentRole = "Spectator"
-  currentState = GameManager.GameState.LOBBY
-  UpdateHud("LOBBY", "0s", "")
+  UpdateHud("LOBBY", "0s", "Players: 0/0")
 
-  -- Get local player's role and score from PlayerManager NetworkValue
+  -- Get local player's role from PlayerManager NetworkValue
   local localPlayer = client.localPlayer
   if localPlayer then
     local playerInfo = PlayerManager.GetPlayerInfo(localPlayer)
@@ -110,14 +79,6 @@ function self:Start()
         currentRole = FormatRole(newRole)
         print("[PropHuntHUD] Role changed via NetworkValue: " .. currentRole)
       end)
-
-      -- Listen for score changes (if available)
-      if playerInfo.score then
-        playerInfo.score.Changed:Connect(function(newScore, oldScore)
-          currentScore = newScore
-          print("[PropHuntHUD] Score updated: " .. currentScore)
-        end)
-      end
     else
       print("[PropHuntHUD] WARNING: Could not get player info for role tracking")
     end
@@ -129,9 +90,8 @@ function self:Start()
     currentRole = FormatRole(role)
   end)
 
-  -- Listen for state changes to reset role to Spectator in LOBBY and track current state
+  -- Listen for state changes to reset role to Spectator in LOBBY
   stateChangedEvent:Connect(function(newState, timer)
-    currentState = newState
     if newState == 1 then -- LOBBY state
       currentRole = "Spectator"
       print("[PropHuntHUD] Returned to LOBBY - role reset to Spectator")
