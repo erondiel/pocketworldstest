@@ -9,6 +9,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_PilarB
     second: {fileID: 2100000, guid: 4ec2b98805581f9418e2c3b111546638, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_PropHunt
+    second: {fileID: 2100000, guid: 2abdc51ddf1815740b8ab77969c405a8, type: 2}
   materials:
     materialImportMode: 1
     materialName: 1

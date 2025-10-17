@@ -14,6 +14,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_Candelabra
     second: {fileID: 2100000, guid: cfd91adca6f131e4984fb58350ef4074, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_PropHunt
+    second: {fileID: 2100000, guid: 2abdc51ddf1815740b8ab77969c405a8, type: 2}
   materials:
     materialImportMode: 1
     materialName: 1

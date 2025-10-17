@@ -7,6 +7,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_PropHunt
+    second: {fileID: 2100000, guid: 2abdc51ddf1815740b8ab77969c405a8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Table
     second: {fileID: 2100000, guid: cb100ea5bc879b2448cd7360d654ce15, type: 2}
   materials:

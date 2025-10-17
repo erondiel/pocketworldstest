@@ -95,6 +95,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 9120759219772870990}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0303c9f8e7a4be24dae7ecd74221f001,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6609532909417993776}
   m_SourcePrefab: {fileID: 100100000, guid: 0303c9f8e7a4be24dae7ecd74221f001, type: 3}
 --- !u!1 &5960532447005871195 stripped
 GameObject:
@@ -124,6 +128,25 @@ BoxCollider:
   m_Size: {x: 1.8282516, y: 1.075396, z: 2.9737842}
   m_Center: {x: 0.000000029802322, y: 0.5360194, z: -0.018565893}
 --- !u!114 &9120759219772870990
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5960532447005871195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_OverrideArea: 1
+  m_Area: 1
+  m_OverrideGenerateLinks: 0
+  m_GenerateLinks: 0
+  m_IgnoreFromBuild: 0
+  m_ApplyToChildren: 1
+  m_AffectedAgents: ffffffff
+--- !u!114 &6609532909417993776
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
