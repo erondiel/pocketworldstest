@@ -828,7 +828,7 @@ function TriggerLobbyTransition()
     DebugVFX("TriggerLobbyTransition - Entering Lobby state")
 
     -- PLACEHOLDER: Log the transition
-    print("[VFX PLACEHOLDER] Lobby transition - desaturate world, spawn lobby particles")
+    Logger.Debug("VFXManager", "[PLACEHOLDER] Lobby transition - desaturate world, spawn lobby particles")
 
     -- TODO: Implement lobby transition VFX:
     -- 1. Apply desaturation LUT to lobby area cameras
@@ -851,7 +851,7 @@ function TriggerHidePhaseStart(propsTeam)
     DebugVFX("TriggerHidePhaseStart - Hide phase starting with " .. tostring(#propsTeam) .. " props")
 
     -- PLACEHOLDER: Log the transition
-    print("[VFX PLACEHOLDER] Hide phase start - pulse arena, teleport beams, enable outlines")
+    Logger.Debug("VFXManager", "[PLACEHOLDER] Hide phase start - pulse arena, teleport beams, enable outlines")
 
     -- TODO: Implement hide phase VFX:
     -- 1. Play arena pulse gradient (radial from center, 0.5s)
@@ -861,7 +861,7 @@ function TriggerHidePhaseStart(propsTeam)
 
     -- For now, just log the prop team size
     if propsTeam then
-        print("[VFX] Props team size: " .. tostring(#propsTeam))
+        Logger.Debug("VFXManager", "Props team size: " .. tostring(#propsTeam))
     end
 end
 
@@ -879,7 +879,7 @@ function TriggerHuntPhaseStart()
     DebugVFX("TriggerHuntPhaseStart - Hunt phase starting")
 
     -- PLACEHOLDER: Log the transition
-    print("[VFX PLACEHOLDER] Hunt phase start - expand vignette, fade outlines, tension music")
+    Logger.Debug("VFXManager", "[PLACEHOLDER] Hunt phase start - expand vignette, fade outlines, tension music")
 
     -- TODO: Implement hunt phase VFX:
     -- 1. Expand arena vignette (from 0.3 to 0.7 over 1.0s)
@@ -912,7 +912,7 @@ function TriggerEndRoundVFX(winningTeam, winningPlayers)
     local winningPlayersCount = winningPlayers and #winningPlayers or 0
     endRoundVFXEvent:FireAllClients(winningTeam, winningPlayersCount)
 
-    print("[VFX] SERVER: Broadcast EndRound VFX event (team: " .. tostring(winningTeam) .. ", players: " .. tostring(winningPlayersCount) .. ")")
+    Logger.Debug("VFXManager", "SERVER: Broadcast EndRound VFX event (team: " .. tostring(winningTeam) .. ", players: " .. tostring(winningPlayersCount) .. ")")
 end
 
 --[[
@@ -936,10 +936,10 @@ local function PlayEndRoundVFX(winningTeam, winningPlayersCount)
     local vfxInstance = SpawnUIVFX(_endRoundVFXPrefab, vfxDuration, "EndRound")
 
     -- PLACEHOLDER: Log the transition
-    print("[VFX PLACEHOLDER] End round VFX - victory screen, confetti, score celebration")
-    print("[VFX] Winning team: " .. tostring(winningTeam))
-    print("[VFX] VFX duration: " .. vfxDuration .. "s")
-    print("[VFX] Winning players count: " .. tostring(winningPlayersCount))
+    Logger.Debug("VFXManager", "[PLACEHOLDER] End round VFX - victory screen, confetti, score celebration")
+    Logger.Debug("VFXManager", "Winning team: " .. tostring(winningTeam))
+    Logger.Debug("VFXManager", "VFX duration: " .. vfxDuration .. "s")
+    Logger.Debug("VFXManager", "Winning players count: " .. tostring(winningPlayersCount))
 
     -- TODO: Implement end round VFX:
     -- 1. Spawn confetti/sparkle particle systems
@@ -1166,7 +1166,7 @@ function self:ClientStart()
         PlayEndRoundVFX(winningTeam, winningPlayersCount)
     end)
 
-    print("[VFX] Client started - listening for EndRound VFX events")
+    Logger.Debug("VFXManager", "Client started - listening for EndRound VFX events")
 end
 
 -- ========== EXPORTED FUNCTIONS ==========

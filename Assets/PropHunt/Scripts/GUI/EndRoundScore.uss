@@ -1,0 +1,204 @@
+/* ========== END ROUND SCORE SCREEN ========== */
+
+/* Root Container */
+.endround-score {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    /* No background - transparent */
+    /* Visibility controlled by PropHuntUIManager via GameObject.SetActive() */
+}
+
+/* Main Score Container */
+.score-container {
+    width: 600px;
+    max-width: 90%;
+    height: 700px;
+    max-height: 85%;
+    background-color: rgba(20, 20, 30, 0.95);
+    border-radius: 20px;
+    border-width: 3px;
+    border-color: rgb(100, 100, 150);
+    padding: 30px;
+    align-items: center;
+}
+
+/* ========== HEADER ========== */
+
+.score-header {
+    width: 100%;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom-width: 2px;
+    border-bottom-color: rgb(80, 80, 120);
+}
+
+.score-title {
+    font-size: 48px;
+    color: rgb(255, 215, 0); /* Gold */
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    margin-bottom: 5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.score-subtitle {
+    font-size: 24px;
+    color: rgb(200, 200, 220);
+    -unity-text-align: middle-center;
+}
+
+/* ========== PLAYER LIST ========== */
+
+.player-list {
+    width: 100%;
+    flex-grow: 1;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.player-entry {
+    width: 100%;
+    height: 60px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background-color: rgba(40, 40, 60, 0.8);
+    border-radius: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-bottom: 8px;
+    border-width: 2px;
+    border-color: rgba(80, 80, 120, 0.5);
+}
+
+/* Highlight for 1st place */
+.player-entry.rank-1 {
+    background-color: rgba(255, 215, 0, 0.2); /* Gold tint */
+    border-color: rgb(255, 215, 0);
+    border-width: 3px;
+}
+
+/* Highlight for 2nd place */
+.player-entry.rank-2 {
+    background-color: rgba(192, 192, 192, 0.15); /* Silver tint */
+    border-color: rgb(192, 192, 192);
+}
+
+/* Highlight for 3rd place */
+.player-entry.rank-3 {
+    background-color: rgba(205, 127, 50, 0.15); /* Bronze tint */
+    border-color: rgb(205, 127, 50);
+}
+
+.player-rank {
+    font-size: 28px;
+    color: rgb(255, 215, 0);
+    -unity-font-style: bold;
+    min-width: 50px;
+    -unity-text-align: middle-center;
+}
+
+.player-name {
+    font-size: 22px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    flex-grow: 1;
+    margin-left: 10px;
+}
+
+.player-score {
+    font-size: 26px;
+    color: rgb(100, 255, 100); /* Green */
+    -unity-font-style: bold;
+    min-width: 80px;
+    -unity-text-align: middle-right;
+}
+
+.player-role {
+    font-size: 18px;
+    color: rgb(150, 150, 200);
+    min-width: 100px;
+    -unity-text-align: middle-center;
+    margin-left: 10px;
+}
+
+/* ========== FOOTER ========== */
+
+.score-footer {
+    width: 100%;
+    align-items: center;
+    padding-top: 15px;
+    border-top-width: 2px;
+    border-top-color: rgb(80, 80, 120);
+}
+
+.footer-text {
+    font-size: 18px;
+    color: rgb(180, 180, 200);
+    -unity-text-align: middle-center;
+}
+
+/* ========== WINNER OVERLAY ========== */
+
+.winner-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.85);
+    /* Ensure overlay is above everything */
+    z-index: 1000;
+}
+
+.winner-overlay.hidden {
+    display: none;
+}
+
+.winner-content {
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(30, 30, 40, 0.95);
+    border-radius: 30px;
+    border-width: 6px;
+    border-color: rgb(255, 215, 0);
+    padding: 80px;
+    width: 600px;
+    max-width: 85%;
+    /* Add glow effect */
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+}
+
+.winner-trophy {
+    font-size: 140px;
+    -unity-text-align: middle-center;
+    margin-bottom: 25px;
+    /* Add glow to trophy */
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+}
+
+.winner-title {
+    font-size: 84px;
+    color: rgb(255, 215, 0);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.9), 3px 3px 6px rgba(0, 0, 0, 0.9);
+    margin-bottom: 20px;
+    letter-spacing: 4px;
+}
+
+.winner-subtitle {
+    font-size: 36px;
+    color: rgb(255, 255, 255);
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}

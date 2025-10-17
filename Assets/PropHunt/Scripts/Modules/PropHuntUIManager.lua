@@ -13,6 +13,9 @@ local _HUD : GameObject = nil
 local _UIGameObjectsToHide : {GameObject} = {}
 local UI_NAMES_TO_HIDE = {"ReadyButton", "SpectatorButton"}
 
+-- EndRoundScore UI (shown only during ROUND_END)
+local _EndRoundScoreUI : GameObject = nil
+
 -- Game states
 local GameState = {
     LOBBY = 1,
@@ -187,6 +190,15 @@ function self:ClientStart()
         end
     end
 
+    -- Find EndRoundScore UI (managed separately - shown only during ROUND_END)
+    _EndRoundScoreUI = GameObject.Find("EndRoundScore")
+    if _EndRoundScoreUI then
+        Logger.Log("UIManager", "Found EndRoundScore UI")
+        _EndRoundScoreUI:SetActive(false) -- Hide by default
+    else
+        Logger.Log("UIManager", "WARNING: Could not find EndRoundScore GameObject")
+    end
+
     if #_UIGameObjectsToHide == 0 then
         Logger.Log("UIManager", "ERROR: No UI GameObjects found!")
         Logger.Log("UIManager", "Make sure GameObjects are named: " .. table.concat(UI_NAMES_TO_HIDE, ", "))
@@ -220,9 +232,24 @@ function self:ClientStart()
                 if newState == GameState.LOBBY then
                     Logger.Log("UIManager", "CLIENT: State = LOBBY → Showing UI")
                     SetUIVisibility(true)
+                    if _HUD then _HUD:SetActive(true) end
+                    if _EndRoundScoreUI then
+                        _EndRoundScoreUI:SetActive(false)
+                    end
+                elseif newState == GameState.ROUND_END then
+                    Logger.Log("UIManager", "CLIENT: State = ROUND_END → Showing EndRoundScore")
+                    SetUIVisibility(false) -- Hide lobby UI
+                    if _HUD then _HUD:SetActive(false) end -- Hide HUD during end screen
+                    if _EndRoundScoreUI then
+                        _EndRoundScoreUI:SetActive(true)
+                    end
                 else
                     Logger.Log("UIManager", "CLIENT: State = " .. tostring(newState) .. " → Hiding UI")
                     SetUIVisibility(false)
+                    if _HUD then _HUD:SetActive(true) end -- Show HUD during gameplay
+                    if _EndRoundScoreUI then
+                        _EndRoundScoreUI:SetActive(false)
+                    end
                 end
             end)
 
@@ -240,8 +267,22 @@ function self:ClientStart()
 
         if newState == GameState.LOBBY then
             SetUIVisibility(true)
+            if _HUD then _HUD:SetActive(true) end
+            if _EndRoundScoreUI then
+                _EndRoundScoreUI:SetActive(false)
+            end
+        elseif newState == GameState.ROUND_END then
+            SetUIVisibility(false)
+            if _HUD then _HUD:SetActive(false) end -- Hide HUD during end screen
+            if _EndRoundScoreUI then
+                _EndRoundScoreUI:SetActive(true)
+            end
         else
             SetUIVisibility(false)
+            if _HUD then _HUD:SetActive(true) end -- Show HUD during gameplay
+            if _EndRoundScoreUI then
+                _EndRoundScoreUI:SetActive(false)
+            end
         end
     end)
 end
