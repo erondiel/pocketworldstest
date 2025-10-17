@@ -69,12 +69,8 @@ namespace Highrise.Lua.Generated
         [Tooltip("Duration for tag miss scale punch animation")]
         [SerializeField] public System.Double _tagMissScalePunchDuration = 0.3;
         [Header("Phase Transition VFX")]
-        [Tooltip("VFX prefab for end round effect")]
+        [Tooltip("VFX prefab for end round effect (duration matches Round End timer from PropHuntConfig)")]
         [SerializeField] public UnityEngine.GameObject _endRoundVFXPrefab = default;
-        [Tooltip("Enable looping end round VFX (duration matches Round End timer)")]
-        [SerializeField] public System.Boolean _endRoundVFXLooping = true;
-        [Tooltip("Duration for end round VFX (only used if looping is disabled)")]
-        [SerializeField] public System.Double _endRoundDuration = 3;
 
         protected override SerializedPropertyValue[] SerializeProperties()
         {
@@ -103,8 +99,6 @@ namespace Highrise.Lua.Generated
                 CreateSerializedProperty(_script.GetPropertyAt(17), _tagHitScalePunchDuration),
                 CreateSerializedProperty(_script.GetPropertyAt(18), _tagMissScalePunchDuration),
                 CreateSerializedProperty(_script.GetPropertyAt(19), _endRoundVFXPrefab),
-                CreateSerializedProperty(_script.GetPropertyAt(20), _endRoundVFXLooping),
-                CreateSerializedProperty(_script.GetPropertyAt(21), _endRoundDuration),
             };
         }
         

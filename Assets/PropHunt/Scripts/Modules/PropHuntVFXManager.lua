@@ -20,6 +20,7 @@ local TweenGroup = TweenModule.TweenGroup
 local Easing = TweenModule.Easing
 
 local PropHuntConfig = require("PropHuntConfig")
+local Logger = require("PropHuntLogger")
 
 -- ========== NETWORK EVENTS ==========
 -- EndRound VFX event for broadcasting to all clients
@@ -149,7 +150,7 @@ end
 local function SpawnVFX(prefabRef, duration, position, vfxName)
     -- Validate prefab reference
     if not prefabRef then
-        print(string.format("[VFX] ERROR: %s prefab not assigned in Inspector!", vfxName))
+        Logger.Error("VFXManager", string.format("%s prefab not assigned in Inspector!", vfxName))
         return nil
     end
 
@@ -162,13 +163,13 @@ local function SpawnVFX(prefabRef, duration, position, vfxName)
     -- Enable the VFX GameObject (works even if it's disabled)
     vfxInstance:SetActive(true)
 
-    print(string.format("[VFX] %s VFX spawned at %s (will disable after %.2fs)", vfxName, tostring(position), duration))
+    Logger.Debug("VFXManager", string.format("%s VFX spawned at %s (will disable after %.2fs)", vfxName, tostring(position), duration))
 
     -- Schedule disable after duration
     Timer.After(duration, function()
         if vfxInstance then
             vfxInstance:SetActive(false)
-            print(string.format("[VFX] %s VFX disabled after %.2fs", vfxName, duration))
+            Logger.Debug("VFXManager", string.format("%s VFX disabled after %.2fs", vfxName, duration))
         end
     end)
 
@@ -193,7 +194,7 @@ end
 local function SpawnUIVFX(prefabRef, duration, vfxName)
     -- Validate prefab reference
     if not prefabRef then
-        print(string.format("[VFX] ERROR: %s UI prefab not assigned in Inspector!", vfxName))
+        Logger.Error("VFXManager", string.format("%s UI prefab not assigned in Inspector!", vfxName))
         return nil
     end
 
@@ -204,13 +205,13 @@ local function SpawnUIVFX(prefabRef, duration, vfxName)
     -- NOTE: Canvas should already have RTSCamera assigned in the scene
     vfxInstance:SetActive(true)
 
-    print(string.format("[VFX] %s UI VFX spawned (will disable after %.2fs)", vfxName, duration))
+    Logger.Debug("VFXManager", string.format("%s UI VFX spawned (will disable after %.2fs)", vfxName, duration))
 
     -- Schedule disable after duration
     Timer.After(duration, function()
         if vfxInstance then
             vfxInstance:SetActive(false)
-            print(string.format("[VFX] %s UI VFX disabled after %.2fs", vfxName, duration))
+            Logger.Debug("VFXManager", string.format("%s UI VFX disabled after %.2fs", vfxName, duration))
         end
     end)
 
@@ -218,13 +219,11 @@ local function SpawnUIVFX(prefabRef, duration, vfxName)
 end
 
 --[[
-  DebugVFX: Logs VFX debug messages
+  DebugVFX: Logs VFX debug messages using unified logger
   @param message: string - The debug message
 ]]
 local function DebugVFX(message : string)
-    if PropHuntConfig.IsDebugEnabled() then
-        PropHuntConfig.DebugLog("[VFX] " .. message)
-    end
+    Logger.Debug("VFXManager", message)
 end
 
 -- ========== UI ANIMATION WRAPPERS ==========
