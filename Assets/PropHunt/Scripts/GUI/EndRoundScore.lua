@@ -100,6 +100,32 @@ function self:Start()
         Logger.Error("EndRoundScore", "Global event object not found!")
     end
 
+    -- Listen for state changes to hide UI when returning to LOBBY
+    local stateChangedEvent = _G.PH_StateChangedEvent
+    if stateChangedEvent then
+        Logger.Log("EndRoundScore", "Found state changed event object")
+
+        stateChangedEvent:Connect(function(newState, timer)
+            Logger.Log("EndRoundScore", "State changed to: " .. tostring(newState))
+
+            -- Hide score container when returning to LOBBY (state 1)
+            if newState == 1 then -- GameState.LOBBY
+                if _scoreContainer then
+                    _scoreContainer:AddToClassList("hidden")
+                    Logger.Log("EndRoundScore", "Score container hidden (returned to LOBBY)")
+                end
+                if _winnerOverlay then
+                    _winnerOverlay:AddToClassList("hidden")
+                    Logger.Log("EndRoundScore", "Winner overlay hidden (returned to LOBBY)")
+                end
+            end
+        end)
+
+        Logger.Log("EndRoundScore", "State change listener registered")
+    else
+        Logger.Log("EndRoundScore", "WARNING: State changed event not found (scores won't hide on LOBBY)")
+    end
+
     Logger.Log("EndRoundScore", "UI initialized and ready for scores")
 end
 

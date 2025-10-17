@@ -39,6 +39,7 @@ local activePlayers = {}
 local propsTeam = {}
 local huntersTeam = {}
 local eliminatedPlayers = {}
+local originalRoles = {}  -- Track original roles for score display (props become spectators when eliminated)
 
 -- Statistics
 local propsWins = 0
@@ -49,7 +50,10 @@ local propScoringTimer = nil
 local lastTickTime = 0
 
 -- Network Events
-local stateChangedEvent = Event.new("PH_StateChanged")
+-- IMPORTANT: Create state change event as GLOBAL so UI scripts can access the same Event object
+_G.PH_StateChangedEvent = Event.new("PH_StateChanged")
+local stateChangedEvent = _G.PH_StateChangedEvent
+
 local roleAssignedEvent = Event.new("PH_RoleAssigned")
 local playerTaggedEvent = Event.new("PH_PlayerTagged")
 local debugEvent = Event.new("PH_Debug")
@@ -464,6 +468,7 @@ end
 function AssignRoles()
     propsTeam = {}
     huntersTeam = {}
+    originalRoles = {}  -- Reset original roles tracking for new round
 
     local players = GetActivePlayers()
     local readyPlayers = PlayerManager.GetReadyPlayers()
@@ -482,6 +487,7 @@ function AssignRoles()
             table.insert(spectators, player)
             PlayerManager.SetPlayerRole(player, "spectator")
             NotifyPlayerRole(player, "spectator")
+            originalRoles[player.id] = "spectator"  -- Store original role
             Log(string.format("SPECTATOR: %s", player.name))
         elseif not isReady then
             -- Not ready - force into spectator mode
@@ -489,6 +495,7 @@ function AssignRoles()
             PlayerManager.ForceSpectatorMode(player)
             PlayerManager.SetPlayerRole(player, "spectator")
             NotifyPlayerRole(player, "spectator")
+            originalRoles[player.id] = "spectator"  -- Store original role
             table.insert(spectators, player)
         else
             -- Ready and not spectator - eligible to play
@@ -530,12 +537,14 @@ function AssignRoles()
             table.insert(huntersTeam, player)
             PlayerManager.SetPlayerRole(player, "hunter")
             NotifyPlayerRole(player, "hunter")
+            originalRoles[player.id] = "hunter"  -- Store original role
             Log(string.format("HUNTER: %s", player.name))
             debugEvent:FireAllClients("ROLE", player.id, "hunter")
         else
             table.insert(propsTeam, player)
             PlayerManager.SetPlayerRole(player, "prop")
             NotifyPlayerRole(player, "prop")
+            originalRoles[player.id] = "prop"  -- Store original role
             Log(string.format("PROP: %s", player.name))
             debugEvent:FireAllClients("ROLE", player.id, "prop")
         end
@@ -734,13 +743,16 @@ function BroadcastEndRoundScores()
         local playerInfo = PlayerManager.GetPlayerInfo(player)
         if playerInfo then
             local playerScore = ScoringSystem.GetPlayerScore(player)
+            -- Use original role (eliminated props show as "prop" not "spectator")
+            local displayRole = originalRoles[player.id] or playerInfo.role.value
             table.insert(scoresData, {
                 id = player.id,
                 name = player.name,
                 score = playerScore,
-                role = playerInfo.role.value
+                role = displayRole
             })
-            Log(string.format("[EndRoundScores] Player: %s | Score: %d | Role: %s", player.name, playerScore, playerInfo.role.value))
+            Log(string.format("[EndRoundScores] Player: %s | Score: %d | Role: %s (original: %s)",
+                player.name, playerScore, displayRole, originalRoles[player.id] or "unknown"))
         end
     end
 
