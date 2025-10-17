@@ -51,7 +51,7 @@ local _slideInDuration : number = 0.35
 --!SerializeField
 local _defaultEasing : string = "easeOutQuad"
 
---!Space(10)
+--!Space
 --!Header("Player VFX")
 --!SerializeField
 --!Tooltip("VFX prefab for player vanish effect")
@@ -69,7 +69,7 @@ local _playerAppearVFXPrefab : GameObject = nil
 --!Tooltip("Duration for player appear VFX")
 local _playerAppearDuration : number = 2.5
 
---!Space(10)
+--!Space
 --!Header("Prop VFX")
 --!SerializeField
 --!Tooltip("VFX prefab for prop infill effect")
@@ -87,7 +87,7 @@ local _rejectionVFXPrefab : GameObject = nil
 --!Tooltip("Duration for rejection VFX (auto-filled from particle system)")
 local _rejectionDuration : number = 0.2
 
---!Space(10)
+--!Space
 --!Header("Tag VFX")
 --!SerializeField
 --!Tooltip("VFX prefab for tag hit effect")
@@ -113,7 +113,7 @@ local _tagHitScalePunchDuration : number = 0.3
 --!Tooltip("Duration for tag miss scale punch animation")
 local _tagMissScalePunchDuration : number = 0.3
 
---!Space(10)
+--!Space
 --!Header("Phase Transition VFX")
 --!SerializeField
 --!Tooltip("VFX prefab for end round effect (duration matches Round End timer from PropHuntConfig)")

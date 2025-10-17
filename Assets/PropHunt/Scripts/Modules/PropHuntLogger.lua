@@ -1,3 +1,5 @@
+--!Type(Module)
+
 --[[
     PropHunt Logger Module
     Centralized logging system with per-system toggles for debug output
@@ -9,12 +11,10 @@
         Logger.Error("Teleporter", "Spawn point not found")
 ]]
 
---!Type(Module)
+-- ========== CORE SYSTEMS ==========
+-- Logging toggles for primary game systems
 
--- ========== LOG SYSTEM TOGGLES ==========
--- Set to true to enable logging for specific systems
--- Set to false to disable logging for that system
-
+--!Header("Core Systems")
 --!SerializeField
 --!Tooltip("Enable/disable logging for GameManager")
 local _enableGameManager : boolean = true
@@ -28,20 +28,21 @@ local _enablePlayerManager : boolean = true
 local _enableScoringSystem : boolean = true
 
 --!SerializeField
+--!Tooltip("Enable/disable logging for Config")
+local _enableConfig : boolean = true
+
+-- ========== GAMEPLAY SYSTEMS ==========
+-- Logging toggles for gameplay mechanics
+
+--!Space
+--!Header("Gameplay Systems")
+--!SerializeField
 --!Tooltip("Enable/disable logging for Teleporter")
 local _enableTeleporter : boolean = true
 
 --!SerializeField
---!Tooltip("Enable/disable logging for VFXManager")
-local _enableVFXManager : boolean = true
-
---!SerializeField
 --!Tooltip("Enable/disable logging for ZoneManager")
 local _enableZoneManager : boolean = true
-
---!SerializeField
---!Tooltip("Enable/disable logging for UIManager")
-local _enableUIManager : boolean = true
 
 --!SerializeField
 --!Tooltip("Enable/disable logging for HunterTagSystem")
@@ -51,6 +52,37 @@ local _enableHunterTagSystem : boolean = true
 --!Tooltip("Enable/disable logging for PropPossessionSystem")
 local _enablePropPossessionSystem : boolean = true
 
+-- ========== UI SYSTEMS ==========
+-- Logging toggles for user interface components
+
+--!Space
+--!Header("UI Systems")
+--!SerializeField
+--!Tooltip("Enable/disable logging for UIManager")
+local _enableUIManager : boolean = true
+
+--!SerializeField
+--!Tooltip("Enable/disable logging for EndRoundScore")
+local _enableEndRoundScore : boolean = true
+
+--!SerializeField
+--!Tooltip("Enable/disable logging for RecapScreen")
+local _enableRecapScreen : boolean = true
+
+-- ========== VFX SYSTEMS ==========
+-- Logging toggles for visual effects
+
+--!Space
+--!Header("VFX Systems")
+--!SerializeField
+--!Tooltip("Enable/disable logging for VFXManager")
+local _enableVFXManager : boolean = true
+
+-- ========== NOT IMPLEMENTED ==========
+-- Logging toggles for placeholder/future systems
+
+--!Space
+--!Header("Not Implemented (Future Systems)")
 --!SerializeField
 --!Tooltip("Enable/disable logging for PropDisguiseSystem - Not Implemented")
 local _enablePropDisguiseSystem_NotImplemented : boolean = true
@@ -68,37 +100,40 @@ local _enableReadyButton_NotImplemented : boolean = false
 local _enableSpectatorButton_NotImplemented : boolean = false
 
 --!SerializeField
---!Tooltip("Enable/disable logging for RecapScreen - Not Implemented")
-local _enableRecapScreen_NotImplemented : boolean = true
-
---!SerializeField
 --!Tooltip("Enable/disable logging for HUD - Not Implemented")
 local _enableHUD_NotImplemented : boolean = false
 
---!SerializeField
---!Tooltip("Enable/disable logging for Config")
-local _enableConfig : boolean = true
-
 -- ========== SYSTEM NAME MAPPING ==========
 -- Maps system names to their toggle flags
+
 local systemToggles = {
+    -- Core Systems
     ["GameManager"] = function() return _enableGameManager end,
     ["PlayerManager"] = function() return _enablePlayerManager end,
     ["ScoringSystem"] = function() return _enableScoringSystem end,
+    ["Config"] = function() return _enableConfig end,
+
+    -- Gameplay Systems
     ["Teleporter"] = function() return _enableTeleporter end,
-    ["VFXManager"] = function() return _enableVFXManager end,
-    ["VFX"] = function() return _enableVFXManager end,  -- Alias
     ["ZoneManager"] = function() return _enableZoneManager end,
-    ["UIManager"] = function() return _enableUIManager end,
     ["HunterTagSystem"] = function() return _enableHunterTagSystem end,
     ["PropPossessionSystem"] = function() return _enablePropPossessionSystem end,
+
+    -- UI Systems
+    ["UIManager"] = function() return _enableUIManager end,
+    ["EndRoundScore"] = function() return _enableEndRoundScore end,
+    ["RecapScreen"] = function() return _enableRecapScreen end,
+
+    -- VFX Systems
+    ["VFXManager"] = function() return _enableVFXManager end,
+    ["VFX"] = function() return _enableVFXManager end,  -- Alias
+
+    -- Not Implemented
     ["PropDisguiseSystem"] = function() return _enablePropDisguiseSystem_NotImplemented end,
     ["RangeIndicator"] = function() return _enableRangeIndicator_NotImplemented end,
     ["ReadyButton"] = function() return _enableReadyButton_NotImplemented end,
     ["SpectatorButton"] = function() return _enableSpectatorButton_NotImplemented end,
-    ["RecapScreen"] = function() return _enableRecapScreen_NotImplemented end,
     ["HUD"] = function() return _enableHUD_NotImplemented end,
-    ["Config"] = function() return _enableConfig end,
 
     -- Alternative names / aliases
     ["PropHunt"] = function() return _enableGameManager end,
@@ -109,7 +144,7 @@ local systemToggles = {
     ["PropHuntVFXManager"] = function() return _enableVFXManager end,
     ["PropHuntUIManager"] = function() return _enableUIManager end,
     ["PropHuntZoneManager"] = function() return _enableZoneManager end,
-    ["PropHuntHUD"] = function() return _enableHUD end,
+    ["PropHuntHUD"] = function() return _enableHUD_NotImplemented end,
     ["PropHuntConfig"] = function() return _enableConfig end,
 }
 
@@ -205,7 +240,6 @@ end
     @param ... - Arguments for the format string
 ]]
 function Logf(systemName, format, ...)
-    if not _showInfo then return end
     if not IsSystemEnabled(systemName) then return end
 
     local message = string.format(format, ...)
@@ -213,6 +247,7 @@ function Logf(systemName, format, ...)
 end
 
 -- ========== MODULE EXPORTS ==========
+
 return {
     Log = Log,
     Warn = Warn,
