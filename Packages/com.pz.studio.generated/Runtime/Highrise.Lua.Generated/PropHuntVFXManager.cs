@@ -28,9 +28,9 @@ namespace Highrise.Lua.Generated
 
         [Header("UI Animation Settings")]
         [Tooltip("Duration for fade in animations")]
-        [SerializeField] public System.Double _fadeInDuration = 0.3;
+        [SerializeField] public System.Double _fadeInDuration = 0.5;
         [Tooltip("Duration for fade out animations")]
-        [SerializeField] public System.Double _fadeOutDuration = 0.25;
+        [SerializeField] public System.Double _fadeOutDuration = 0.5;
         [Tooltip("Duration for scale pulse animations")]
         [SerializeField] public System.Double _pulseDuration = 0.4;
         [Tooltip("Duration for slide in animations")]

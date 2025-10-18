@@ -33,11 +33,11 @@ local endRoundVFXEvent = Event.new("PH_EndRoundVFX")
 --!Header("UI Animation Settings")
 --!Tooltip("Duration for fade in animations")
 --!SerializeField
-local _fadeInDuration : number = 0.3
+local _fadeInDuration : number = 0.5
 
 --!Tooltip("Duration for fade out animations")
 --!SerializeField
-local _fadeOutDuration : number = 0.25
+local _fadeOutDuration : number = 0.5
 
 --!Tooltip("Duration for scale pulse animations")
 --!SerializeField
